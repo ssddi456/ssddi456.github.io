@@ -1,0 +1,31 @@
+{
+  "extends": [
+    "tslint:recommended"
+  ],
+  "rules": {
+    "only-arrow-functions": [
+      false
+    ],
+    "member-ordering": [
+      false
+    ],
+    "member-access": [
+      false
+    ],
+    "space-before-function-paran" :false,
+    "quotemark": [
+      "single"
+    ],
+    "ordered-imports": [
+      false
+    ],
+    "object-literal-sort-keys": false,
+    "max-classes-per-file": [
+      false
+    ],
+    "prefer-for-of": false,
+    "forin": false,
+    "no-var-requires": false,
+    "space-before-function-paren": [true, {"anonymous": "always", "named": "never", "asyncArrow": "always"}]
+  }
+}

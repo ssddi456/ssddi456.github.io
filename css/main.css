@@ -1,0 +1,14 @@
+html, body, .wrapper {
+    height: 100%;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.wrapper canvas#main {
+    flex: 1;
+    max-height: 800px;
+    max-width: 800px;
+}
