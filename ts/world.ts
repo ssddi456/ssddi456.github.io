@@ -1,5 +1,7 @@
 interface Matrix {
     flatten(): number[];
+    clone(): Matrix;
+    x(m: Matrix): Matrix;
 }
 
 export class Camara {
@@ -17,6 +19,7 @@ export class Camara {
 }
 
 export abstract class Shader {
+    inited: false;
     abstract init(gl: WebGLRenderingContext);
     abstract render(world: World, mesh: Mesh, camaraMatrixFlat: number[]);
 }
@@ -29,7 +32,16 @@ export class VertexColorShader extends Shader {
     aVertexColor: number;
     shaderProgram: WebGLProgram;
 
+    clone() {
+        const newInstance = new VertexColorShader();
+        newInstance.vertexShaderFactory = this.vertexShaderFactory;
+        newInstance.fragementShaderFactory = this.fragementShaderFactory;
+        return newInstance;
+    }
     init(gl: WebGLRenderingContext) {
+        if (this.inited) {
+            return false;
+        }
         const shaderProgram = this.shaderProgram = gl.createProgram();
         const vertexShader = this.vertexShaderFactory(gl);
         const fragementShader = this.fragementShaderFactory(gl);
@@ -82,6 +94,16 @@ export class Mesh {
     vertexBuffer: WebGLBuffer;
     vertexColorBuffer: WebGLBuffer;
     facesBuffer: WebGLBuffer;
+    inited = false;
+    clone() {
+        const newInstance = new Mesh();
+        newInstance.vertices = this.vertices.slice(0);
+        newInstance.faces = this.faces.slice(0);
+        newInstance.verticesColor = this.verticesColor.slice(0);
+        newInstance.shader = this.shader;
+        newInstance.trs = this.trs.clone();
+        return newInstance;
+    }
 
     init(gl: WebGLRenderingContext) {
         this.vertexBuffer = gl.createBuffer();
@@ -97,6 +119,7 @@ export class Mesh {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
 
         this.shader.init(gl);
+        this.inited = true;
     }
 
     render(world: World, camaraMatrixFlat: number[]) {

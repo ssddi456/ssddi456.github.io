@@ -42,7 +42,16 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
       function VertexColorShader() {
           return _super !== null && _super.apply(this, arguments) || this;
       }
+      VertexColorShader.prototype.clone = function () {
+          var newInstance = new VertexColorShader();
+          newInstance.vertexShaderFactory = this.vertexShaderFactory;
+          newInstance.fragementShaderFactory = this.fragementShaderFactory;
+          return newInstance;
+      };
       VertexColorShader.prototype.init = function (gl) {
+          if (this.inited) {
+              return false;
+          }
           var shaderProgram = this.shaderProgram = gl.createProgram();
           var vertexShader = this.vertexShaderFactory(gl);
           var fragementShader = this.fragementShaderFactory(gl);
@@ -76,7 +85,17 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
   exports.VertexColorShader = VertexColorShader;
   var Mesh = (function () {
       function Mesh() {
+          this.inited = false;
       }
+      Mesh.prototype.clone = function () {
+          var newInstance = new Mesh();
+          newInstance.vertices = this.vertices.slice(0);
+          newInstance.faces = this.faces.slice(0);
+          newInstance.verticesColor = this.verticesColor.slice(0);
+          newInstance.shader = this.shader;
+          newInstance.trs = this.trs.clone();
+          return newInstance;
+      };
       Mesh.prototype.init = function (gl) {
           this.vertexBuffer = gl.createBuffer();
           gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
@@ -88,6 +107,7 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
           gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
           this.shader.init(gl);
+          this.inited = true;
       };
       Mesh.prototype.render = function (world, camaraMatrixFlat) {
           this.shader.render(world, this, camaraMatrixFlat);
