@@ -1,3 +1,4 @@
+import { Shader } from './world';
 interface Matrix {
     flatten(): number[];
     clone(): Matrix;
@@ -18,111 +19,108 @@ export class Camara {
     }
 }
 
-export abstract class Shader {
-    inited: false;
-    abstract init(gl: WebGLRenderingContext);
-    abstract render(world: World, mesh: Mesh, camaraMatrixFlat: number[]);
-}
-
-export class VertexColorShader extends Shader {
-    vertexShaderFactory: (gl: WebGLRenderingContext) => WebGLShader;
-    fragementShaderFactory: (gl: WebGLRenderingContext) => WebGLShader;
-
-    aVertexPosition: number;
-    aVertexColor: number;
-    shaderProgram: WebGLProgram;
-
-    clone() {
-        const newInstance = new VertexColorShader();
-        newInstance.vertexShaderFactory = this.vertexShaderFactory;
-        newInstance.fragementShaderFactory = this.fragementShaderFactory;
-        return newInstance;
-    }
-    init(gl: WebGLRenderingContext) {
-        if (this.inited) {
-            return false;
-        }
-        const shaderProgram = this.shaderProgram = gl.createProgram();
-        const vertexShader = this.vertexShaderFactory(gl);
-        const fragementShader = this.fragementShaderFactory(gl);
-
-        gl.attachShader(shaderProgram, vertexShader);
-        gl.attachShader(shaderProgram, fragementShader);
-        gl.linkProgram(shaderProgram);
-
-        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-            alert("Unable to initialize the shader program: " + gl.getProgramInfoLog(shaderProgram));
-        }
-
-        gl.useProgram(shaderProgram);
-
-        this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-        gl.enableVertexAttribArray(this.aVertexPosition);
-
-        this.aVertexColor = gl.getAttribLocation(shaderProgram, "aVertexColor");
-        gl.enableVertexAttribArray(this.aVertexColor);
-    }
-
-    render(world: World, mesh: Mesh, camaraMatrixFlat: number[]) {
-        const gl = world.gl;
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
-        gl.vertexAttribPointer(this.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexColorBuffer);
-        gl.vertexAttribPointer(this.aVertexColor, 4, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.facesBuffer);
-
-        const pUniform = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
-        gl.uniformMatrix4fv(pUniform, false, new Float32Array(camaraMatrixFlat));
-
-        const mvUniform = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
-        gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mesh.trs.flatten()));
-
-        gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
-    }
-}
-
 export class Mesh {
     vertices: number[];
+    vertexBuffer: WebGLBuffer;
+
     faces: number[];
+    facesBuffer: WebGLBuffer;
+
     verticesColor: number[];
+    vertexColorBuffer: WebGLBuffer;
+
+    textureCoordinates: number[];
+    textureCoordinatesBuffer: WebGLBuffer;
+
+    textureSrc: string;
+    texture: WebGLTexture;
+
     shader: Shader;
     trs: Matrix;
 
-    vertexBuffer: WebGLBuffer;
-    vertexColorBuffer: WebGLBuffer;
-    facesBuffer: WebGLBuffer;
     inited = false;
+
+    async loadTexture(gl: WebGLRenderingContext) {
+        const texture = this.texture = gl.createTexture();
+        const image = new Image();
+        const loadFinsh = new Promise(function (resolve, reject) {
+            image.onload = function () {
+                resolve();
+            };
+            image.onerror = function (e) {
+                reject(e);
+            };
+        });
+
+        image.src = this.textureSrc;
+        await loadFinsh;
+
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
     clone() {
         const newInstance = new Mesh();
         newInstance.vertices = this.vertices.slice(0);
         newInstance.faces = this.faces.slice(0);
-        newInstance.verticesColor = this.verticesColor.slice(0);
+
+        if (this.verticesColor) {
+            newInstance.verticesColor = this.verticesColor.slice(0);
+        }
+
+        if (this.textureCoordinates) {
+            newInstance.textureCoordinates = this.textureCoordinates.slice(0);
+        }
+
+        if (this.textureSrc) {
+            newInstance.textureSrc = this.textureSrc;
+        }
+
+        if (this.texture) {
+            newInstance.texture = this.texture;
+        }
+
         newInstance.shader = this.shader;
         newInstance.trs = this.trs.clone();
+
         return newInstance;
     }
 
-    init(gl: WebGLRenderingContext) {
+    async init(gl: WebGLRenderingContext) {
         this.vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
 
-        this.vertexColorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticesColor), gl.STATIC_DRAW);
-
         this.facesBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
+
+        if (this.verticesColor) {
+            this.vertexColorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticesColor), gl.STATIC_DRAW);
+        }
+
+        if (this.textureCoordinates) {
+            this.textureCoordinatesBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
+        }
+
+        if (this.textureSrc) {
+            await this.loadTexture(gl);
+        }
 
         this.shader.init(gl);
         this.inited = true;
     }
 
     render(world: World, camaraMatrixFlat: number[]) {
+        world.useShader(this.shader);
         this.shader.render(world, this, camaraMatrixFlat);
     }
 }
@@ -131,6 +129,7 @@ export class World {
     camara: Camara;
     meshes: Mesh[] = [];
     gl: WebGLRenderingContext;
+    lastUsedShader: Shader;
 
     constructor(gl: WebGLRenderingContext, size) {
         this.gl = gl;
@@ -150,12 +149,19 @@ export class World {
         this.camara.height = size.height;
         this.camara.width = size.width;
     }
-    attachObject(mesh: Mesh) {
+    async attachObject(mesh: Mesh) {
         this.meshes.push(mesh);
 
-        mesh.init(this.gl);
+        await mesh.init(this.gl);
     }
 
+    useShader(shader: Shader) {
+        if (shader === this.lastUsedShader) {
+            return;
+        }
+        shader.mount(this.gl);
+        this.lastUsedShader = shader;
+    }
     render() {
         const gl = this.gl;
 

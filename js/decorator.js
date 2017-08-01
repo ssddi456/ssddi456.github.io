@@ -75,7 +75,7 @@ define('js/decorator', ['require', 'exports', 'module'], function(require, expor
       }
       return newDescriptor;
   }
-  function ensurePropertyDescriptorFactory(target, propertyName) {
+  function ensurePropertyDescriptorFactories(target, propertyName) {
       var descriptors = viewModelPrototypeMap.get(target);
       if (!descriptors) {
           descriptors = {};
@@ -87,7 +87,7 @@ define('js/decorator', ['require', 'exports', 'module'], function(require, expor
       return descriptors[propertyName];
   }
   exports.observable = function (target, propertyName, descriptor) {
-      ensurePropertyDescriptorFactory(target, propertyName).push(observableDescriptorFactiory);
+      ensurePropertyDescriptorFactories(target, propertyName).push(observableDescriptorFactiory);
       return descriptor;
   };
   var B = (function () {
@@ -115,8 +115,6 @@ define('js/decorator', ['require', 'exports', 'module'], function(require, expor
   B = __decorate([
       viewModel
   ], B);
-  exports.b = new B();
-  exports.c = new B();
   
 
 });

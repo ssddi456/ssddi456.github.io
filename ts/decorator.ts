@@ -72,7 +72,7 @@ function observableDescriptorFactiory(target, propertyName: string, descriptor: 
     return newDescriptor;
 }
 
-function ensurePropertyDescriptorFactory(target, propertyName) {
+function ensurePropertyDescriptorFactories(target, propertyName) {
 
     let descriptors = viewModelPrototypeMap.get(target);
     if (!descriptors) {
@@ -89,7 +89,7 @@ function ensurePropertyDescriptorFactory(target, propertyName) {
 
 export const observable: IObservable = function (target, propertyName, descriptor?) {
 
-    ensurePropertyDescriptorFactory(target, propertyName).push(observableDescriptorFactiory);
+    ensurePropertyDescriptorFactories(target, propertyName).push(observableDescriptorFactiory);
 
     return descriptor;
 };
@@ -104,6 +104,3 @@ class B {
         return false;
     }
 }
-
-export const b = new B();
-export const c = new B();
