@@ -2,6 +2,7 @@ import { World, Mesh } from '../world';
 
 export abstract class Shader {
     inited: false;
+    shaderProgram: WebGLProgram;
     abstract init(gl: WebGLRenderingContext);
     abstract mount(gl: WebGLRenderingContext);
     abstract render(world: World, mesh: Mesh, camaraMatrixFlat: number[]);

@@ -42,6 +42,9 @@ define('js/shaders/cube_with_texture_shader', ['require', 'exports', 'module', "
           gl.enableVertexAttribArray(this.aVertexPosition);
           this.textureCoordAttribute = gl.getAttribLocation(shaderProgram, 'aTextureCoord');
           gl.enableVertexAttribArray(this.textureCoordAttribute);
+          this.uSampler = gl.getUniformLocation(this.shaderProgram, "uSampler");
+          this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+          this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
       };
       CubeWithTextureShader.prototype.render = function (world, mesh, camaraMatrixFlat) {
           var gl = world.gl;
@@ -52,11 +55,9 @@ define('js/shaders/cube_with_texture_shader', ['require', 'exports', 'module', "
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.facesBuffer);
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
-          gl.uniform1i(gl.getUniformLocation(this.shaderProgram, "uSampler"), 0);
-          var pUniform = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
-          gl.uniformMatrix4fv(pUniform, false, new Float32Array(camaraMatrixFlat));
-          var mvUniform = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
-          gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mesh.trs.flatten()));
+          gl.uniform1i(this.uSampler, 0);
+          gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
+          gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
           gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
       };
       return CubeWithTextureShader;

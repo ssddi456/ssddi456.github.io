@@ -1,8 +1,11 @@
 import { Shader } from './world';
+
 interface Matrix {
     flatten(): number[];
     clone(): Matrix;
     x(m: Matrix): Matrix;
+    inverse(): Matrix;
+    transpose(): Matrix;
 }
 
 export class Camara {
@@ -31,6 +34,9 @@ export class Mesh {
 
     textureCoordinates: number[];
     textureCoordinatesBuffer: WebGLBuffer;
+
+    vertexNormal: number[];
+    vertexNormalBuffer: WebGLBuffer;
 
     textureSrc: string;
     texture: WebGLTexture;
@@ -84,6 +90,10 @@ export class Mesh {
             newInstance.texture = this.texture;
         }
 
+        if (this.vertexNormal) {
+            newInstance.vertexNormal = this.vertexNormal;
+        }
+
         newInstance.shader = this.shader;
         newInstance.trs = this.trs.clone();
 
@@ -109,6 +119,12 @@ export class Mesh {
             this.textureCoordinatesBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
+        }
+
+        if (this.vertexNormal) {
+            this.vertexNormalBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
         }
 
         if (this.textureSrc) {

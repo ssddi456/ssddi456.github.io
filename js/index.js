@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_shader"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -38,7 +38,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   };
   var world_1 = require("./world");
   var vertex_color_shader_1 = require("./shaders/vertex_color_shader");
-  var cube_with_texture_shader_1 = require("./shaders/cube_with_texture_shader");
+  var cube_with_texture_and_lighting_shader_1 = require("./shaders/cube_with_texture_and_lighting_shader");
   var main = $('#main')[0];
   var size = main.getClientRects()[0];
   main.height = size.height;
@@ -100,6 +100,38 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       16, 17, 18, 16, 18, 19,
       20, 21, 22, 20, 22, 23,
   ];
+  cubeTemplate.vertexNormal = [
+      // Front
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+      // Back
+      0.0, 0.0, -1.0,
+      0.0, 0.0, -1.0,
+      0.0, 0.0, -1.0,
+      0.0, 0.0, -1.0,
+      // Top
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0,
+      // Bottom
+      0.0, -1.0, 0.0,
+      0.0, -1.0, 0.0,
+      0.0, -1.0, 0.0,
+      0.0, -1.0, 0.0,
+      // Right
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
+      // Left
+      -1.0, 0.0, 0.0,
+      -1.0, 0.0, 0.0,
+      -1.0, 0.0, 0.0,
+      -1.0, 0.0, 0.0
+  ];
   cubeTemplate.trs = Matrix.I(4);
   var cubeTemplate2 = cubeTemplate.clone();
   cubeTemplate2.verticesColor = undefined;
@@ -136,7 +168,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       0.0, 1.0,
   ];
   cubeTemplate2.textureSrc = '/images/cubetexture.png';
-  cubeTemplate2.shader = new cube_with_texture_shader_1.CubeWithTextureShader();
+  cubeTemplate2.shader = new cube_with_texture_and_lighting_shader_1.CubeWithTextureAndLightingShader();
   var move = Matrix.Translation($V([0, 0, -25]));
   var rotateX = Matrix.RotationX(0.25 * Math.PI).ensure4x4();
   var rotateY = Matrix.RotationY(0.25 * Math.PI).ensure4x4();

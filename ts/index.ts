@@ -2,6 +2,7 @@ import { Mesh, World, Camara } from './world';
 
 import { VertexColorShader } from './shaders/vertex_color_shader';
 import { CubeWithTextureShader } from './shaders/cube_with_texture_shader';
+import { CubeWithTextureAndLightingShader } from './shaders/cube_with_texture_and_lighting_shader';
 
 const main = $('#main')[0] as HTMLCanvasElement;
 const size = main.getClientRects()[0];
@@ -76,11 +77,49 @@ cubeTemplate.faces = [
     16, 17, 18, 16, 18, 19,   // right
     20, 21, 22, 20, 22, 23,    // left
 ];
+cubeTemplate.vertexNormal = [
+    // Front
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+
+    // Back
+    0.0, 0.0, -1.0,
+    0.0, 0.0, -1.0,
+    0.0, 0.0, -1.0,
+    0.0, 0.0, -1.0,
+
+    // Top
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+
+    // Bottom
+    0.0, -1.0, 0.0,
+    0.0, -1.0, 0.0,
+    0.0, -1.0, 0.0,
+    0.0, -1.0, 0.0,
+
+    // Right
+    1.0, 0.0, 0.0,
+    1.0, 0.0, 0.0,
+    1.0, 0.0, 0.0,
+    1.0, 0.0, 0.0,
+
+    // Left
+    -1.0, 0.0, 0.0,
+    -1.0, 0.0, 0.0,
+    -1.0, 0.0, 0.0,
+    -1.0, 0.0, 0.0
+];
 
 cubeTemplate.trs = Matrix.I(4);
 
 const cubeTemplate2 = cubeTemplate.clone();
 cubeTemplate2.verticesColor = undefined;
+
 cubeTemplate2.textureCoordinates = [
     // Front
     0.0, 0.0,
@@ -115,7 +154,7 @@ cubeTemplate2.textureCoordinates = [
 ];
 
 cubeTemplate2.textureSrc = '/images/cubetexture.png';
-cubeTemplate2.shader = new CubeWithTextureShader();
+cubeTemplate2.shader = new CubeWithTextureAndLightingShader();
 
 const move = Matrix.Translation($V([0, 0, -25]));
 const rotateX = Matrix.RotationX(0.25 * Math.PI).ensure4x4();

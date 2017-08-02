@@ -112,6 +112,9 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
           if (this.texture) {
               newInstance.texture = this.texture;
           }
+          if (this.vertexNormal) {
+              newInstance.vertexNormal = this.vertexNormal;
+          }
           newInstance.shader = this.shader;
           newInstance.trs = this.trs.clone();
           return newInstance;
@@ -136,6 +139,11 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
                               this.textureCoordinatesBuffer = gl.createBuffer();
                               gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
                               gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
+                          }
+                          if (this.vertexNormal) {
+                              this.vertexNormalBuffer = gl.createBuffer();
+                              gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
+                              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
                           }
                           if (!this.textureSrc) return [3 /*break*/, 2];
                           return [4 /*yield*/, this.loadTexture(gl)];

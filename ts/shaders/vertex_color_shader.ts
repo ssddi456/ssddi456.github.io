@@ -8,6 +8,9 @@ export class VertexColorShader extends Shader {
 
     aVertexPosition: number;
     aVertexColor: number;
+    uPMatrix: WebGLUniformLocation;
+    uMVMatrix: WebGLUniformLocation;
+
     shaderProgram: WebGLProgram;
 
     clone() {
@@ -44,6 +47,10 @@ export class VertexColorShader extends Shader {
 
         this.aVertexColor = gl.getAttribLocation(shaderProgram, "aVertexColor");
         gl.enableVertexAttribArray(this.aVertexColor);
+
+        this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+        this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
+
     }
 
     render(world: World, mesh: Mesh, camaraMatrixFlat: number[]) {
@@ -57,11 +64,8 @@ export class VertexColorShader extends Shader {
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.facesBuffer);
 
-        const pUniform = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
-        gl.uniformMatrix4fv(pUniform, false, new Float32Array(camaraMatrixFlat));
-
-        const mvUniform = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
-        gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mesh.trs.flatten()));
+        gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
+        gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
 
         gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
     }
