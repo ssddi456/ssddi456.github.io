@@ -1,4 +1,5 @@
-import { Shader } from './world';
+import { Shader } from './shaders/base_shader';
+import { Light } from "./light";
 
 interface Matrix {
     flatten(): number[];
@@ -18,7 +19,12 @@ export class Camara {
     nearClip = 0.1;
     farClip = 100;
     get matrix(): Matrix {
-        return makePerspective(this.fv, this.radio, this.nearClip, this.farClip);
+        return makePerspective(this.fv, this.radio, this.nearClip, this.farClip)
+                    .x(makeLookAt(
+                        0, 5, 20,
+                        1, 1, 1,
+                        0, 1, 0
+                    ));
     }
 }
 
@@ -135,22 +141,24 @@ export class Mesh {
         this.inited = true;
     }
 
-    render(world: World, camaraMatrixFlat: number[]) {
+    render(world: World, camaraMatrixFlat: number[], lights: Light[]) {
         world.useShader(this.shader);
-        this.shader.render(world, this, camaraMatrixFlat);
+        this.shader.render(world, this, camaraMatrixFlat, lights);
     }
 }
 
 export class World {
     camara: Camara;
     meshes: Mesh[] = [];
+    lights: Light[] = [];
+
     gl: WebGLRenderingContext;
     lastUsedShader: Shader;
 
     constructor(gl: WebGLRenderingContext, size) {
         this.gl = gl;
         // Set clear color to black, fully opaque
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clearColor(0, 0, 0, 1.0);
         // Enable depth testing
         gl.enable(gl.DEPTH_TEST);
         // Near things obscure far things
@@ -184,9 +192,14 @@ export class World {
         // tslint:disable-next-line:no-bitwise
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         const camaraMatrixFlat = this.camara.matrix.flatten();
+        for (let index = 0; index < this.lights.length; index++) {
+            this.lights[index].render(this, camaraMatrixFlat);
+        }
+
         for (let index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
-            mesh.render(this, camaraMatrixFlat);
+
+            mesh.render(this, camaraMatrixFlat, this.lights);
         }
     }
 }

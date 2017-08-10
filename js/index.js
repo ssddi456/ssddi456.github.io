@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -39,11 +39,17 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var world_1 = require("./world");
   var vertex_color_shader_1 = require("./shaders/vertex_color_shader");
   var cube_with_texture_and_lighting_shader_1 = require("./shaders/cube_with_texture_and_lighting_shader");
+  var light_1 = require("./light");
   var main = $('#main')[0];
   var size = main.getClientRects()[0];
   main.height = size.height;
   main.width = size.width;
   var world = new world_1.World(main.getContext('webgl'), size);
+  var testLight = new light_1.Light();
+  testLight.direction = [1, 2, 10];
+  testLight.color = [1, 1, 1];
+  testLight.debug = true;
+  world.lights.push(testLight);
   var cubeTemplate = new world_1.Mesh();
   var cubeShader = new vertex_color_shader_1.VertexColorShader();
   cubeTemplate.shader = cubeShader;
@@ -172,7 +178,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var move = Matrix.Translation($V([0, 0, -25]));
   var rotateX = Matrix.RotationX(0.25 * Math.PI).ensure4x4();
   var rotateY = Matrix.RotationY(0.25 * Math.PI).ensure4x4();
-  var rotateZ = Matrix.RotationZ(0.25 * Math.PI / 60 / 4).ensure4x4();
+  var rotateZ = Matrix.RotationY(0.25 * Math.PI / 60 / 4).ensure4x4();
   var cubes = [];
   function loadCubes() {
       return __awaiter(this, void 0, void 0, function () {
@@ -186,9 +192,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
                       if (!(i < 5)) return [3 /*break*/, 4];
                       cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
                       cubeCopy.trs = cubeCopy.trs.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0])))
-                          .x(move)
-                          .x(rotateX)
-                          .x(rotateY);
+                          .x(move);
                       cubes.push(cubeCopy);
                       return [4 /*yield*/, world.attachObject(cubeCopy)];
                   case 2:
@@ -202,7 +206,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           });
       });
   }
-  var startTime = Date.now();
+  var startTime = 0;
   var interval = 1000 / 60;
   function drawLoop() {
       var currentTime = Date.now();
@@ -214,7 +218,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           });
           world.render();
       }
-      requestAnimationFrame(drawLoop);
+      // requestAnimationFrame(drawLoop);
   }
   loadCubes().then(function () {
       drawLoop();

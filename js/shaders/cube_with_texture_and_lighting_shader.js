@@ -48,8 +48,10 @@ define('js/shaders/cube_with_texture_and_lighting_shader', ['require', 'exports'
           this.uNormalMatrix = gl.getUniformLocation(this.shaderProgram, "uNormalMatrix");
           this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
           this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
+          this.uDirectionalLightColor = gl.getUniformLocation(this.shaderProgram, 'uDirectionalLightColor');
+          this.uDirectionalVector = gl.getUniformLocation(this.shaderProgram, 'uDirectionalVector');
       };
-      CubeWithTextureAndLightingShader.prototype.render = function (world, mesh, camaraMatrixFlat) {
+      CubeWithTextureAndLightingShader.prototype.render = function (world, mesh, camaraMatrixFlat, lights) {
           var gl = world.gl;
           gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
           gl.vertexAttribPointer(this.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
@@ -61,6 +63,8 @@ define('js/shaders/cube_with_texture_and_lighting_shader', ['require', 'exports'
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
           gl.uniform1i(this.uSampler, 0);
+          gl.uniform3fv(this.uDirectionalLightColor, lights[0].color);
+          gl.uniform3fv(this.uDirectionalVector, lights[0].direction);
           gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
           gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
           var normalMatrix = mesh.trs.inverse().transpose();

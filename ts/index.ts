@@ -3,6 +3,7 @@ import { Mesh, World, Camara } from './world';
 import { VertexColorShader } from './shaders/vertex_color_shader';
 import { CubeWithTextureShader } from './shaders/cube_with_texture_shader';
 import { CubeWithTextureAndLightingShader } from './shaders/cube_with_texture_and_lighting_shader';
+import { Light } from "./light";
 
 const main = $('#main')[0] as HTMLCanvasElement;
 const size = main.getClientRects()[0];
@@ -11,6 +12,13 @@ main.height = size.height;
 main.width = size.width;
 
 const world = new World(main.getContext('webgl'), size);
+const testLight = new Light();
+
+testLight.direction = [1, 2, 10];
+testLight.color = [1, 1, 1];
+testLight.debug = true;
+
+world.lights.push(testLight);
 
 const cubeTemplate = new Mesh();
 
@@ -160,7 +168,7 @@ const move = Matrix.Translation($V([0, 0, -25]));
 const rotateX = Matrix.RotationX(0.25 * Math.PI).ensure4x4();
 const rotateY = Matrix.RotationY(0.25 * Math.PI).ensure4x4();
 
-const rotateZ = Matrix.RotationZ(0.25 * Math.PI / 60 / 4).ensure4x4();
+const rotateZ = Matrix.RotationY(0.25 * Math.PI / 60 / 4).ensure4x4();
 
 const cubes = [];
 
@@ -168,15 +176,14 @@ async function loadCubes() {
     for (let i = 0; i < 5; i++) {
         const cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
         cubeCopy.trs = cubeCopy.trs.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0])))
-            .x(move)
-            .x(rotateX)
-            .x(rotateY);
+            .x(move);
+
         cubes.push(cubeCopy);
         await world.attachObject(cubeCopy);
     }
 }
 
-let startTime = Date.now();
+let startTime = 0;
 const interval = 1000 / 60;
 
 function drawLoop() {
@@ -189,7 +196,7 @@ function drawLoop() {
         });
         world.render();
     }
-    requestAnimationFrame(drawLoop);
+    // requestAnimationFrame(drawLoop);
 }
 
 loadCubes().then(function () {

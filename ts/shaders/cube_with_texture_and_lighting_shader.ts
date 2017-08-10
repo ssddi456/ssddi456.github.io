@@ -1,6 +1,7 @@
 
 import { Shader, ShaderFactory } from "./base_shader";
 import { World, Mesh } from "../world";
+import { Light } from "../light";
 
 export class CubeWithTextureAndLightingShader extends Shader {
 
@@ -15,6 +16,8 @@ export class CubeWithTextureAndLightingShader extends Shader {
     uSampler: WebGLUniformLocation;
     uPMatrix: WebGLUniformLocation;
     uMVMatrix: WebGLUniformLocation;
+    uDirectionalLightColor: WebGLUniformLocation;
+    uDirectionalVector: WebGLUniformLocation;
 
     clone() {
         const newInstance = new CubeWithTextureAndLightingShader();
@@ -58,9 +61,11 @@ export class CubeWithTextureAndLightingShader extends Shader {
         this.uNormalMatrix = gl.getUniformLocation(this.shaderProgram, "uNormalMatrix");
         this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
         this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
+        this.uDirectionalLightColor = gl.getUniformLocation(this.shaderProgram, 'uDirectionalLightColor');
+        this.uDirectionalVector = gl.getUniformLocation(this.shaderProgram, 'uDirectionalVector');
     }
 
-    render(world: World, mesh: Mesh, camaraMatrixFlat: number[]) {
+    render(world: World, mesh: Mesh, camaraMatrixFlat: number[], lights: Light[]) {
         const gl = world.gl;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
@@ -78,6 +83,9 @@ export class CubeWithTextureAndLightingShader extends Shader {
         gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
 
         gl.uniform1i(this.uSampler, 0);
+
+        gl.uniform3fv(this.uDirectionalLightColor, lights[0].color);
+        gl.uniform3fv(this.uDirectionalVector, lights[0].direction);
 
         gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
         gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));

@@ -53,7 +53,8 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
       });
       Object.defineProperty(Camara.prototype, "matrix", {
           get: function () {
-              return makePerspective(this.fv, this.radio, this.nearClip, this.farClip);
+              return makePerspective(this.fv, this.radio, this.nearClip, this.farClip)
+                  .x(makeLookAt(0, 5, 20, 1, 1, 1, 0, 1, 0));
           },
           enumerable: true,
           configurable: true
@@ -158,9 +159,9 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
               });
           });
       };
-      Mesh.prototype.render = function (world, camaraMatrixFlat) {
+      Mesh.prototype.render = function (world, camaraMatrixFlat, lights) {
           world.useShader(this.shader);
-          this.shader.render(world, this, camaraMatrixFlat);
+          this.shader.render(world, this, camaraMatrixFlat, lights);
       };
       return Mesh;
   }());
@@ -168,9 +169,10 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
   var World = (function () {
       function World(gl, size) {
           this.meshes = [];
+          this.lights = [];
           this.gl = gl;
           // Set clear color to black, fully opaque
-          gl.clearColor(0.0, 0.0, 0.0, 1.0);
+          gl.clearColor(0, 0, 0, 1.0);
           // Enable depth testing
           gl.enable(gl.DEPTH_TEST);
           // Near things obscure far things
@@ -209,9 +211,12 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
           // tslint:disable-next-line:no-bitwise
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
           var camaraMatrixFlat = this.camara.matrix.flatten();
+          for (var index = 0; index < this.lights.length; index++) {
+              this.lights[index].render(this, camaraMatrixFlat);
+          }
           for (var index = 0; index < this.meshes.length; index++) {
               var mesh = this.meshes[index];
-              mesh.render(this, camaraMatrixFlat);
+              mesh.render(this, camaraMatrixFlat, this.lights);
           }
       };
       return World;

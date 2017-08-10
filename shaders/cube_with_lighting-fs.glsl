@@ -5,5 +5,5 @@ uniform sampler2D uSampler;
 
 void main(void) {
     highp vec4 texelColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-    gl_FragColor = vec4(texelColor.rgb * vLighting, texelColor.a);
+    gl_FragColor = vec4(vLighting, texelColor.a);
 }
