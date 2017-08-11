@@ -15,26 +15,6 @@ define('js/shaders/cube_with_texture_and_lighting_shader', ['require', 'exports'
           _this.fragementShaderFactory = require("js/shaders/cube_with_lighting-fs.glsl.js");
           return _this;
       }
-      CubeWithTextureAndLightingShader.prototype.clone = function () {
-          var newInstance = new CubeWithTextureAndLightingShader();
-          newInstance.vertexShaderFactory = this.vertexShaderFactory;
-          newInstance.fragementShaderFactory = this.fragementShaderFactory;
-          return newInstance;
-      };
-      CubeWithTextureAndLightingShader.prototype.init = function (gl) {
-          if (this.inited) {
-              return false;
-          }
-          var shaderProgram = this.shaderProgram = gl.createProgram();
-          var vertexShader = this.vertexShaderFactory(gl);
-          var fragementShader = this.fragementShaderFactory(gl);
-          gl.attachShader(shaderProgram, vertexShader);
-          gl.attachShader(shaderProgram, fragementShader);
-          gl.linkProgram(shaderProgram);
-          if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-              alert("Unable to initialize the shader program: " + gl.getProgramInfoLog(shaderProgram));
-          }
-      };
       CubeWithTextureAndLightingShader.prototype.mount = function (gl) {
           var shaderProgram = this.shaderProgram;
           gl.useProgram(shaderProgram);
@@ -69,7 +49,7 @@ define('js/shaders/cube_with_texture_and_lighting_shader', ['require', 'exports'
           gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
           var normalMatrix = mesh.trs.inverse().transpose();
           gl.uniformMatrix4fv(this.uNormalMatrix, false, new Float32Array(normalMatrix.flatten()));
-          gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+          gl.drawElements(gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0);
       };
       return CubeWithTextureAndLightingShader;
   }(base_shader_1.Shader));

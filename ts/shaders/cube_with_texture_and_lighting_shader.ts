@@ -1,7 +1,8 @@
 
 import { Shader, ShaderFactory } from "./base_shader";
-import { World, Mesh } from "../world";
+import { World } from "../world";
 import { Light } from "../light";
+import { Mesh } from "../mesh";
 
 export class CubeWithTextureAndLightingShader extends Shader {
 
@@ -18,29 +19,6 @@ export class CubeWithTextureAndLightingShader extends Shader {
     uMVMatrix: WebGLUniformLocation;
     uDirectionalLightColor: WebGLUniformLocation;
     uDirectionalVector: WebGLUniformLocation;
-
-    clone() {
-        const newInstance = new CubeWithTextureAndLightingShader();
-        newInstance.vertexShaderFactory = this.vertexShaderFactory;
-        newInstance.fragementShaderFactory = this.fragementShaderFactory;
-        return newInstance;
-    }
-    init(gl: WebGLRenderingContext) {
-        if (this.inited) {
-            return false;
-        }
-        const shaderProgram = this.shaderProgram = gl.createProgram();
-        const vertexShader = this.vertexShaderFactory(gl);
-        const fragementShader = this.fragementShaderFactory(gl);
-
-        gl.attachShader(shaderProgram, vertexShader);
-        gl.attachShader(shaderProgram, fragementShader);
-        gl.linkProgram(shaderProgram);
-
-        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-            alert("Unable to initialize the shader program: " + gl.getProgramInfoLog(shaderProgram));
-        }
-    }
 
     mount(gl: WebGLRenderingContext) {
 
@@ -93,6 +71,6 @@ export class CubeWithTextureAndLightingShader extends Shader {
         const normalMatrix = mesh.trs.inverse().transpose();
         gl.uniformMatrix4fv(this.uNormalMatrix, false, new Float32Array(normalMatrix.flatten()));
 
-        gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0);
     }
 }

@@ -1,9 +1,10 @@
-import { Mesh, World, Camara } from './world';
+import { World, Camara } from './world';
 
 import { VertexColorShader } from './shaders/vertex_color_shader';
 import { CubeWithTextureShader } from './shaders/cube_with_texture_shader';
 import { CubeWithTextureAndLightingShader } from './shaders/cube_with_texture_and_lighting_shader';
 import { Light } from "./light";
+import { Mesh } from "./mesh";
 
 const main = $('#main')[0] as HTMLCanvasElement;
 const size = main.getClientRects()[0];
@@ -196,9 +197,29 @@ function drawLoop() {
         });
         world.render();
     }
-    // requestAnimationFrame(drawLoop);
+    requestAnimationFrame(drawLoop);
 }
 
 loadCubes().then(function () {
     drawLoop();
 });
+
+document.body.addEventListener('keydown', function (e) {
+
+    switch (String.fromCharCode(e.keyCode)) {
+        case 'A':
+            world.camara.eye[0] -= 1;
+            break;
+        case 'S':
+            world.camara.eye[1] -= 1;
+            break;
+        case 'D':
+            world.camara.eye[0] += 1;
+            break;
+        case 'W':
+            world.camara.eye[1] += 1;
+            break;
+        default: break;
+    }
+    
+}, true);

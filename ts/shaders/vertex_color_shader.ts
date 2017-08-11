@@ -1,6 +1,7 @@
 
 import { Shader, ShaderFactory } from "./base_shader";
-import { World, Mesh } from "../world";
+import { World } from "../world";
+import { Mesh } from "../mesh";
 
 export class VertexColorShader extends Shader {
     vertexShaderFactory: ShaderFactory = require("../shaders/cube_with_face_color-vs.glsl");
@@ -13,12 +14,6 @@ export class VertexColorShader extends Shader {
 
     shaderProgram: WebGLProgram;
 
-    clone() {
-        const newInstance = new VertexColorShader();
-        newInstance.vertexShaderFactory = this.vertexShaderFactory;
-        newInstance.fragementShaderFactory = this.fragementShaderFactory;
-        return newInstance;
-    }
     init(gl: WebGLRenderingContext) {
         if (this.inited) {
             return false;
@@ -67,6 +62,6 @@ export class VertexColorShader extends Shader {
         gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
         gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
 
-        gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0);
     }
 }

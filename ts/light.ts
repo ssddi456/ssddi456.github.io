@@ -1,6 +1,7 @@
 
-import { World, Mesh } from "./world";
+import { World } from "./world";
 import { VertexColorShader } from "./shaders/vertex_color_shader";
+import { Mesh } from "./mesh";
 
 const debugMesh = new Mesh();
 debugMesh.shader = new VertexColorShader();

@@ -15,12 +15,6 @@ define('js/shaders/cube_with_texture_shader', ['require', 'exports', 'module', "
           _this.fragementShaderFactory = require("js/shaders/cube_with_texture-fs.glsl.js");
           return _this;
       }
-      CubeWithTextureShader.prototype.clone = function () {
-          var newInstance = new CubeWithTextureShader();
-          newInstance.vertexShaderFactory = this.vertexShaderFactory;
-          newInstance.fragementShaderFactory = this.fragementShaderFactory;
-          return newInstance;
-      };
       CubeWithTextureShader.prototype.init = function (gl) {
           if (this.inited) {
               return false;
@@ -58,7 +52,7 @@ define('js/shaders/cube_with_texture_shader', ['require', 'exports', 'module', "
           gl.uniform1i(this.uSampler, 0);
           gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
           gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
-          gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+          gl.drawElements(gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0);
       };
       return CubeWithTextureShader;
   }(base_shader_1.Shader));

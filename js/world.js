@@ -43,6 +43,9 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
           this.height = 480;
           this.nearClip = 0.1;
           this.farClip = 100;
+          this.eye = [0, 5, 20];
+          this.center = [0, 0, -25];
+          this.up = [0, 1, 0];
       }
       Object.defineProperty(Camara.prototype, "radio", {
           get: function () {
@@ -54,7 +57,7 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
       Object.defineProperty(Camara.prototype, "matrix", {
           get: function () {
               return makePerspective(this.fv, this.radio, this.nearClip, this.farClip)
-                  .x(makeLookAt(0, 5, 20, 1, 1, 1, 0, 1, 0));
+                  .x(makeLookAt.apply(null, [].concat(this.eye, this.center, this.up)));
           },
           enumerable: true,
           configurable: true
@@ -62,110 +65,6 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
       return Camara;
   }());
   exports.Camara = Camara;
-  var Mesh = (function () {
-      function Mesh() {
-          this.inited = false;
-      }
-      Mesh.prototype.loadTexture = function (gl) {
-          return __awaiter(this, void 0, void 0, function () {
-              var texture, image, loadFinsh;
-              return __generator(this, function (_a) {
-                  switch (_a.label) {
-                      case 0:
-                          texture = this.texture = gl.createTexture();
-                          image = new Image();
-                          loadFinsh = new Promise(function (resolve, reject) {
-                              image.onload = function () {
-                                  resolve();
-                              };
-                              image.onerror = function (e) {
-                                  reject(e);
-                              };
-                          });
-                          image.src = this.textureSrc;
-                          return [4 /*yield*/, loadFinsh];
-                      case 1:
-                          _a.sent();
-                          gl.bindTexture(gl.TEXTURE_2D, texture);
-                          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-                          gl.generateMipmap(gl.TEXTURE_2D);
-                          gl.bindTexture(gl.TEXTURE_2D, null);
-                          return [2 /*return*/];
-                  }
-              });
-          });
-      };
-      Mesh.prototype.clone = function () {
-          var newInstance = new Mesh();
-          newInstance.vertices = this.vertices.slice(0);
-          newInstance.faces = this.faces.slice(0);
-          if (this.verticesColor) {
-              newInstance.verticesColor = this.verticesColor.slice(0);
-          }
-          if (this.textureCoordinates) {
-              newInstance.textureCoordinates = this.textureCoordinates.slice(0);
-          }
-          if (this.textureSrc) {
-              newInstance.textureSrc = this.textureSrc;
-          }
-          if (this.texture) {
-              newInstance.texture = this.texture;
-          }
-          if (this.vertexNormal) {
-              newInstance.vertexNormal = this.vertexNormal;
-          }
-          newInstance.shader = this.shader;
-          newInstance.trs = this.trs.clone();
-          return newInstance;
-      };
-      Mesh.prototype.init = function (gl) {
-          return __awaiter(this, void 0, void 0, function () {
-              return __generator(this, function (_a) {
-                  switch (_a.label) {
-                      case 0:
-                          this.vertexBuffer = gl.createBuffer();
-                          gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-                          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
-                          this.facesBuffer = gl.createBuffer();
-                          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
-                          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
-                          if (this.verticesColor) {
-                              this.vertexColorBuffer = gl.createBuffer();
-                              gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
-                              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticesColor), gl.STATIC_DRAW);
-                          }
-                          if (this.textureCoordinates) {
-                              this.textureCoordinatesBuffer = gl.createBuffer();
-                              gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
-                              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
-                          }
-                          if (this.vertexNormal) {
-                              this.vertexNormalBuffer = gl.createBuffer();
-                              gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
-                              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
-                          }
-                          if (!this.textureSrc) return [3 /*break*/, 2];
-                          return [4 /*yield*/, this.loadTexture(gl)];
-                      case 1:
-                          _a.sent();
-                          _a.label = 2;
-                      case 2:
-                          this.shader.init(gl);
-                          this.inited = true;
-                          return [2 /*return*/];
-                  }
-              });
-          });
-      };
-      Mesh.prototype.render = function (world, camaraMatrixFlat, lights) {
-          world.useShader(this.shader);
-          this.shader.render(world, this, camaraMatrixFlat, lights);
-      };
-      return Mesh;
-  }());
-  exports.Mesh = Mesh;
   var World = (function () {
       function World(gl, size) {
           this.meshes = [];

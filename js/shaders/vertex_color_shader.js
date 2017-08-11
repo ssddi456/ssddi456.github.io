@@ -15,12 +15,6 @@ define('js/shaders/vertex_color_shader', ['require', 'exports', 'module', "./bas
           _this.fragementShaderFactory = require("js/shaders/cube_with_face_color-fs.glsl.js");
           return _this;
       }
-      VertexColorShader.prototype.clone = function () {
-          var newInstance = new VertexColorShader();
-          newInstance.vertexShaderFactory = this.vertexShaderFactory;
-          newInstance.fragementShaderFactory = this.fragementShaderFactory;
-          return newInstance;
-      };
       VertexColorShader.prototype.init = function (gl) {
           if (this.inited) {
               return false;
@@ -54,7 +48,7 @@ define('js/shaders/vertex_color_shader', ['require', 'exports', 'module', "./bas
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.facesBuffer);
           gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
           gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
-          gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+          gl.drawElements(gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0);
       };
       return VertexColorShader;
   }(base_shader_1.Shader));

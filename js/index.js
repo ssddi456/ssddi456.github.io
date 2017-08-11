@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light", "./mesh"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -40,6 +40,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var vertex_color_shader_1 = require("./shaders/vertex_color_shader");
   var cube_with_texture_and_lighting_shader_1 = require("./shaders/cube_with_texture_and_lighting_shader");
   var light_1 = require("./light");
+  var mesh_1 = require("./mesh");
   var main = $('#main')[0];
   var size = main.getClientRects()[0];
   main.height = size.height;
@@ -50,7 +51,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   testLight.color = [1, 1, 1];
   testLight.debug = true;
   world.lights.push(testLight);
-  var cubeTemplate = new world_1.Mesh();
+  var cubeTemplate = new mesh_1.Mesh();
   var cubeShader = new vertex_color_shader_1.VertexColorShader();
   cubeTemplate.shader = cubeShader;
   cubeTemplate.vertices = [
@@ -218,11 +219,28 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           });
           world.render();
       }
-      // requestAnimationFrame(drawLoop);
+      requestAnimationFrame(drawLoop);
   }
   loadCubes().then(function () {
       drawLoop();
   });
+  document.body.addEventListener('keydown', function (e) {
+      switch (String.fromCharCode(e.keyCode)) {
+          case 'A':
+              world.camara.eye[0] -= 1;
+              break;
+          case 'S':
+              world.camara.eye[1] -= 1;
+              break;
+          case 'D':
+              world.camara.eye[0] += 1;
+              break;
+          case 'W':
+              world.camara.eye[1] += 1;
+              break;
+          default: break;
+      }
+  }, true);
   
 
 });

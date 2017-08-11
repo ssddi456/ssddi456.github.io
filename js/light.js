@@ -1,9 +1,9 @@
-define('js/light', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader"], function(require, exports, module) {
+define('js/light', ['require', 'exports', 'module', "./shaders/vertex_color_shader", "./mesh"], function(require, exports, module) {
 
   "use strict";
-  var world_1 = require("./world");
   var vertex_color_shader_1 = require("./shaders/vertex_color_shader");
-  var debugMesh = new world_1.Mesh();
+  var mesh_1 = require("./mesh");
+  var debugMesh = new mesh_1.Mesh();
   debugMesh.shader = new vertex_color_shader_1.VertexColorShader();
   debugMesh.vertices = [
       // Front face
