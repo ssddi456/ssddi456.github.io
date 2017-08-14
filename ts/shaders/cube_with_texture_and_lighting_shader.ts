@@ -21,10 +21,7 @@ export class CubeWithTextureAndLightingShader extends Shader {
     uDirectionalVector: WebGLUniformLocation;
 
     mount(gl: WebGLRenderingContext) {
-
         const shaderProgram = this.shaderProgram;
-
-        gl.useProgram(shaderProgram);
 
         this.aVertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
         gl.enableVertexAttribArray(this.aVertexNormal);
@@ -43,7 +40,7 @@ export class CubeWithTextureAndLightingShader extends Shader {
         this.uDirectionalVector = gl.getUniformLocation(this.shaderProgram, 'uDirectionalVector');
     }
 
-    render(world: World, mesh: Mesh, camaraMatrixFlat: number[], lights: Light[]) {
+    render(world: World, mesh: Mesh, camaraMatrixFlat: Float32Array, lights: Light[]) {
         const gl = world.gl;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
@@ -53,7 +50,7 @@ export class CubeWithTextureAndLightingShader extends Shader {
         gl.vertexAttribPointer(this.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexNormalBuffer);
-        gl.vertexAttribPointer(this.aVertexNormal, 2, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(this.aVertexNormal, 3, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.facesBuffer);
 
@@ -65,7 +62,7 @@ export class CubeWithTextureAndLightingShader extends Shader {
         gl.uniform3fv(this.uDirectionalLightColor, lights[0].color);
         gl.uniform3fv(this.uDirectionalVector, lights[0].direction);
 
-        gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
+        gl.uniformMatrix4fv(this.uPMatrix, false, camaraMatrixFlat);
         gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
 
         const normalMatrix = mesh.trs.inverse().transpose();

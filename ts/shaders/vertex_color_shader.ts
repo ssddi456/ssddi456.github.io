@@ -14,28 +14,8 @@ export class VertexColorShader extends Shader {
 
     shaderProgram: WebGLProgram;
 
-    init(gl: WebGLRenderingContext) {
-        if (this.inited) {
-            return false;
-        }
-        const shaderProgram = this.shaderProgram = gl.createProgram();
-        const vertexShader = this.vertexShaderFactory(gl);
-        const fragementShader = this.fragementShaderFactory(gl);
-
-        gl.attachShader(shaderProgram, vertexShader);
-        gl.attachShader(shaderProgram, fragementShader);
-        gl.linkProgram(shaderProgram);
-
-        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-            alert("Unable to initialize the shader program: " + gl.getProgramInfoLog(shaderProgram));
-        }
-
-    }
     mount(gl: WebGLRenderingContext) {
-
         const shaderProgram = this.shaderProgram;
-
-        gl.useProgram(shaderProgram);
 
         this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
         gl.enableVertexAttribArray(this.aVertexPosition);
@@ -45,10 +25,9 @@ export class VertexColorShader extends Shader {
 
         this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
         this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
-
     }
 
-    render(world: World, mesh: Mesh, camaraMatrixFlat: number[]) {
+    render(world: World, mesh: Mesh, camaraMatrixFlat: Float32Array) {
         const gl = world.gl;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
@@ -59,7 +38,7 @@ export class VertexColorShader extends Shader {
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.facesBuffer);
 
-        gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
+        gl.uniformMatrix4fv(this.uPMatrix, false, camaraMatrixFlat);
         gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
 
         gl.drawElements(gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0);

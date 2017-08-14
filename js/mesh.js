@@ -1,4 +1,4 @@
-define('js/mesh', ['require', 'exports', 'module', "./shape"], function(require, exports, module) {
+define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], function(require, exports, module) {
 
   "use strict";
   var __extends = (this && this.__extends) || function (d, b) {
@@ -42,6 +42,7 @@ define('js/mesh', ['require', 'exports', 'module', "./shape"], function(require,
       }
   };
   var shape_1 = require("./shape");
+  var line_1 = require("./line");
   var Mesh = (function (_super) {
       __extends(Mesh, _super);
       function Mesh() {
@@ -53,6 +54,9 @@ define('js/mesh', ['require', 'exports', 'module', "./shape"], function(require,
               return __generator(this, function (_a) {
                   switch (_a.label) {
                       case 0:
+                          if (!this.textureSrc) {
+                              return [2 /*return*/];
+                          }
                           texture = this.texture = gl.createTexture();
                           image = new Image();
                           loadFinsh = new Promise(function (resolve, reject) {
@@ -99,9 +103,11 @@ define('js/mesh', ['require', 'exports', 'module', "./shape"], function(require,
           }
           newInstance.shader = this.shader;
           newInstance.trs = this.trs.clone();
+          newInstance.debug = this.debug;
+          newInstance.visible = this.visible;
           return newInstance;
       };
-      Mesh.prototype.init = function (gl) {
+      Mesh.prototype.init = function (gl, world) {
           return __awaiter(this, void 0, void 0, function () {
               return __generator(this, function (_a) {
                   switch (_a.label) {
@@ -127,18 +133,125 @@ define('js/mesh', ['require', 'exports', 'module', "./shape"], function(require,
                               gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
                               gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
                           }
-                          if (!this.textureSrc) return [3 /*break*/, 2];
-                          return [4 /*yield*/, this.loadTexture(gl)];
+                          return [4 /*yield*/, Promise.all([
+                                  this.loadTexture(gl),
+                                  this.addDebugObjects(world),
+                              ])];
                       case 1:
                           _a.sent();
-                          _a.label = 2;
-                      case 2:
                           this.shader.init(gl);
                           this.inited = true;
                           return [2 /*return*/];
                   }
               });
           });
+      };
+      Mesh.prototype.addDebugObjects = function (world) {
+          return __awaiter(this, void 0, void 0, function () {
+              var normals, normalLines, transformedNormalLines, vertexFinalLightLines, index, normal, vertex, normalLine, transformedNormalLine, finalLightLine, originX;
+              return __generator(this, function (_a) {
+                  switch (_a.label) {
+                      case 0:
+                          if (!this.debug) {
+                              return [2 /*return*/];
+                          }
+                          normals = this.normals = [];
+                          normalLines = this.normalLines = [];
+                          transformedNormalLines = this.transformedNormalLines = [];
+                          vertexFinalLightLines = this.vertexFinalLightLines = [];
+                          if (!this.vertexNormal) return [3 /*break*/, 6];
+                          index = 0;
+                          _a.label = 1;
+                      case 1:
+                          if (!(index < this.vertexNormal.length)) return [3 /*break*/, 6];
+                          normal = this.vertexNormal.slice(index, index + 3);
+                          vertex = this.vertices.slice(index, index + 3);
+                          normals.push([normal[0], normal[1], normal[2], 1]);
+                          normalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
+                          return [4 /*yield*/, world.attachObject(normalLine)];
+                      case 2:
+                          _a.sent();
+                          normalLines.push(normalLine);
+                          transformedNormalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
+                          transformedNormalLine.verticesColor = [
+                              0, 1, 0, 1,
+                              1, 0, 1, 1,
+                          ];
+                          return [4 /*yield*/, world.attachObject(transformedNormalLine)];
+                      case 3:
+                          _a.sent();
+                          transformedNormalLines.push(transformedNormalLine);
+                          finalLightLine = line_1.Line.createSimpleLine([
+                              vertex[0] + 0.2 * normal[0],
+                              vertex[1] + 0.2 * normal[1],
+                              vertex[2] + 0.2 * normal[2],
+                          ], normal, this.trs);
+                          finalLightLine.verticesColor = [
+                              1, 1, 1, 1,
+                              1, 0, 1, 1,
+                          ];
+                          return [4 /*yield*/, world.attachObject(finalLightLine)];
+                      case 4:
+                          _a.sent();
+                          vertexFinalLightLines.push(finalLightLine);
+                          _a.label = 5;
+                      case 5:
+                          index += 3;
+                          return [3 /*break*/, 1];
+                      case 6:
+                          originX = this.x;
+                          this.x = function (matrix) {
+                              this.normalLines.forEach(function (x) { return x.x(matrix); });
+                              this.transformedNormalLines.forEach(function (x) { return x.x(matrix); });
+                              this.vertexFinalLightLines.forEach(function (x) { return x.x(matrix); });
+                              return originX.call(this, matrix);
+                          };
+                          return [2 /*return*/];
+                  }
+              });
+          });
+      };
+      Mesh.prototype.updateDebug = function (world, lights) {
+          var _this = this;
+          var mainLight = lights[0];
+          var gl = world.gl;
+          this.normalLines.forEach(function (x) { return x.visible = false; });
+          this.transformedNormalLines.forEach(function (x) { return x.visible = false; });
+          if (!mainLight) {
+              this.transformedNormalLines.forEach(function (x) { return x.visible = false; });
+          }
+          else {
+              var objAxis_1 = this.trs.inverse().transpose();
+              var lightDirection_1 = $V(mainLight.direction).toUnitVector();
+              this.transformedNormalLines.forEach(function (x, i) {
+                  var start = x.start;
+                  var normal = _this.normals[i];
+                  var transformedNormalLine = objAxis_1.multiply(Matrix.create([
+                      [normal[0]],
+                      [normal[1]],
+                      [normal[2]],
+                      [normal[3]],
+                  ]));
+                  x.end = [
+                      start[0] + transformedNormalLine.elements[0][0],
+                      start[1] + transformedNormalLine.elements[1][0],
+                      start[2] + transformedNormalLine.elements[2][0],
+                  ];
+                  gl.bindBuffer(gl.ARRAY_BUFFER, x.lineBuffer);
+                  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(x.points), gl.STATIC_DRAW);
+                  var finalLightLine = _this.vertexFinalLightLines[i];
+                  var lightPower = $V([].concat.apply([], transformedNormalLine.elements.slice(0, 3)))
+                      .dot(lightDirection_1);
+                  lightPower = Math.max(0, lightPower);
+                  finalLightLine.end = [
+                      finalLightLine.start[0] + lightPower * normal[0],
+                      finalLightLine.start[1] + lightPower * normal[1],
+                      finalLightLine.start[2] + lightPower * normal[2],
+                  ];
+                  gl.bindBuffer(gl.ARRAY_BUFFER, finalLightLine.lineBuffer);
+                  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(finalLightLine.points), gl.STATIC_DRAW);
+              });
+          }
       };
       return Mesh;
   }(shape_1.Shape));

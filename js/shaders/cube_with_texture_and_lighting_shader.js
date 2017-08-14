@@ -17,7 +17,6 @@ define('js/shaders/cube_with_texture_and_lighting_shader', ['require', 'exports'
       }
       CubeWithTextureAndLightingShader.prototype.mount = function (gl) {
           var shaderProgram = this.shaderProgram;
-          gl.useProgram(shaderProgram);
           this.aVertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
           gl.enableVertexAttribArray(this.aVertexNormal);
           this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
@@ -38,14 +37,14 @@ define('js/shaders/cube_with_texture_and_lighting_shader', ['require', 'exports'
           gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureCoordinatesBuffer);
           gl.vertexAttribPointer(this.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
           gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexNormalBuffer);
-          gl.vertexAttribPointer(this.aVertexNormal, 2, gl.FLOAT, false, 0, 0);
+          gl.vertexAttribPointer(this.aVertexNormal, 3, gl.FLOAT, false, 0, 0);
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.facesBuffer);
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
           gl.uniform1i(this.uSampler, 0);
           gl.uniform3fv(this.uDirectionalLightColor, lights[0].color);
           gl.uniform3fv(this.uDirectionalVector, lights[0].direction);
-          gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
+          gl.uniformMatrix4fv(this.uPMatrix, false, camaraMatrixFlat);
           gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
           var normalMatrix = mesh.trs.inverse().transpose();
           gl.uniformMatrix4fv(this.uNormalMatrix, false, new Float32Array(normalMatrix.flatten()));

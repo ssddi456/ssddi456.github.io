@@ -3,11 +3,22 @@ define('js/shape', ['require', 'exports', 'module'], function(require, exports, 
   "use strict";
   var Shape = (function () {
       function Shape() {
+          this.visible = true;
+          this.debug = false;
           this.inited = false;
       }
+      Shape.prototype.x = function (matrix) {
+          this.trs = this.trs.x(matrix);
+          return this;
+      };
       Shape.prototype.render = function (world, camaraMatrixFlat, lights) {
-          world.useShader(this.shader);
-          this.shader.render(world, this, camaraMatrixFlat, lights);
+          if (this.debug && this.updateDebug) {
+              this.updateDebug(world, lights);
+          }
+          if (this.visible) {
+              world.useShader(this.shader);
+              this.shader.render(world, this, camaraMatrixFlat, lights);
+          }
       };
       return Shape;
   }());

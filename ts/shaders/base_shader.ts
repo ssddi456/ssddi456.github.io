@@ -4,6 +4,7 @@ import { Shape } from "../shape";
 
 export abstract class Shader {
     inited: boolean = false;
+    mounted: boolean = false;
     shaderProgram: WebGLProgram;
 
     abstract vertexShaderFactory: ShaderFactory;
@@ -32,7 +33,7 @@ export abstract class Shader {
         }
     }
     abstract mount(gl: WebGLRenderingContext);
-    abstract render(world: World, mesh: Shape, camaraMatrixFlat: number[], lights: Light[]);
+    abstract render(world: World, mesh: Shape, camaraMatrixFlat: Float32Array, lights: Light[]);
 }
 
 type ShaderSubclass = new (...args: any[]) => Shader;

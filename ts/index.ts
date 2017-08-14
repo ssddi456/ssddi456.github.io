@@ -1,3 +1,4 @@
+import { LineVertexColorShader } from './shaders/line_vertex_color_shader';
 import { World, Camara } from './world';
 
 import { VertexColorShader } from './shaders/vertex_color_shader';
@@ -5,6 +6,7 @@ import { CubeWithTextureShader } from './shaders/cube_with_texture_shader';
 import { CubeWithTextureAndLightingShader } from './shaders/cube_with_texture_and_lighting_shader';
 import { Light } from "./light";
 import { Mesh } from "./mesh";
+import { Line } from "./line";
 
 const main = $('#main')[0] as HTMLCanvasElement;
 const size = main.getClientRects()[0];
@@ -17,11 +19,10 @@ const testLight = new Light();
 
 testLight.direction = [1, 2, 10];
 testLight.color = [1, 1, 1];
-testLight.debug = true;
-
-world.lights.push(testLight);
+testLight.debug = false;
 
 const cubeTemplate = new Mesh();
+cubeTemplate.visible = true;
 
 const cubeShader = new VertexColorShader();
 
@@ -121,7 +122,7 @@ cubeTemplate.vertexNormal = [
     -1.0, 0.0, 0.0,
     -1.0, 0.0, 0.0,
     -1.0, 0.0, 0.0,
-    -1.0, 0.0, 0.0
+    -1.0, 0.0, 0.0,
 ];
 
 cubeTemplate.trs = Matrix.I(4);
@@ -173,15 +174,37 @@ const rotateZ = Matrix.RotationY(0.25 * Math.PI / 60 / 4).ensure4x4();
 
 const cubes = [];
 
-async function loadCubes() {
+const linex = Line.createSimpleLine([0, 0, 0], [10, 0, 0], Matrix.I(4));
+linex.verticesColor = [
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
+];
+const liney = Line.createSimpleLine([0, 0, 0], [0, 10, 0], Matrix.I(4));
+liney.verticesColor = [
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+];
+const linez = Line.createSimpleLine([0, 0, 0], [0, 0, 10], Matrix.I(4));
+linez.verticesColor = [
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+];
+
+
+async function loadShapes() {
+    world.attachLight(testLight);
+
     for (let i = 0; i < 5; i++) {
         const cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
-        cubeCopy.trs = cubeCopy.trs.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0])))
-            .x(move);
+        cubeCopy.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0]))).x(move);
 
         cubes.push(cubeCopy);
         await world.attachObject(cubeCopy);
     }
+
+    await world.attachObject(linex);
+    await world.attachObject(liney);
+    await world.attachObject(linez);
 }
 
 let startTime = 0;
@@ -193,15 +216,15 @@ function drawLoop() {
     if (interval < delta) {
         startTime = currentTime;
         cubes.forEach(function (cube) {
-            cube.trs = cube.trs.x(rotateZ);
+            cube.x(rotateZ);
         });
         world.render();
     }
     requestAnimationFrame(drawLoop);
 }
 
-loadCubes().then(function () {
-    drawLoop();
+loadShapes().then(function () {
+    requestAnimationFrame(drawLoop);
 });
 
 document.body.addEventListener('keydown', function (e) {
@@ -210,16 +233,16 @@ document.body.addEventListener('keydown', function (e) {
         case 'A':
             world.camara.eye[0] -= 1;
             break;
-        case 'S':
-            world.camara.eye[1] -= 1;
-            break;
         case 'D':
             world.camara.eye[0] += 1;
             break;
+        case 'S':
+            world.camara.eye[2] += 1;
+            break;
         case 'W':
-            world.camara.eye[1] += 1;
+            world.camara.eye[2] -= 1;
             break;
         default: break;
     }
-    
+
 }, true);

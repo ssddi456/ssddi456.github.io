@@ -25,7 +25,7 @@ export class LineVertexColorShader extends Shader {
         this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
 
     }
-    render(world: World, mesh: Line, camaraMatrixFlat: number[], lights: Light[]) {
+    render(world: World, mesh: Line, camaraMatrixFlat: Float32Array, lights: Light[]) {
         const gl = world.gl;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.lineBuffer);
@@ -34,7 +34,9 @@ export class LineVertexColorShader extends Shader {
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexColorBuffer);
         gl.vertexAttribPointer(this.aVertexColor, 4, gl.FLOAT, false, 0, 0);
 
-        gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+
+        gl.uniformMatrix4fv(this.uPMatrix, false, camaraMatrixFlat);
         gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
 
         gl.drawElements(gl.LINE_STRIP, mesh.lineVertexCounts, gl.UNSIGNED_SHORT, 0);

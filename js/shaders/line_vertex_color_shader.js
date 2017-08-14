@@ -30,7 +30,8 @@ define('js/shaders/line_vertex_color_shader', ['require', 'exports', 'module', "
           gl.vertexAttribPointer(this.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
           gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexColorBuffer);
           gl.vertexAttribPointer(this.aVertexColor, 4, gl.FLOAT, false, 0, 0);
-          gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+          gl.uniformMatrix4fv(this.uPMatrix, false, camaraMatrixFlat);
           gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
           gl.drawElements(gl.LINE_STRIP, mesh.lineVertexCounts, gl.UNSIGNED_SHORT, 0);
       };

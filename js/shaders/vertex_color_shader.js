@@ -15,23 +15,8 @@ define('js/shaders/vertex_color_shader', ['require', 'exports', 'module', "./bas
           _this.fragementShaderFactory = require("js/shaders/cube_with_face_color-fs.glsl.js");
           return _this;
       }
-      VertexColorShader.prototype.init = function (gl) {
-          if (this.inited) {
-              return false;
-          }
-          var shaderProgram = this.shaderProgram = gl.createProgram();
-          var vertexShader = this.vertexShaderFactory(gl);
-          var fragementShader = this.fragementShaderFactory(gl);
-          gl.attachShader(shaderProgram, vertexShader);
-          gl.attachShader(shaderProgram, fragementShader);
-          gl.linkProgram(shaderProgram);
-          if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-              alert("Unable to initialize the shader program: " + gl.getProgramInfoLog(shaderProgram));
-          }
-      };
       VertexColorShader.prototype.mount = function (gl) {
           var shaderProgram = this.shaderProgram;
-          gl.useProgram(shaderProgram);
           this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
           gl.enableVertexAttribArray(this.aVertexPosition);
           this.aVertexColor = gl.getAttribLocation(shaderProgram, "aVertexColor");
@@ -46,7 +31,7 @@ define('js/shaders/vertex_color_shader', ['require', 'exports', 'module', "./bas
           gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexColorBuffer);
           gl.vertexAttribPointer(this.aVertexColor, 4, gl.FLOAT, false, 0, 0);
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.facesBuffer);
-          gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
+          gl.uniformMatrix4fv(this.uPMatrix, false, camaraMatrixFlat);
           gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
           gl.drawElements(gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0);
       };

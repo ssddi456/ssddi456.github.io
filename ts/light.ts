@@ -63,7 +63,9 @@ export class Light {
     debug = false;
     debugMesh: Mesh;
 
-    render(world: World, camaraMatrixFlat: number[]) {
+    async init(gl: WebGLRenderingContext, world: World) {
+        this.direction = $V(this.direction).toUnitVector().elements;
+
         if (this.debug) {
             if (!this.debugMesh) {
                 this.debugMesh = debugMesh.clone();
@@ -80,8 +82,9 @@ export class Light {
                     }
                 }
 
-                world.attachObject(this.debugMesh);
+                await world.attachObject(this.debugMesh);
             }
         }
+
     }
 }

@@ -1,4 +1,4 @@
-define('js/line', ['require', 'exports', 'module', "./shape"], function(require, exports, module) {
+define('js/line', ['require', 'exports', 'module', "./shape", "./shaders/line_vertex_color_shader"], function(require, exports, module) {
 
   "use strict";
   var __extends = (this && this.__extends) || function (d, b) {
@@ -42,10 +42,12 @@ define('js/line', ['require', 'exports', 'module', "./shape"], function(require,
       }
   };
   var shape_1 = require("./shape");
+  var line_vertex_color_shader_1 = require("./shaders/line_vertex_color_shader");
   var Line = (function (_super) {
       __extends(Line, _super);
       function Line() {
           var _this = _super !== null && _super.apply(this, arguments) || this;
+          _this.index = [0, 1];
           _this.lineVertexCounts = 2;
           return _this;
       }
@@ -60,11 +62,14 @@ define('js/line', ['require', 'exports', 'module', "./shape"], function(require,
           return __awaiter(this, void 0, void 0, function () {
               return __generator(this, function (_a) {
                   this.lineBuffer = gl.createBuffer();
-                  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.lineBuffer);
-                  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Float32Array(this.points), gl.STATIC_DRAW);
+                  gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer);
+                  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.points), gl.STATIC_DRAW);
                   this.vertexColorBuffer = gl.createBuffer();
-                  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vertexColorBuffer);
-                  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Float32Array(this.verticesColor), gl.STATIC_DRAW);
+                  gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
+                  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticesColor), gl.STATIC_DRAW);
+                  this.indexBuffer = gl.createBuffer();
+                  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+                  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.index), gl.STATIC_DRAW);
                   this.shader.init(gl);
                   this.inited = true;
                   return [2 /*return*/];
@@ -73,6 +78,18 @@ define('js/line', ['require', 'exports', 'module', "./shape"], function(require,
       };
       Line.prototype.clone = function () {
           var clone = new Line();
+      };
+      Line.createSimpleLine = function (start, direct, trs) {
+          var normalLine = new Line();
+          normalLine.start = start;
+          normalLine.end = [start[0] + direct[0], start[1] + direct[1], start[2] + direct[2]];
+          normalLine.verticesColor = [
+              0.0, 0.0, 1.0, 1.0,
+              1.0, 0.0, 1.0, 1.0,
+          ];
+          normalLine.shader = new line_vertex_color_shader_1.LineVertexColorShader();
+          normalLine.trs = trs.clone();
+          return normalLine;
       };
       return Line;
   }(shape_1.Shape));

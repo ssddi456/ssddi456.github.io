@@ -15,23 +15,8 @@ define('js/shaders/cube_with_texture_shader', ['require', 'exports', 'module', "
           _this.fragementShaderFactory = require("js/shaders/cube_with_texture-fs.glsl.js");
           return _this;
       }
-      CubeWithTextureShader.prototype.init = function (gl) {
-          if (this.inited) {
-              return false;
-          }
-          var shaderProgram = this.shaderProgram = gl.createProgram();
-          var vertexShader = this.vertexShaderFactory(gl);
-          var fragementShader = this.fragementShaderFactory(gl);
-          gl.attachShader(shaderProgram, vertexShader);
-          gl.attachShader(shaderProgram, fragementShader);
-          gl.linkProgram(shaderProgram);
-          if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-              alert("Unable to initialize the shader program: " + gl.getProgramInfoLog(shaderProgram));
-          }
-      };
       CubeWithTextureShader.prototype.mount = function (gl) {
           var shaderProgram = this.shaderProgram;
-          gl.useProgram(shaderProgram);
           this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
           gl.enableVertexAttribArray(this.aVertexPosition);
           this.textureCoordAttribute = gl.getAttribLocation(shaderProgram, 'aTextureCoord');
@@ -50,7 +35,7 @@ define('js/shaders/cube_with_texture_shader', ['require', 'exports', 'module', "
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
           gl.uniform1i(this.uSampler, 0);
-          gl.uniformMatrix4fv(this.uPMatrix, false, new Float32Array(camaraMatrixFlat));
+          gl.uniformMatrix4fv(this.uPMatrix, false, camaraMatrixFlat);
           gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
           gl.drawElements(gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0);
       };

@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light", "./mesh"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light", "./mesh", "./line"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -41,6 +41,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var cube_with_texture_and_lighting_shader_1 = require("./shaders/cube_with_texture_and_lighting_shader");
   var light_1 = require("./light");
   var mesh_1 = require("./mesh");
+  var line_1 = require("./line");
   var main = $('#main')[0];
   var size = main.getClientRects()[0];
   main.height = size.height;
@@ -49,9 +50,9 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var testLight = new light_1.Light();
   testLight.direction = [1, 2, 10];
   testLight.color = [1, 1, 1];
-  testLight.debug = true;
-  world.lights.push(testLight);
+  testLight.debug = false;
   var cubeTemplate = new mesh_1.Mesh();
+  cubeTemplate.visible = true;
   var cubeShader = new vertex_color_shader_1.VertexColorShader();
   cubeTemplate.shader = cubeShader;
   cubeTemplate.vertices = [
@@ -137,7 +138,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       -1.0, 0.0, 0.0,
       -1.0, 0.0, 0.0,
       -1.0, 0.0, 0.0,
-      -1.0, 0.0, 0.0
+      -1.0, 0.0, 0.0,
   ];
   cubeTemplate.trs = Matrix.I(4);
   var cubeTemplate2 = cubeTemplate.clone();
@@ -181,19 +182,34 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var rotateY = Matrix.RotationY(0.25 * Math.PI).ensure4x4();
   var rotateZ = Matrix.RotationY(0.25 * Math.PI / 60 / 4).ensure4x4();
   var cubes = [];
-  function loadCubes() {
+  var linex = line_1.Line.createSimpleLine([0, 0, 0], [10, 0, 0], Matrix.I(4));
+  linex.verticesColor = [
+      1.0, 0.0, 0.0, 1.0,
+      1.0, 0.0, 0.0, 1.0,
+  ];
+  var liney = line_1.Line.createSimpleLine([0, 0, 0], [0, 10, 0], Matrix.I(4));
+  liney.verticesColor = [
+      0.0, 1.0, 0.0, 1.0,
+      0.0, 1.0, 0.0, 1.0,
+  ];
+  var linez = line_1.Line.createSimpleLine([0, 0, 0], [0, 0, 10], Matrix.I(4));
+  linez.verticesColor = [
+      0.0, 0.0, 1.0, 1.0,
+      0.0, 0.0, 1.0, 1.0,
+  ];
+  function loadShapes() {
       return __awaiter(this, void 0, void 0, function () {
           var i, cubeCopy;
           return __generator(this, function (_a) {
               switch (_a.label) {
                   case 0:
+                      world.attachLight(testLight);
                       i = 0;
                       _a.label = 1;
                   case 1:
                       if (!(i < 5)) return [3 /*break*/, 4];
                       cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
-                      cubeCopy.trs = cubeCopy.trs.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0])))
-                          .x(move);
+                      cubeCopy.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0]))).x(move);
                       cubes.push(cubeCopy);
                       return [4 /*yield*/, world.attachObject(cubeCopy)];
                   case 2:
@@ -202,7 +218,16 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
                   case 3:
                       i++;
                       return [3 /*break*/, 1];
-                  case 4: return [2 /*return*/];
+                  case 4: return [4 /*yield*/, world.attachObject(linex)];
+                  case 5:
+                      _a.sent();
+                      return [4 /*yield*/, world.attachObject(liney)];
+                  case 6:
+                      _a.sent();
+                      return [4 /*yield*/, world.attachObject(linez)];
+                  case 7:
+                      _a.sent();
+                      return [2 /*return*/];
               }
           });
       });
@@ -215,28 +240,28 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       if (interval < delta) {
           startTime = currentTime;
           cubes.forEach(function (cube) {
-              cube.trs = cube.trs.x(rotateZ);
+              cube.x(rotateZ);
           });
           world.render();
       }
       requestAnimationFrame(drawLoop);
   }
-  loadCubes().then(function () {
-      drawLoop();
+  loadShapes().then(function () {
+      requestAnimationFrame(drawLoop);
   });
   document.body.addEventListener('keydown', function (e) {
       switch (String.fromCharCode(e.keyCode)) {
           case 'A':
               world.camara.eye[0] -= 1;
               break;
-          case 'S':
-              world.camara.eye[1] -= 1;
-              break;
           case 'D':
               world.camara.eye[0] += 1;
               break;
+          case 'S':
+              world.camara.eye[2] += 1;
+              break;
           case 'W':
-              world.camara.eye[1] += 1;
+              world.camara.eye[2] -= 1;
               break;
           default: break;
       }

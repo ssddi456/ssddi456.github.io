@@ -55,17 +55,28 @@ export class World {
         this.camara.height = size.height;
         this.camara.width = size.width;
     }
+    async attachLight(light: Light) {
+        this.lights.push(light);
+        await light.init(this.gl, this);
+    }
+
     async attachObject(mesh: Shape) {
         this.meshes.push(mesh);
 
-        await mesh.init(this.gl);
+        await mesh.init(this.gl, this);
     }
 
     useShader(shader: Shader) {
         if (shader === this.lastUsedShader) {
             return;
         }
+        if (this.lastUsedShader) {
+            this.lastUsedShader.mounted = false;
+        }
+
+        this.gl.useProgram(shader.shaderProgram);
         shader.mount(this.gl);
+        shader.mounted = true;
         this.lastUsedShader = shader;
     }
     render() {
@@ -73,14 +84,10 @@ export class World {
 
         // tslint:disable-next-line:no-bitwise
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        const camaraMatrixFlat = this.camara.matrix.flatten();
-        for (let index = 0; index < this.lights.length; index++) {
-            this.lights[index].render(this, camaraMatrixFlat);
-        }
+        const camaraMatrixFlat = new Float32Array(this.camara.matrix.flatten());
 
         for (let index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
-
             mesh.render(this, camaraMatrixFlat, this.lights);
         }
     }

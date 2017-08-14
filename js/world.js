@@ -84,13 +84,27 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
           this.camara.height = size.height;
           this.camara.width = size.width;
       }
+      World.prototype.attachLight = function (light) {
+          return __awaiter(this, void 0, void 0, function () {
+              return __generator(this, function (_a) {
+                  switch (_a.label) {
+                      case 0:
+                          this.lights.push(light);
+                          return [4 /*yield*/, light.init(this.gl, this)];
+                      case 1:
+                          _a.sent();
+                          return [2 /*return*/];
+                  }
+              });
+          });
+      };
       World.prototype.attachObject = function (mesh) {
           return __awaiter(this, void 0, void 0, function () {
               return __generator(this, function (_a) {
                   switch (_a.label) {
                       case 0:
                           this.meshes.push(mesh);
-                          return [4 /*yield*/, mesh.init(this.gl)];
+                          return [4 /*yield*/, mesh.init(this.gl, this)];
                       case 1:
                           _a.sent();
                           return [2 /*return*/];
@@ -102,17 +116,19 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
           if (shader === this.lastUsedShader) {
               return;
           }
+          if (this.lastUsedShader) {
+              this.lastUsedShader.mounted = false;
+          }
+          this.gl.useProgram(shader.shaderProgram);
           shader.mount(this.gl);
+          shader.mounted = true;
           this.lastUsedShader = shader;
       };
       World.prototype.render = function () {
           var gl = this.gl;
           // tslint:disable-next-line:no-bitwise
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-          var camaraMatrixFlat = this.camara.matrix.flatten();
-          for (var index = 0; index < this.lights.length; index++) {
-              this.lights[index].render(this, camaraMatrixFlat);
-          }
+          var camaraMatrixFlat = new Float32Array(this.camara.matrix.flatten());
           for (var index = 0; index < this.meshes.length; index++) {
               var mesh = this.meshes[index];
               mesh.render(this, camaraMatrixFlat, this.lights);

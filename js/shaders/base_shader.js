@@ -4,6 +4,7 @@ define('js/shaders/base_shader', ['require', 'exports', 'module'], function(requ
   var Shader = (function () {
       function Shader() {
           this.inited = false;
+          this.mounted = false;
       }
       Shader.prototype.clone = function () {
           var newInstance = new this.constructor();
