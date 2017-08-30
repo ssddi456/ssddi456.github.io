@@ -79,6 +79,17 @@ define('js/line', ['require', 'exports', 'module', "./shape", "./shaders/line_ve
       Line.prototype.clone = function () {
           var clone = new Line();
       };
+      Object.defineProperty(Line, "simepleShader", {
+          get: function () {
+              if (!Line.singleSimepleShader) {
+                  Line.singleSimepleShader = new line_vertex_color_shader_1.LineVertexColorShader();
+              }
+              return Line.singleSimepleShader;
+          },
+          enumerable: true,
+          configurable: true
+      });
+      ;
       Line.createSimpleLine = function (start, direct, trs) {
           var normalLine = new Line();
           normalLine.start = start;
@@ -87,7 +98,19 @@ define('js/line', ['require', 'exports', 'module', "./shape", "./shaders/line_ve
               0.0, 0.0, 1.0, 1.0,
               1.0, 0.0, 1.0, 1.0,
           ];
-          normalLine.shader = new line_vertex_color_shader_1.LineVertexColorShader();
+          normalLine.shader = Line.simepleShader;
+          normalLine.trs = trs.clone();
+          return normalLine;
+      };
+      Line.createSimpleLine2 = function (start, end, trs) {
+          var normalLine = new Line();
+          normalLine.start = start;
+          normalLine.end = end;
+          normalLine.verticesColor = [
+              0.0, 0.0, 1.0, 1.0,
+              1.0, 0.0, 1.0, 1.0,
+          ];
+          normalLine.shader = Line.simepleShader;
           normalLine.trs = trs.clone();
           return normalLine;
       };

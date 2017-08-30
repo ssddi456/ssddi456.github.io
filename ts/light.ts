@@ -71,14 +71,14 @@ export class Light {
                 this.debugMesh = debugMesh.clone();
                 this.debugMesh.trs = this.debugMesh.trs.x(Matrix.Translation($V(this.direction)));
 
-                this.debugMesh.verticesColor = [];
+                this.debugMesh.vertexColors = [];
 
                 for (let j = 0; j < 6; j++) {
                     for (let k = 0; k < 4; k++) {
                         for (let index = 0; index < 3; index++) {
-                            this.debugMesh.verticesColor.push(this.color[0]);
+                            this.debugMesh.vertexColors.push(this.color[0]);
                         }
-                        this.debugMesh.verticesColor.push(1);
+                        this.debugMesh.vertexColors.push(1);
                     }
                 }
 

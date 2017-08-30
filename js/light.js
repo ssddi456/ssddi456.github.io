@@ -99,13 +99,13 @@ define('js/light', ['require', 'exports', 'module', "./shaders/vertex_color_shad
                           if (!!this.debugMesh) return [3 /*break*/, 2];
                           this.debugMesh = debugMesh.clone();
                           this.debugMesh.trs = this.debugMesh.trs.x(Matrix.Translation($V(this.direction)));
-                          this.debugMesh.verticesColor = [];
+                          this.debugMesh.vertexColors = [];
                           for (j = 0; j < 6; j++) {
                               for (k = 0; k < 4; k++) {
                                   for (index = 0; index < 3; index++) {
-                                      this.debugMesh.verticesColor.push(this.color[0]);
+                                      this.debugMesh.vertexColors.push(this.color[0]);
                                   }
-                                  this.debugMesh.verticesColor.push(1);
+                                  this.debugMesh.vertexColors.push(1);
                               }
                           }
                           return [4 /*yield*/, world.attachObject(this.debugMesh)];

@@ -1,3 +1,4 @@
+import { Mesh3dRoad } from './libs/3dRoad';
 import { LineVertexColorShader } from './shaders/line_vertex_color_shader';
 import { World, Camara } from './world';
 
@@ -7,6 +8,7 @@ import { CubeWithTextureAndLightingShader } from './shaders/cube_with_texture_an
 import { Light } from "./light";
 import { Mesh } from "./mesh";
 import { Line } from "./line";
+import { RoadMap } from "./libs/roadMap";
 
 const main = $('#main')[0] as HTMLCanvasElement;
 const size = main.getClientRects()[0];
@@ -17,7 +19,7 @@ main.width = size.width;
 const world = new World(main.getContext('webgl'), size);
 const testLight = new Light();
 
-testLight.direction = [1, 2, 10];
+testLight.direction = [1, 2, 1];
 testLight.color = [1, 1, 1];
 testLight.debug = false;
 
@@ -65,7 +67,7 @@ cubeTemplate.vertices = [
     -1.0, 1.0, -1.0,
 ];
 
-cubeTemplate.verticesColor = [].concat.apply([], [
+cubeTemplate.vertexColors = [].concat.apply([], [
     [1.0, 1.0, 1.0, 1.0],    // Front face: white
     [1.0, 0.0, 0.0, 1.0],    // Back face: red
     [0.0, 1.0, 0.0, 1.0],    // Top face: green
@@ -128,7 +130,7 @@ cubeTemplate.vertexNormal = [
 cubeTemplate.trs = Matrix.I(4);
 
 const cubeTemplate2 = cubeTemplate.clone();
-cubeTemplate2.verticesColor = undefined;
+cubeTemplate2.vertexColors = undefined;
 
 cubeTemplate2.textureCoordinates = [
     // Front
@@ -163,8 +165,32 @@ cubeTemplate2.textureCoordinates = [
     0.0, 1.0,
 ];
 
-cubeTemplate2.textureSrc = '/images/cubetexture.png';
+cubeTemplate2.textureSrc = '/images/checkerBroad.jpg';
 cubeTemplate2.shader = new CubeWithTextureAndLightingShader();
+
+const roadMap = new RoadMap(20, 20);
+roadMap.generateRandonRoad();
+// const roadMap = new RoadMap(3, 3);
+// roadMap.setWalkThrough(1, 1);
+
+const mesh3dRoad = new Mesh3dRoad(roadMap);
+const meshData3dRoad = mesh3dRoad.getMesh();
+const objMesh3dRoad = cubeTemplate2.clone();
+
+// objMesh3dRoad.debug = true;
+objMesh3dRoad.visible = true;
+objMesh3dRoad.vertices = meshData3dRoad.vertexs;
+objMesh3dRoad.faces = meshData3dRoad.faces;
+
+if (meshData3dRoad.vertexColors.length) {
+    objMesh3dRoad.vertexColors = meshData3dRoad.vertexColors;
+}
+if (meshData3dRoad.vertexNormal.length) {
+    objMesh3dRoad.vertexNormal = meshData3dRoad.vertexNormal;
+}
+if (meshData3dRoad.textureCoordinates.length) {
+    objMesh3dRoad.textureCoordinates = meshData3dRoad.textureCoordinates;
+}
 
 const move = Matrix.Translation($V([0, 0, -25]));
 const rotateX = Matrix.RotationX(0.25 * Math.PI).ensure4x4();
@@ -194,17 +220,18 @@ linez.verticesColor = [
 async function loadShapes() {
     world.attachLight(testLight);
 
-    for (let i = 0; i < 5; i++) {
-        const cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
-        cubeCopy.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0]))).x(move);
+    // for (let i = 0; i < 5; i++) {
+    //     const cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
+    //     cubeCopy.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0]))).x(move);
 
-        cubes.push(cubeCopy);
-        await world.attachObject(cubeCopy);
-    }
+    //     cubes.push(cubeCopy);
+    //     await world.attachObject(cubeCopy);
+    // }
 
     await world.attachObject(linex);
     await world.attachObject(liney);
     await world.attachObject(linez);
+    await world.attachObject(objMesh3dRoad);
 }
 
 let startTime = 0;

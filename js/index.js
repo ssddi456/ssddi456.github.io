@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light", "./mesh", "./line"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light", "./mesh", "./line", "./libs/roadMap"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -36,19 +36,21 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
       }
   };
+  var _3dRoad_1 = require("./libs/3dRoad");
   var world_1 = require("./world");
   var vertex_color_shader_1 = require("./shaders/vertex_color_shader");
   var cube_with_texture_and_lighting_shader_1 = require("./shaders/cube_with_texture_and_lighting_shader");
   var light_1 = require("./light");
   var mesh_1 = require("./mesh");
   var line_1 = require("./line");
+  var roadMap_1 = require("./libs/roadMap");
   var main = $('#main')[0];
   var size = main.getClientRects()[0];
   main.height = size.height;
   main.width = size.width;
   var world = new world_1.World(main.getContext('webgl'), size);
   var testLight = new light_1.Light();
-  testLight.direction = [1, 2, 10];
+  testLight.direction = [1, 2, 1];
   testLight.color = [1, 1, 1];
   testLight.debug = false;
   var cubeTemplate = new mesh_1.Mesh();
@@ -87,7 +89,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       -1.0, 1.0, 1.0,
       -1.0, 1.0, -1.0,
   ];
-  cubeTemplate.verticesColor = [].concat.apply([], [
+  cubeTemplate.vertexColors = [].concat.apply([], [
       [1.0, 1.0, 1.0, 1.0],
       [1.0, 0.0, 0.0, 1.0],
       [0.0, 1.0, 0.0, 1.0],
@@ -142,7 +144,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   ];
   cubeTemplate.trs = Matrix.I(4);
   var cubeTemplate2 = cubeTemplate.clone();
-  cubeTemplate2.verticesColor = undefined;
+  cubeTemplate2.vertexColors = undefined;
   cubeTemplate2.textureCoordinates = [
       // Front
       0.0, 0.0,
@@ -175,8 +177,28 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       1.0, 1.0,
       0.0, 1.0,
   ];
-  cubeTemplate2.textureSrc = '/images/cubetexture.png';
+  cubeTemplate2.textureSrc = '/images/checkerBroad.jpg';
   cubeTemplate2.shader = new cube_with_texture_and_lighting_shader_1.CubeWithTextureAndLightingShader();
+  var roadMap = new roadMap_1.RoadMap(20, 20);
+  roadMap.generateRandonRoad();
+  // const roadMap = new RoadMap(3, 3);
+  // roadMap.setWalkThrough(1, 1);
+  var mesh3dRoad = new _3dRoad_1.Mesh3dRoad(roadMap);
+  var meshData3dRoad = mesh3dRoad.getMesh();
+  var objMesh3dRoad = cubeTemplate2.clone();
+  // objMesh3dRoad.debug = true;
+  objMesh3dRoad.visible = true;
+  objMesh3dRoad.vertices = meshData3dRoad.vertexs;
+  objMesh3dRoad.faces = meshData3dRoad.faces;
+  if (meshData3dRoad.vertexColors.length) {
+      objMesh3dRoad.vertexColors = meshData3dRoad.vertexColors;
+  }
+  if (meshData3dRoad.vertexNormal.length) {
+      objMesh3dRoad.vertexNormal = meshData3dRoad.vertexNormal;
+  }
+  if (meshData3dRoad.textureCoordinates.length) {
+      objMesh3dRoad.textureCoordinates = meshData3dRoad.textureCoordinates;
+  }
   var move = Matrix.Translation($V([0, 0, -25]));
   var rotateX = Matrix.RotationX(0.25 * Math.PI).ensure4x4();
   var rotateY = Matrix.RotationY(0.25 * Math.PI).ensure4x4();
@@ -199,33 +221,33 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   ];
   function loadShapes() {
       return __awaiter(this, void 0, void 0, function () {
-          var i, cubeCopy;
           return __generator(this, function (_a) {
               switch (_a.label) {
                   case 0:
                       world.attachLight(testLight);
-                      i = 0;
-                      _a.label = 1;
+                      // for (let i = 0; i < 5; i++) {
+                      //     const cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
+                      //     cubeCopy.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0]))).x(move);
+                      //     cubes.push(cubeCopy);
+                      //     await world.attachObject(cubeCopy);
+                      // }
+                      return [4 /*yield*/, world.attachObject(linex)];
                   case 1:
-                      if (!(i < 5)) return [3 /*break*/, 4];
-                      cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
-                      cubeCopy.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0]))).x(move);
-                      cubes.push(cubeCopy);
-                      return [4 /*yield*/, world.attachObject(cubeCopy)];
-                  case 2:
-                      _a.sent();
-                      _a.label = 3;
-                  case 3:
-                      i++;
-                      return [3 /*break*/, 1];
-                  case 4: return [4 /*yield*/, world.attachObject(linex)];
-                  case 5:
+                      // for (let i = 0; i < 5; i++) {
+                      //     const cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
+                      //     cubeCopy.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0]))).x(move);
+                      //     cubes.push(cubeCopy);
+                      //     await world.attachObject(cubeCopy);
+                      // }
                       _a.sent();
                       return [4 /*yield*/, world.attachObject(liney)];
-                  case 6:
+                  case 2:
                       _a.sent();
                       return [4 /*yield*/, world.attachObject(linez)];
-                  case 7:
+                  case 3:
+                      _a.sent();
+                      return [4 /*yield*/, world.attachObject(objMesh3dRoad)];
+                  case 4:
                       _a.sent();
                       return [2 /*return*/];
               }

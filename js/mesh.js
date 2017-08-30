@@ -86,8 +86,8 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
           var newInstance = new Mesh();
           newInstance.vertices = this.vertices.slice(0);
           newInstance.faces = this.faces.slice(0);
-          if (this.verticesColor) {
-              newInstance.verticesColor = this.verticesColor.slice(0);
+          if (this.vertexColors) {
+              newInstance.vertexColors = this.vertexColors.slice(0);
           }
           if (this.textureCoordinates) {
               newInstance.textureCoordinates = this.textureCoordinates.slice(0);
@@ -118,10 +118,10 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
                           this.facesBuffer = gl.createBuffer();
                           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
                           gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
-                          if (this.verticesColor) {
+                          if (this.vertexColors) {
                               this.vertexColorBuffer = gl.createBuffer();
                               gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
-                              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticesColor), gl.STATIC_DRAW);
+                              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexColors), gl.STATIC_DRAW);
                           }
                           if (this.textureCoordinates) {
                               this.textureCoordinatesBuffer = gl.createBuffer();
@@ -148,29 +148,65 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
       };
       Mesh.prototype.addDebugObjects = function (world) {
           return __awaiter(this, void 0, void 0, function () {
-              var normals, normalLines, transformedNormalLines, vertexFinalLightLines, index, normal, vertex, normalLine, transformedNormalLine, finalLightLine, originX;
-              return __generator(this, function (_a) {
-                  switch (_a.label) {
+              var normals, normalLines, meshLines, transformedNormalLines, vertexFinalLightLines, index, vertex1, vertex2, vertex3, line1, line2, line3, _a, _b, _c, _d, index, normal, vertex, normalLine, transformedNormalLine, finalLightLine, originX;
+              return __generator(this, function (_e) {
+                  switch (_e.label) {
                       case 0:
                           if (!this.debug) {
                               return [2 /*return*/];
                           }
                           normals = this.normals = [];
                           normalLines = this.normalLines = [];
+                          meshLines = this.meshLins = [];
                           transformedNormalLines = this.transformedNormalLines = [];
                           vertexFinalLightLines = this.vertexFinalLightLines = [];
-                          if (!this.vertexNormal) return [3 /*break*/, 6];
                           index = 0;
-                          _a.label = 1;
+                          _e.label = 1;
                       case 1:
-                          if (!(index < this.vertexNormal.length)) return [3 /*break*/, 6];
+                          if (!(index < this.faces.length)) return [3 /*break*/, 7];
+                          vertex1 = this.vertices.slice(this.faces[index] * 3, this.faces[index] * 3 + 3);
+                          vertex2 = this.vertices.slice(this.faces[index + 1] * 3, this.faces[index + 1] * 3 + 3);
+                          vertex3 = this.vertices.slice(this.faces[index + 2] * 3, this.faces[index + 2] * 3 + 3);
+                          line1 = line_1.Line.createSimpleLine2(vertex1, vertex2, this.trs);
+                          meshLines.push(line1);
+                          line2 = line_1.Line.createSimpleLine2(vertex2, vertex3, this.trs);
+                          meshLines.push(line2);
+                          line3 = line_1.Line.createSimpleLine2(vertex3, vertex1, this.trs);
+                          meshLines.push(line3);
+                          _b = (_a = Promise).all;
+                          return [4 /*yield*/, world.attachObject(line1)];
+                      case 2:
+                          _d = [
+                              _e.sent()
+                          ];
+                          return [4 /*yield*/, world.attachObject(line2)];
+                      case 3:
+                          _d = _d.concat([
+                              _e.sent()
+                          ]);
+                          return [4 /*yield*/, world.attachObject(line3)];
+                      case 4: return [4 /*yield*/, _b.apply(_a, [_d.concat([
+                                  _e.sent()
+                              ])])];
+                      case 5:
+                          _e.sent();
+                          _e.label = 6;
+                      case 6:
+                          index += 3;
+                          return [3 /*break*/, 1];
+                      case 7:
+                          if (!this.vertexNormal) return [3 /*break*/, 13];
+                          index = 0;
+                          _e.label = 8;
+                      case 8:
+                          if (!(index < this.vertexNormal.length)) return [3 /*break*/, 13];
                           normal = this.vertexNormal.slice(index, index + 3);
                           vertex = this.vertices.slice(index, index + 3);
                           normals.push([normal[0], normal[1], normal[2], 1]);
                           normalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
                           return [4 /*yield*/, world.attachObject(normalLine)];
-                      case 2:
-                          _a.sent();
+                      case 9:
+                          _e.sent();
                           normalLines.push(normalLine);
                           transformedNormalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
                           transformedNormalLine.verticesColor = [
@@ -178,8 +214,8 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
                               1, 0, 1, 1,
                           ];
                           return [4 /*yield*/, world.attachObject(transformedNormalLine)];
-                      case 3:
-                          _a.sent();
+                      case 10:
+                          _e.sent();
                           transformedNormalLines.push(transformedNormalLine);
                           finalLightLine = line_1.Line.createSimpleLine([
                               vertex[0] + 0.2 * normal[0],
@@ -191,19 +227,20 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
                               1, 0, 1, 1,
                           ];
                           return [4 /*yield*/, world.attachObject(finalLightLine)];
-                      case 4:
-                          _a.sent();
+                      case 11:
+                          _e.sent();
                           vertexFinalLightLines.push(finalLightLine);
-                          _a.label = 5;
-                      case 5:
+                          _e.label = 12;
+                      case 12:
                           index += 3;
-                          return [3 /*break*/, 1];
-                      case 6:
+                          return [3 /*break*/, 8];
+                      case 13:
                           originX = this.x;
                           this.x = function (matrix) {
                               this.normalLines.forEach(function (x) { return x.x(matrix); });
                               this.transformedNormalLines.forEach(function (x) { return x.x(matrix); });
                               this.vertexFinalLightLines.forEach(function (x) { return x.x(matrix); });
+                              this.meshLins.forEach(function (x) { return x.x(matrix); });
                               return originX.call(this, matrix);
                           };
                           return [2 /*return*/];
@@ -216,6 +253,7 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
           var mainLight = lights[0];
           var gl = world.gl;
           this.normalLines.forEach(function (x) { return x.visible = false; });
+          this.vertexFinalLightLines.forEach(function (x) { return x.visible = false; });
           this.transformedNormalLines.forEach(function (x) { return x.visible = false; });
           if (!mainLight) {
               this.transformedNormalLines.forEach(function (x) { return x.visible = false; });

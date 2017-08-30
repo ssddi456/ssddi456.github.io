@@ -5,6 +5,7 @@ import { World } from "./world";
 import { Light } from "./light";
 import { Line } from "./line";
 import { LineVertexColorShader } from "./shaders/line_vertex_color_shader";
+import { Vector3 } from "./libs/2dRoad";
 
 export class Mesh extends Shape {
     vertices: number[];
@@ -13,7 +14,7 @@ export class Mesh extends Shape {
     faces: number[];
     facesBuffer: WebGLBuffer;
 
-    verticesColor: number[];
+    vertexColors: number[];
     vertexColorBuffer: WebGLBuffer;
 
     textureCoordinates: number[];
@@ -57,8 +58,8 @@ export class Mesh extends Shape {
         newInstance.vertices = this.vertices.slice(0);
         newInstance.faces = this.faces.slice(0);
 
-        if (this.verticesColor) {
-            newInstance.verticesColor = this.verticesColor.slice(0);
+        if (this.vertexColors) {
+            newInstance.vertexColors = this.vertexColors.slice(0);
         }
 
         if (this.textureCoordinates) {
@@ -93,10 +94,10 @@ export class Mesh extends Shape {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
 
-        if (this.verticesColor) {
+        if (this.vertexColors) {
             this.vertexColorBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticesColor), gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexColors), gl.STATIC_DRAW);
         }
 
         if (this.textureCoordinates) {
@@ -128,9 +129,32 @@ export class Mesh extends Shape {
 
         const normals = this.normals = [] as Array<[number, number, number, 1.0]>;
         const normalLines: Line[] = this.normalLines = [];
+        const meshLines: Line[] = this.meshLins = [];
 
         const transformedNormalLines: Line[] = this.transformedNormalLines = [];
         const vertexFinalLightLines: Line[] = this.vertexFinalLightLines = [];
+
+        for (let index = 0; index < this.faces.length; index += 3) {
+            const vertex1 = this.vertices.slice(this.faces[index] * 3, this.faces[index] * 3 + 3) as Vector3;
+            const vertex2 = this.vertices.slice(this.faces[index + 1] * 3, this.faces[index + 1] * 3 + 3) as Vector3;
+            const vertex3 = this.vertices.slice(this.faces[index + 2] * 3, this.faces[index + 2] * 3 + 3) as Vector3;
+
+            const line1 = Line.createSimpleLine2(vertex1, vertex2, this.trs);
+
+            meshLines.push(line1);
+            const line2 = Line.createSimpleLine2(vertex2, vertex3, this.trs);
+
+            meshLines.push(line2);
+            const line3 = Line.createSimpleLine2(vertex3, vertex1, this.trs);
+
+            meshLines.push(line3);
+
+            await Promise.all([
+                await world.attachObject(line1),
+                await world.attachObject(line2),
+                await world.attachObject(line3),
+            ]);
+        }
 
         if (this.vertexNormal) {
             for (let index = 0; index < this.vertexNormal.length; index += 3) {
@@ -171,10 +195,12 @@ export class Mesh extends Shape {
             this.normalLines.forEach((x) => x.x(matrix));
             this.transformedNormalLines.forEach((x) => x.x(matrix));
             this.vertexFinalLightLines.forEach((x) => x.x(matrix));
+            this.meshLins.forEach((x) => x.x(matrix));
             return originX.call(this, matrix);
         };
     }
 
+    meshLins: Line[];
     normalLines: Line[];
     normals: Array<[number, number, number, 1.0]>;
     transformedNormalLines: Line[];
@@ -185,6 +211,7 @@ export class Mesh extends Shape {
         const gl = world.gl;
 
         this.normalLines.forEach((x) => x.visible = false);
+        this.vertexFinalLightLines.forEach((x) => x.visible = false);
         this.transformedNormalLines.forEach((x) => x.visible = false);
 
         if (!mainLight) {

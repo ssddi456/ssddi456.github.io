@@ -2,10 +2,11 @@ import { Shape } from "./shape";
 import { World } from "./world";
 import { Shader } from "./shaders/base_shader";
 import { LineVertexColorShader } from "./shaders/line_vertex_color_shader";
+import { Vector3 } from "./libs/2dRoad";
 
 export class Line extends Shape {
-    start: [number, number, number];
-    end: [number, number, number];
+    start: Vector3;
+    end: Vector3;
     lineBuffer: WebGLBuffer;
 
     index = [0, 1];
@@ -40,10 +41,16 @@ export class Line extends Shape {
     clone() {
         const clone = new Line();
     }
-
+    static singleSimepleShader: Shader;
+    static get simepleShader(): Shader {
+        if (!Line.singleSimepleShader) {
+            Line.singleSimepleShader = new LineVertexColorShader();
+        }
+        return Line.singleSimepleShader;
+    };
     static createSimpleLine(
-        start: [number, number, number],
-        direct: [number, number, number],
+        start: Vector3,
+        direct: Vector3,
         trs: Matrix,
     ) {
 
@@ -54,9 +61,28 @@ export class Line extends Shape {
             0.0, 0.0, 1.0, 1.0,
             1.0, 0.0, 1.0, 1.0,
         ];
-        normalLine.shader = new LineVertexColorShader();
+
+        normalLine.shader = Line.simepleShader;
         normalLine.trs = trs.clone();
         return normalLine;
 
+    }
+    static createSimpleLine2(
+        start: Vector3,
+        end: Vector3,
+        trs: Matrix,
+    ) {
+
+        const normalLine = new Line();
+        normalLine.start = start;
+        normalLine.end = end;
+        normalLine.verticesColor = [
+            0.0, 0.0, 1.0, 1.0,
+            1.0, 0.0, 1.0, 1.0,
+        ];
+
+        normalLine.shader = Line.simepleShader;
+        normalLine.trs = trs.clone();
+        return normalLine;
     }
 }
