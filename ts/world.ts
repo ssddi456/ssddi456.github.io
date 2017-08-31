@@ -31,6 +31,7 @@ export class Camara {
 
 export class World {
     camara: Camara;
+
     meshes: Shape[] = [];
     lights: Light[] = [];
 
@@ -51,9 +52,6 @@ export class World {
 
         gl.viewport(0, 0, size.width, size.height);
 
-        this.camara = new Camara();
-        this.camara.height = size.height;
-        this.camara.width = size.width;
     }
     async attachLight(light: Light) {
         this.lights.push(light);

@@ -80,9 +80,6 @@ define('js/world', ['require', 'exports', 'module'], function(require, exports, 
           // tslint:disable-next-line:no-bitwise
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
           gl.viewport(0, 0, size.width, size.height);
-          this.camara = new Camara();
-          this.camara.height = size.height;
-          this.camara.width = size.width;
       }
       World.prototype.attachLight = function (light) {
           return __awaiter(this, void 0, void 0, function () {

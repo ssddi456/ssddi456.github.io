@@ -49,10 +49,14 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
   main.height = size.height;
   main.width = size.width;
   var world = new world_1.World(main.getContext('webgl'), size);
-  var testLight = new light_1.Light();
-  testLight.direction = [1, 2, 1];
-  testLight.color = [1, 1, 1];
-  testLight.debug = false;
+  var mainCamara = new world_1.Camara();
+  mainCamara.height = size.height;
+  mainCamara.width = size.width;
+  world.camara = mainCamara;
+  var skyLight = new light_1.Light();
+  skyLight.direction = [1, 2, 1];
+  skyLight.color = [1, 1, 1];
+  skyLight.debug = false;
   var cubeTemplate = new mesh_1.Mesh();
   cubeTemplate.visible = true;
   var cubeShader = new vertex_color_shader_1.VertexColorShader();
@@ -177,7 +181,7 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
       1.0, 1.0,
       0.0, 1.0,
   ];
-  cubeTemplate2.textureSrc = '/images/checkerBroad.jpg';
+  cubeTemplate2.textureSrc = '/images/checker2x2.jpg';
   cubeTemplate2.shader = new cube_with_texture_and_lighting_shader_1.CubeWithTextureAndLightingShader();
   var roadMap = new roadMap_1.RoadMap(20, 20);
   roadMap.generateRandonRoad();
@@ -186,7 +190,7 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
   var mesh3dRoad = new _3dRoad_1.Mesh3dRoad(roadMap);
   var meshData3dRoad = mesh3dRoad.getMesh();
   var objMesh3dRoad = cubeTemplate2.clone();
-  // objMesh3dRoad.debug = true;
+  objMesh3dRoad.debug = false;
   objMesh3dRoad.visible = true;
   objMesh3dRoad.vertices = meshData3dRoad.vertexs;
   objMesh3dRoad.faces = meshData3dRoad.faces;
@@ -203,7 +207,6 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
   var rotateX = Matrix.RotationX(0.25 * Math.PI).ensure4x4();
   var rotateY = Matrix.RotationY(0.25 * Math.PI).ensure4x4();
   var rotateZ = Matrix.RotationY(0.25 * Math.PI / 60 / 4).ensure4x4();
-  var cubes = [];
   var linex = line_1.Line.createSimpleLine([0, 0, 0], [10, 0, 0], Matrix.I(4));
   linex.verticesColor = [
       1.0, 0.0, 0.0, 1.0,
@@ -219,35 +222,22 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
       0.0, 0.0, 1.0, 1.0,
       0.0, 0.0, 1.0, 1.0,
   ];
+  var dummyPlayer = cubeTemplate.clone();
+  dummyPlayer.vertices.forEach(function (v, i) { return dummyPlayer.vertices[i] *= 0.25; });
   function loadShapes() {
       return __awaiter(this, void 0, void 0, function () {
           return __generator(this, function (_a) {
               switch (_a.label) {
                   case 0:
-                      world.attachLight(testLight);
-                      // for (let i = 0; i < 5; i++) {
-                      //     const cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
-                      //     cubeCopy.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0]))).x(move);
-                      //     cubes.push(cubeCopy);
-                      //     await world.attachObject(cubeCopy);
-                      // }
-                      return [4 /*yield*/, world.attachObject(linex)];
+                      world.attachLight(skyLight);
+                      return [4 /*yield*/, Promise.all([
+                              linex,
+                              liney,
+                              linez,
+                              objMesh3dRoad,
+                              dummyPlayer,
+                          ].map(function (x) { return world.attachObject(x); }))];
                   case 1:
-                      // for (let i = 0; i < 5; i++) {
-                      //     const cubeCopy = (i % 2 ? cubeTemplate : cubeTemplate2).clone();
-                      //     cubeCopy.x(Matrix.Translation($V([(-2 + i) * 4, 0, 0]))).x(move);
-                      //     cubes.push(cubeCopy);
-                      //     await world.attachObject(cubeCopy);
-                      // }
-                      _a.sent();
-                      return [4 /*yield*/, world.attachObject(liney)];
-                  case 2:
-                      _a.sent();
-                      return [4 /*yield*/, world.attachObject(linez)];
-                  case 3:
-                      _a.sent();
-                      return [4 /*yield*/, world.attachObject(objMesh3dRoad)];
-                  case 4:
                       _a.sent();
                       return [2 /*return*/];
               }
@@ -256,14 +246,20 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
   }
   var startTime = 0;
   var interval = 1000 / 60;
+  mainCamara.eye = [10, 24, 10];
+  mainCamara.center = [10, 0, 10];
+  mainCamara.up = [0, 0, -1];
+  var dirLeft = [1, 0, 0];
+  var dirRight = [-1, 0, 0];
+  var dirFront = [0, 0, 1];
+  var dirBack = [0, 0, -1];
+  var currentDir = [0, 0, 0];
   function drawLoop() {
       var currentTime = Date.now();
       var delta = currentTime - startTime;
       if (interval < delta) {
           startTime = currentTime;
-          cubes.forEach(function (cube) {
-              cube.x(rotateZ);
-          });
+          dummyPlayer.x(Matrix.Translation($V(currentDir.map(function (x) { return x * 0.1; }))));
           world.render();
       }
       requestAnimationFrame(drawLoop);
@@ -271,22 +267,54 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
   loadShapes().then(function () {
       requestAnimationFrame(drawLoop);
   });
+  var keyPressedMap = {};
   document.body.addEventListener('keydown', function (e) {
-      switch (String.fromCharCode(e.keyCode)) {
+      var delta;
+      var key = String.fromCharCode(e.keyCode);
+      if (keyPressedMap[key]) {
+          return;
+      }
+      keyPressedMap[key] = true;
+      switch (key) {
           case 'A':
-              world.camara.eye[0] -= 1;
+              delta = dirRight;
               break;
           case 'D':
-              world.camara.eye[0] += 1;
+              delta = dirLeft;
               break;
           case 'S':
-              world.camara.eye[2] += 1;
+              delta = dirFront;
               break;
           case 'W':
-              world.camara.eye[2] -= 1;
+              delta = dirBack;
               break;
-          default: break;
+          default: return;
       }
+      currentDir.forEach(function (x, i) { return currentDir[i] += delta[i]; });
+  }, true);
+  document.body.addEventListener('keyup', function (e) {
+      var delta;
+      var key = String.fromCharCode(e.keyCode);
+      if (!keyPressedMap[key]) {
+          return;
+      }
+      keyPressedMap[key] = false;
+      switch (String.fromCharCode(e.keyCode)) {
+          case 'A':
+              delta = dirRight;
+              break;
+          case 'D':
+              delta = dirLeft;
+              break;
+          case 'S':
+              delta = dirFront;
+              break;
+          case 'W':
+              delta = dirBack;
+              break;
+          default: return;
+      }
+      currentDir.forEach(function (x, i) { return currentDir[i] -= delta[i]; });
   }, true);
   
 
