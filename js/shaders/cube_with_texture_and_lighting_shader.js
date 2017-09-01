@@ -17,6 +17,8 @@ define('js/shaders/cube_with_texture_and_lighting_shader', ['require', 'exports'
       }
       CubeWithTextureAndLightingShader.prototype.mount = function (gl) {
           var shaderProgram = this.shaderProgram;
+          this.aVertexColor = gl.getAttribLocation(shaderProgram, "aVertexColor");
+          gl.enableVertexAttribArray(this.aVertexColor);
           this.aVertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
           gl.enableVertexAttribArray(this.aVertexNormal);
           this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
@@ -36,6 +38,8 @@ define('js/shaders/cube_with_texture_and_lighting_shader', ['require', 'exports'
           gl.vertexAttribPointer(this.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
           gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureCoordinatesBuffer);
           gl.vertexAttribPointer(this.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
+          gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexColorBuffer);
+          gl.vertexAttribPointer(this.aVertexColor, 4, gl.FLOAT, false, 0, 0);
           gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexNormalBuffer);
           gl.vertexAttribPointer(this.aVertexNormal, 3, gl.FLOAT, false, 0, 0);
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.facesBuffer);

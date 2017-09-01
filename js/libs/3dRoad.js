@@ -17,31 +17,31 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
               var bottom = (wayPosX + 1) * gridSize;
               var right = (wayPosY + 1) * gridSize;
               if (!roadMap.canWalkThrough(wayPosX, wayPosY)) {
-                  jointFaces.push(createTopSquare(top, left, bottom, right, gridSize, topColor));
+                  jointFaces.push(createTopSquare(top, left, bottom, right, gridSize, wallColor));
                   return;
               }
-              jointFaces.push(createTopSquare(top, left, bottom, right, 0, topColor));
+              jointFaces.push(createTopSquare(top, left, bottom, right, 0, groundColor));
               var nearBys = _this.roadMap.getNearBy(wayPosX, wayPosY);
               nearBys.forEach(function (nearBy) {
                   if (!_this.roadMap.canWalkThrough(nearBy[0], nearBy[1])) {
                       if (nearBy[0] === wayPosX) {
                           if (nearBy[1] > wayPosY) {
                               // create front
-                              jointFaces.push(createFrontSquare(top, right, bottom, BackZAxis, frontColor));
+                              jointFaces.push(createFrontSquare(top, right, bottom, BackZAxis, wallColor));
                           }
                           else if (nearBy[1] < wayPosY) {
                               // create back
-                              jointFaces.push(createFrontSquare(bottom, left, top, FrontZAxis, backColor));
+                              jointFaces.push(createFrontSquare(bottom, left, top, FrontZAxis, wallColor));
                           }
                       }
                       else if (nearBy[1] === wayPosY) {
                           if (nearBy[0] > wayPosX) {
                               // create right
-                              jointFaces.push(createSideSquare(bottom, right, left, LeftXAxis, rightColor));
+                              jointFaces.push(createSideSquare(bottom, right, left, LeftXAxis, wallColor));
                           }
                           else if (nearBy[0] < wayPosX) {
                               // create left
-                              jointFaces.push(createSideSquare(top, left, right, RightXAxis, leftColor));
+                              jointFaces.push(createSideSquare(top, left, right, RightXAxis, wallColor));
                           }
                       }
                   }
@@ -57,6 +57,8 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
   var RightXAxis = [1, 0, 0];
   var FrontZAxis = [0, 0, 1];
   var BackZAxis = [0, 0, -1];
+  var wallColor = [1, 0.1, 0, 1];
+  var groundColor = [0, 0, 0, 1];
   var frontColor = [1.0, 1.0, 1.0, 1.0];
   var backColor = [1.0, 0.0, 0.0, 1.0];
   var topColor = [0.0, 1.0, 0.0, 1.0];

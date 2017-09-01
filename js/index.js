@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light", "./mesh", "./line", "./libs/roadMap"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light", "./mesh", "./line", "./libs/road_map", "./libs/player_control"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -43,7 +43,8 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
   var light_1 = require("./light");
   var mesh_1 = require("./mesh");
   var line_1 = require("./line");
-  var roadMap_1 = require("./libs/roadMap");
+  var road_map_1 = require("./libs/road_map");
+  var player_control_1 = require("./libs/player_control");
   var main = $('#main')[0];
   var size = main.getClientRects()[0];
   main.height = size.height;
@@ -181,9 +182,10 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
       1.0, 1.0,
       0.0, 1.0,
   ];
-  cubeTemplate2.textureSrc = '/images/checker2x2.jpg';
+  // cubeTemplate2.textureSrc = '/images/checker2x2.jpg';
+  cubeTemplate2.textureSrc = '/images/white.jpg';
   cubeTemplate2.shader = new cube_with_texture_and_lighting_shader_1.CubeWithTextureAndLightingShader();
-  var roadMap = new roadMap_1.RoadMap(20, 20);
+  var roadMap = new road_map_1.RoadMap(24, 20);
   roadMap.generateRandonRoad();
   // const roadMap = new RoadMap(3, 3);
   // roadMap.setWalkThrough(1, 1);
@@ -222,8 +224,17 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
       0.0, 0.0, 1.0, 1.0,
       0.0, 0.0, 1.0, 1.0,
   ];
+  var dummyPlayerControl = new player_control_1.Player();
   var dummyPlayer = cubeTemplate.clone();
-  dummyPlayer.vertices.forEach(function (v, i) { return dummyPlayer.vertices[i] *= 0.25; });
+  dummyPlayer.vertices.forEach(function (v, i) {
+      if (i % 3 === 1) {
+          if (v < 0) {
+              dummyPlayer.vertices[i] = 0;
+              return;
+          }
+      }
+      dummyPlayer.vertices[i] *= 0.25;
+  });
   function loadShapes() {
       return __awaiter(this, void 0, void 0, function () {
           return __generator(this, function (_a) {
@@ -246,20 +257,28 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
   }
   var startTime = 0;
   var interval = 1000 / 60;
-  mainCamara.eye = [10, 24, 10];
-  mainCamara.center = [10, 0, 10];
+  mainCamara.eye = [12, 26, 10];
+  mainCamara.center = [12, 0, 10];
   mainCamara.up = [0, 0, -1];
-  var dirLeft = [1, 0, 0];
-  var dirRight = [-1, 0, 0];
-  var dirFront = [0, 0, 1];
-  var dirBack = [0, 0, -1];
-  var currentDir = [0, 0, 0];
+  var dirLeft = [1, 0];
+  var dirRight = [-1, 0];
+  var dirFront = [0, 1];
+  var dirBack = [0, -1];
+  var currentDir = [0, 0];
+  var accelarateControlMap = {
+      A: dirRight,
+      D: dirLeft,
+      S: dirFront,
+      W: dirBack
+  };
   function drawLoop() {
       var currentTime = Date.now();
       var delta = currentTime - startTime;
       if (interval < delta) {
           startTime = currentTime;
-          dummyPlayer.x(Matrix.Translation($V(currentDir.map(function (x) { return x * 0.1; }))));
+          dummyPlayerControl.accelerate(currentDir);
+          var deltaPos = dummyPlayerControl.move(roadMap);
+          dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
           world.render();
       }
       requestAnimationFrame(drawLoop);
@@ -275,20 +294,9 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
           return;
       }
       keyPressedMap[key] = true;
-      switch (key) {
-          case 'A':
-              delta = dirRight;
-              break;
-          case 'D':
-              delta = dirLeft;
-              break;
-          case 'S':
-              delta = dirFront;
-              break;
-          case 'W':
-              delta = dirBack;
-              break;
-          default: return;
+      delta = accelarateControlMap[key];
+      if (!delta) {
+          return;
       }
       currentDir.forEach(function (x, i) { return currentDir[i] += delta[i]; });
   }, true);
@@ -299,20 +307,9 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
           return;
       }
       keyPressedMap[key] = false;
-      switch (String.fromCharCode(e.keyCode)) {
-          case 'A':
-              delta = dirRight;
-              break;
-          case 'D':
-              delta = dirLeft;
-              break;
-          case 'S':
-              delta = dirFront;
-              break;
-          case 'W':
-              delta = dirBack;
-              break;
-          default: return;
+      delta = accelarateControlMap[key];
+      if (!delta) {
+          return;
       }
       currentDir.forEach(function (x, i) { return currentDir[i] -= delta[i]; });
   }, true);

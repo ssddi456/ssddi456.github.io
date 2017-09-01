@@ -27,7 +27,7 @@ export class Mesh3dRoad {
                     bottom,
                     right,
                     gridSize,
-                    topColor,
+                    wallColor,
                 ));
 
                 return;
@@ -40,7 +40,7 @@ export class Mesh3dRoad {
                 bottom,
                 right,
                 0,
-                topColor,
+                groundColor,
             ));
 
             const nearBys = this.roadMap.getNearBy(wayPosX, wayPosY);
@@ -49,18 +49,18 @@ export class Mesh3dRoad {
                     if (nearBy[0] === wayPosX) {
                         if (nearBy[1] > wayPosY) {
                             // create front
-                            jointFaces.push(createFrontSquare(top, right, bottom, BackZAxis, frontColor));
+                            jointFaces.push(createFrontSquare(top, right, bottom, BackZAxis, wallColor));
                         } else if (nearBy[1] < wayPosY) {
                             // create back
-                            jointFaces.push(createFrontSquare(bottom, left, top, FrontZAxis, backColor));
+                            jointFaces.push(createFrontSquare(bottom, left, top, FrontZAxis, wallColor));
                         }
                     } else if (nearBy[1] === wayPosY) {
                         if (nearBy[0] > wayPosX) {
                             // create right
-                            jointFaces.push(createSideSquare(bottom, right, left, LeftXAxis, rightColor));
+                            jointFaces.push(createSideSquare(bottom, right, left, LeftXAxis, wallColor));
                         } else if (nearBy[0] < wayPosX) {
                             // create left
-                            jointFaces.push(createSideSquare(top, left, right, RightXAxis, leftColor));
+                            jointFaces.push(createSideSquare(top, left, right, RightXAxis, wallColor));
                         }
                     }
                 }
@@ -76,6 +76,9 @@ const LeftXAxis = [-1, 0, 0] as Vector3;
 const RightXAxis = [1, 0, 0] as Vector3;
 const FrontZAxis = [0, 0, 1] as Vector3;
 const BackZAxis = [0, 0, -1] as Vector3;
+
+const wallColor = [1, 0.1, 0, 1] as Color;
+const groundColor = [0, 0, 0, 1] as Color;
 
 const frontColor = [1.0, 1.0, 1.0, 1.0] as Color;
 const backColor = [1.0, 0.0, 0.0, 1.0] as Color;

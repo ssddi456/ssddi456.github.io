@@ -1,3 +1,4 @@
+import { Point } from './2dRoad';
 
 /**
  * [
@@ -111,14 +112,29 @@ export class RoadMap {
     forEach(walker: (x: number, y: number) => any) {
         for (let indexY = 0; indexY < this.grid.length; indexY++) {
             const row = this.grid[indexY];
-            for (let indexX = 0; indexX < this.grid.length; indexX++) {
+            for (let indexX = 0; indexX < row.length; indexX++) {
                 walker(indexX, indexY);
             }
         }
     }
 
+    getArround(x: number, y: number) {
+        const deltas = [-1, 0, 1];
+        const ret = [] as Point[];
+        for (let indexY = 0; indexY < deltas.length; indexY++) {
+            const deltaY = deltas[indexY];
+            for (let indexX = 0; indexX < deltas.length; indexX++) {
+                const deltaX = deltas[indexX];
+                if (!(deltaX === 0 && deltaY === 0)) {
+                    ret.push([x + deltaX, y + deltaY]);
+                }
+            }
+        }
+        return ret;
+    }
+
     getNearBy(x: number, y: number) {
-        const ret = [] as Array<[number, number]>;
+        const ret = [] as Point[];
         if (this.isInGrid(x, y - 1)) {
             ret.push([x, y - 1]);
         }

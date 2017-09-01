@@ -1,5 +1,6 @@
-define('js/libs/roadMap', ['require', 'exports', 'module'], function(require, exports, module) {
+define('js/libs/road_map', ['require', 'exports', 'module'], function(require, exports, module) {
 
+  "use strict";
   /**
    * [
    *  [0, 0, 0],
@@ -9,7 +10,6 @@ define('js/libs/roadMap', ['require', 'exports', 'module'], function(require, ex
    *
    * 来构成一个地图，0为不通过，1为可以通过。
    */
-  "use strict";
   var RoadMap = (function () {
       function RoadMap(x, y) {
           this.width = 0;
@@ -103,10 +103,24 @@ define('js/libs/roadMap', ['require', 'exports', 'module'], function(require, ex
       RoadMap.prototype.forEach = function (walker) {
           for (var indexY = 0; indexY < this.grid.length; indexY++) {
               var row = this.grid[indexY];
-              for (var indexX = 0; indexX < this.grid.length; indexX++) {
+              for (var indexX = 0; indexX < row.length; indexX++) {
                   walker(indexX, indexY);
               }
           }
+      };
+      RoadMap.prototype.getArround = function (x, y) {
+          var deltas = [-1, 0, 1];
+          var ret = [];
+          for (var indexY = 0; indexY < deltas.length; indexY++) {
+              var deltaY = deltas[indexY];
+              for (var indexX = 0; indexX < deltas.length; indexX++) {
+                  var deltaX = deltas[indexX];
+                  if (!(deltaX === 0 && deltaY === 0)) {
+                      ret.push([x + deltaX, y + deltaY]);
+                  }
+              }
+          }
+          return ret;
       };
       RoadMap.prototype.getNearBy = function (x, y) {
           var ret = [];

@@ -9,6 +9,7 @@ export class CubeWithTextureAndLightingShader extends Shader {
     vertexShaderFactory: ShaderFactory = require("../shaders/cube_with_lighting-vs.glsl");
     fragementShaderFactory: ShaderFactory = require("../shaders/cube_with_lighting-fs.glsl");
 
+    aVertexColor: number;
     aVertexPosition: number;
     aTextureCoord: number;
     aVertexNormal: number;
@@ -22,6 +23,9 @@ export class CubeWithTextureAndLightingShader extends Shader {
 
     mount(gl: WebGLRenderingContext) {
         const shaderProgram = this.shaderProgram;
+
+        this.aVertexColor = gl.getAttribLocation(shaderProgram, "aVertexColor");
+        gl.enableVertexAttribArray(this.aVertexColor);
 
         this.aVertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
         gl.enableVertexAttribArray(this.aVertexNormal);
@@ -48,6 +52,9 @@ export class CubeWithTextureAndLightingShader extends Shader {
 
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureCoordinatesBuffer);
         gl.vertexAttribPointer(this.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexColorBuffer);
+        gl.vertexAttribPointer(this.aVertexColor, 4, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexNormalBuffer);
         gl.vertexAttribPointer(this.aVertexNormal, 3, gl.FLOAT, false, 0, 0);

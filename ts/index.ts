@@ -1,4 +1,4 @@
-import { Vector3 } from './libs/2dRoad';
+import { Vector3, Point } from './libs/2dRoad';
 import { Mesh3dRoad } from './libs/3dRoad';
 import { LineVertexColorShader } from './shaders/line_vertex_color_shader';
 import { World, Camara } from './world';
@@ -9,7 +9,8 @@ import { CubeWithTextureAndLightingShader } from './shaders/cube_with_texture_an
 import { Light } from "./light";
 import { Mesh } from "./mesh";
 import { Line } from "./line";
-import { RoadMap } from "./libs/roadMap";
+import { RoadMap } from "./libs/road_map";
+import { Player } from "./libs/player_control";
 
 const main = $('#main')[0] as HTMLCanvasElement;
 const size = main.getClientRects()[0];
@@ -173,10 +174,11 @@ cubeTemplate2.textureCoordinates = [
     0.0, 1.0,
 ];
 
-cubeTemplate2.textureSrc = '/images/checker2x2.jpg';
+// cubeTemplate2.textureSrc = '/images/checker2x2.jpg';
+cubeTemplate2.textureSrc = '/images/white.jpg';
 cubeTemplate2.shader = new CubeWithTextureAndLightingShader();
 
-const roadMap = new RoadMap(20, 20);
+const roadMap = new RoadMap(24, 20);
 roadMap.generateRandonRoad();
 // const roadMap = new RoadMap(3, 3);
 // roadMap.setWalkThrough(1, 1);
@@ -221,8 +223,17 @@ linez.verticesColor = [
     0.0, 0.0, 1.0, 1.0,
 ];
 
+const dummyPlayerControl = new Player();
 const dummyPlayer = cubeTemplate.clone();
-dummyPlayer.vertices.forEach((v, i) => dummyPlayer.vertices[i] *= 0.25);
+dummyPlayer.vertices.forEach((v, i) => {
+    if (i % 3 === 1) {
+        if (v < 0) {
+            dummyPlayer.vertices[i] = 0;
+            return;
+        }
+    }
+    dummyPlayer.vertices[i] *= 0.25;
+});
 
 async function loadShapes() {
 
@@ -240,22 +251,33 @@ async function loadShapes() {
 let startTime = 0;
 const interval = 1000 / 60;
 
-mainCamara.eye = [10, 24, 10];
-mainCamara.center = [10, 0, 10];
+mainCamara.eye = [12, 26, 10];
+mainCamara.center = [12, 0, 10];
 mainCamara.up = [0, 0, -1];
 
-const dirLeft = [1, 0, 0];
-const dirRight = [-1, 0, 0];
-const dirFront = [0, 0, 1];
-const dirBack = [0, 0, -1];
-let currentDir = [0, 0, 0];
+const dirLeft = [1, 0];
+const dirRight = [-1, 0];
+const dirFront = [0, 1];
+const dirBack = [0, -1];
+const currentDir = [0, 0] as Point;
+
+const accelarateControlMap = {
+    A: dirRight,
+    D: dirLeft,
+    S: dirFront,
+    W: dirBack,
+};
 
 function drawLoop() {
     const currentTime = Date.now();
     const delta = currentTime - startTime;
     if (interval < delta) {
         startTime = currentTime;
-        dummyPlayer.x(Matrix.Translation($V(currentDir.map((x) => x * 0.1))));
+
+        dummyPlayerControl.accelerate(currentDir);
+        const deltaPos = dummyPlayerControl.move(roadMap);
+
+        dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
 
         world.render();
     }
@@ -275,24 +297,11 @@ document.body.addEventListener('keydown', function (e) {
         return;
     }
     keyPressedMap[key] = true;
-    switch (key) {
-        case 'A':
-            delta = dirRight;
-            break;
-        case 'D':
-            delta = dirLeft;
-            break;
-        case 'S':
-            delta = dirFront;
-            break;
-        case 'W':
-            delta = dirBack;
-            break;
-        default: return;
+    delta = accelarateControlMap[key];
+    if (!delta) {
+        return;
     }
-
     currentDir.forEach((x, i) => currentDir[i] += delta[i]);
-
 }, true);
 
 document.body.addEventListener('keyup', function (e) {
@@ -302,22 +311,9 @@ document.body.addEventListener('keyup', function (e) {
         return;
     }
     keyPressedMap[key] = false;
-    switch (String.fromCharCode(e.keyCode)) {
-        case 'A':
-            delta = dirRight;
-            break;
-        case 'D':
-            delta = dirLeft;
-            break;
-        case 'S':
-            delta = dirFront;
-            break;
-        case 'W':
-            delta = dirBack;
-            break;
-        default: return;
+    delta = accelarateControlMap[key];
+    if (!delta) {
+        return;
     }
-
     currentDir.forEach((x, i) => currentDir[i] -= delta[i]);
-
 }, true);
