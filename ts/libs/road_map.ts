@@ -15,15 +15,23 @@ export class RoadMap {
     width = 0;
     height = 0;
 
+    entrance: Point;
+    exit: Point;
+
     constructor(x: number, y: number) {
         this.grid = [];
         this.width = x;
         this.height = y;
 
-        for (let indexY = 0; indexY < y; indexY++) {
+
+    }
+
+    resetGrid() {
+        this.grid = [];
+        for (let indexY = 0; indexY < this.height; indexY++) {
             const row = [];
             this.grid.push(row);
-            for (let indexX = 0; indexX < x; indexX++) {
+            for (let indexX = 0; indexX < this.width; indexX++) {
                 row.push(0);
             }
         }
@@ -168,28 +176,50 @@ export class RoadMap {
     }
 
     generateRandonRoad(startX = 0, startY = 0) {
+        this.resetGrid();
         const waitForCheck = [] as Array<[number, number]>;
-
-        waitForCheck.push([startX, startY]);
+        this.entrance = [startX, startY];
+        waitForCheck.push(this.entrance);
 
         while (waitForCheck.length) {
-            const pos = waitForCheck.pop();
+            // random pop
+            let pos;
+            if (Math.random() >= 0.5) {
+                pos = waitForCheck.pop();
+            } else {
+                pos = waitForCheck.shift();
+            }
+
             const nearBy = this.getCheckPos(pos[0], pos[1]);
 
             const blocked = nearBy.filter((nearByPos) => {
                 return !this.canWalkThrough(nearByPos.add[0], nearByPos.add[1]) &&
                     !this.canWalkThrough(nearByPos.check[0], nearByPos.check[1]);
             });
+            // 这个逻辑有点不对
             if (blocked.length >= nearBy.length - 1) {
                 this.setWalkThrough(pos[0], pos[1]);
                 // random push
                 while (blocked.length) {
-                    if (Math.random() > 0.5) {
-                        waitForCheck.push(blocked.pop().add);
+                    const block = blocked.pop();
+                    this.setWalkThrough(block.add[0], block.add[1]);
+                    if (Math.random() >= 0.5) {
+                        waitForCheck.push(block.check);
                     } else {
-                        waitForCheck.push(blocked.shift().add);
+                        waitForCheck.unshift(block.check);
                     }
                 }
+            }
+        }
+
+        const exit = [this.width - 1, Math.max(2, Math.ceil(Math.random() * this.height - 2))] as Point;
+        this.exit = exit;
+        let findXExit = exit[0];
+        for (; findXExit > 0; findXExit--) {
+            if (this.canWalkThrough(findXExit, exit[1])) {
+                break;
+            } else {
+                this.setWalkThrough(findXExit, exit[1]);
             }
         }
     }

@@ -146,6 +146,24 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
               });
           });
       };
+      Mesh.prototype.rebuffering = function (gl, world) {
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
+          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
+          if (this.vertexColors) {
+              gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
+              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexColors), gl.STATIC_DRAW);
+          }
+          if (this.textureCoordinates) {
+              gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
+              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
+          }
+          if (this.vertexNormal) {
+              gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
+              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
+          }
+      };
       Mesh.prototype.addDebugObjects = function (world) {
           return __awaiter(this, void 0, void 0, function () {
               var normals, normalLines, meshLines, transformedNormalLines, vertexFinalLightLines, index, vertex1, vertex2, vertex3, line1, line2, line3, _a, _b, _c, _d, index, normal, vertex, normalLine, transformedNormalLine, finalLightLine, originX;

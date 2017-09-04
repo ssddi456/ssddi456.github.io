@@ -5,6 +5,7 @@ define('js/shape', ['require', 'exports', 'module'], function(require, exports, 
       function Shape() {
           this.visible = true;
           this.debug = false;
+          this.trs = Matrix.I(4);
           this.inited = false;
       }
       Shape.prototype.x = function (matrix) {

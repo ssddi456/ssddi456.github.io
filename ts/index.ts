@@ -11,6 +11,7 @@ import { Mesh } from "./mesh";
 import { Line } from "./line";
 import { RoadMap } from "./libs/road_map";
 import { Player } from "./libs/player_control";
+import { LevelControler } from "./libs/level_control";
 
 const main = $('#main')[0] as HTMLCanvasElement;
 const size = main.getClientRects()[0];
@@ -135,93 +136,7 @@ cubeTemplate.vertexNormal = [
     -1.0, 0.0, 0.0,
     -1.0, 0.0, 0.0,
 ];
-
 cubeTemplate.trs = Matrix.I(4);
-
-const cubeTemplate2 = cubeTemplate.clone();
-cubeTemplate2.vertexColors = undefined;
-
-cubeTemplate2.textureCoordinates = [
-    // Front
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    // Back
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    // Top
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    // Bottom
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    // Right
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    // Left
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-];
-
-// cubeTemplate2.textureSrc = '/images/checker2x2.jpg';
-cubeTemplate2.textureSrc = '/images/white.jpg';
-cubeTemplate2.shader = new CubeWithTextureAndLightingShader();
-
-const roadMap = new RoadMap(24, 20);
-roadMap.generateRandonRoad();
-// const roadMap = new RoadMap(3, 3);
-// roadMap.setWalkThrough(1, 1);
-
-const mesh3dRoad = new Mesh3dRoad(roadMap);
-const meshData3dRoad = mesh3dRoad.getMesh();
-const objMesh3dRoad = cubeTemplate2.clone();
-
-objMesh3dRoad.debug = false;
-objMesh3dRoad.visible = true;
-objMesh3dRoad.vertices = meshData3dRoad.vertexs;
-objMesh3dRoad.faces = meshData3dRoad.faces;
-
-if (meshData3dRoad.vertexColors.length) {
-    objMesh3dRoad.vertexColors = meshData3dRoad.vertexColors;
-}
-if (meshData3dRoad.vertexNormal.length) {
-    objMesh3dRoad.vertexNormal = meshData3dRoad.vertexNormal;
-}
-if (meshData3dRoad.textureCoordinates.length) {
-    objMesh3dRoad.textureCoordinates = meshData3dRoad.textureCoordinates;
-}
-
-const move = Matrix.Translation($V([0, 0, -25]));
-const rotateX = Matrix.RotationX(0.25 * Math.PI).ensure4x4();
-const rotateY = Matrix.RotationY(0.25 * Math.PI).ensure4x4();
-const rotateZ = Matrix.RotationY(0.25 * Math.PI / 60 / 4).ensure4x4();
-
-const linex = Line.createSimpleLine([0, 0, 0], [10, 0, 0], Matrix.I(4));
-linex.verticesColor = [
-    1.0, 0.0, 0.0, 1.0,
-    1.0, 0.0, 0.0, 1.0,
-];
-const liney = Line.createSimpleLine([0, 0, 0], [0, 10, 0], Matrix.I(4));
-liney.verticesColor = [
-    0.0, 1.0, 0.0, 1.0,
-    0.0, 1.0, 0.0, 1.0,
-];
-const linez = Line.createSimpleLine([0, 0, 0], [0, 0, 10], Matrix.I(4));
-linez.verticesColor = [
-    0.0, 0.0, 1.0, 1.0,
-    0.0, 0.0, 1.0, 1.0,
-];
 
 const dummyPlayerControl = new Player();
 const dummyPlayer = cubeTemplate.clone();
@@ -234,16 +149,15 @@ dummyPlayer.vertices.forEach((v, i) => {
     }
     dummyPlayer.vertices[i] *= 0.25;
 });
+const levelControler = new LevelControler(dummyPlayerControl);
+levelControler.levelStart();
 
 async function loadShapes() {
 
     world.attachLight(skyLight);
 
     await Promise.all([
-        linex,
-        liney,
-        linez,
-        objMesh3dRoad,
+        levelControler.mazeMesh,
         dummyPlayer,
     ].map((x) => world.attachObject(x)));
 }
@@ -268,6 +182,18 @@ const accelarateControlMap = {
     W: dirBack,
 };
 
+
+dummyPlayerControl.on('enterExit', () => {
+
+    dummyPlayer.x(Matrix.Translation($V([
+        -1 * dummyPlayerControl.currentPos[0],
+        0,
+        -1 * dummyPlayerControl.currentPos[1]])));
+
+    levelControler.levelPass();
+    levelControler.mazeMesh.rebuffering(world.gl, world);
+});
+
 function drawLoop() {
     const currentTime = Date.now();
     const delta = currentTime - startTime;
@@ -275,7 +201,7 @@ function drawLoop() {
         startTime = currentTime;
 
         dummyPlayerControl.accelerate(currentDir);
-        const deltaPos = dummyPlayerControl.move(roadMap);
+        const deltaPos = dummyPlayerControl.move(levelControler.maze);
 
         dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
 

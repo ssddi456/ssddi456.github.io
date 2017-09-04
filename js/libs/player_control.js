@@ -8,6 +8,8 @@ define('js/libs/player_control', ['require', 'exports', 'module'], function(requ
           this.maxSpeed = [0, 0];
           this.speed = [0, 0];
           this.size = [0.25, 0.25];
+          this.events = {};
+          this.resetPos(0, 0);
       }
       Player.prototype.move = function (roadMap) {
           var _this = this;
@@ -105,11 +107,40 @@ define('js/libs/player_control', ['require', 'exports', 'module'], function(requ
           ];
           this.currentPos[0] = premovePos[0];
           this.currentPos[1] = premovePos[1];
+          var moveToTile = this.currentPos.map(Math.floor);
+          if (moveToTile[0] === roadMap.exit[0]
+              && moveToTile[1] === roadMap.exit[1]) {
+              this.trigger('enterExit');
+          }
           return moveDalta;
       };
       Player.prototype.accelerate = function (dir) {
           this.speed[0] = dir[0] * this.acceleration;
           this.speed[1] = dir[1] * this.acceleration;
+      };
+      Player.prototype.resetPos = function (x, y) {
+          this.currentPos[0] = x;
+          this.currentPos[1] = y;
+          this.speed[0] = 0;
+          this.speed[1] = 0;
+      };
+      Player.prototype.getEvent = function (type) {
+          this.events[type] = this.events[type] || [];
+          return this.events[type];
+      };
+      Player.prototype.trigger = function (eventType) {
+          var datas = [];
+          for (var _i = 1; _i < arguments.length; _i++) {
+              datas[_i - 1] = arguments[_i];
+          }
+          var listners = this.getEvent(eventType);
+          for (var index = 0; index < listners.length; index++) {
+              var listner = listners[index];
+              listner.apply(void 0, datas);
+          }
+      };
+      Player.prototype.on = function (eventType, eventHandler) {
+          this.getEvent(eventType).push(eventHandler);
       };
       return Player;
   }());

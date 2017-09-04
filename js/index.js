@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light", "./mesh", "./line", "./libs/road_map", "./libs/player_control"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./light", "./mesh", "./libs/player_control", "./libs/level_control"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -36,15 +36,12 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
           if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
       }
   };
-  var _3dRoad_1 = require("./libs/3dRoad");
   var world_1 = require("./world");
   var vertex_color_shader_1 = require("./shaders/vertex_color_shader");
-  var cube_with_texture_and_lighting_shader_1 = require("./shaders/cube_with_texture_and_lighting_shader");
   var light_1 = require("./light");
   var mesh_1 = require("./mesh");
-  var line_1 = require("./line");
-  var road_map_1 = require("./libs/road_map");
   var player_control_1 = require("./libs/player_control");
+  var level_control_1 = require("./libs/level_control");
   var main = $('#main')[0];
   var size = main.getClientRects()[0];
   main.height = size.height;
@@ -148,82 +145,6 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
       -1.0, 0.0, 0.0,
   ];
   cubeTemplate.trs = Matrix.I(4);
-  var cubeTemplate2 = cubeTemplate.clone();
-  cubeTemplate2.vertexColors = undefined;
-  cubeTemplate2.textureCoordinates = [
-      // Front
-      0.0, 0.0,
-      1.0, 0.0,
-      1.0, 1.0,
-      0.0, 1.0,
-      // Back
-      0.0, 0.0,
-      1.0, 0.0,
-      1.0, 1.0,
-      0.0, 1.0,
-      // Top
-      0.0, 0.0,
-      1.0, 0.0,
-      1.0, 1.0,
-      0.0, 1.0,
-      // Bottom
-      0.0, 0.0,
-      1.0, 0.0,
-      1.0, 1.0,
-      0.0, 1.0,
-      // Right
-      0.0, 0.0,
-      1.0, 0.0,
-      1.0, 1.0,
-      0.0, 1.0,
-      // Left
-      0.0, 0.0,
-      1.0, 0.0,
-      1.0, 1.0,
-      0.0, 1.0,
-  ];
-  // cubeTemplate2.textureSrc = '/images/checker2x2.jpg';
-  cubeTemplate2.textureSrc = '/images/white.jpg';
-  cubeTemplate2.shader = new cube_with_texture_and_lighting_shader_1.CubeWithTextureAndLightingShader();
-  var roadMap = new road_map_1.RoadMap(24, 20);
-  roadMap.generateRandonRoad();
-  // const roadMap = new RoadMap(3, 3);
-  // roadMap.setWalkThrough(1, 1);
-  var mesh3dRoad = new _3dRoad_1.Mesh3dRoad(roadMap);
-  var meshData3dRoad = mesh3dRoad.getMesh();
-  var objMesh3dRoad = cubeTemplate2.clone();
-  objMesh3dRoad.debug = false;
-  objMesh3dRoad.visible = true;
-  objMesh3dRoad.vertices = meshData3dRoad.vertexs;
-  objMesh3dRoad.faces = meshData3dRoad.faces;
-  if (meshData3dRoad.vertexColors.length) {
-      objMesh3dRoad.vertexColors = meshData3dRoad.vertexColors;
-  }
-  if (meshData3dRoad.vertexNormal.length) {
-      objMesh3dRoad.vertexNormal = meshData3dRoad.vertexNormal;
-  }
-  if (meshData3dRoad.textureCoordinates.length) {
-      objMesh3dRoad.textureCoordinates = meshData3dRoad.textureCoordinates;
-  }
-  var move = Matrix.Translation($V([0, 0, -25]));
-  var rotateX = Matrix.RotationX(0.25 * Math.PI).ensure4x4();
-  var rotateY = Matrix.RotationY(0.25 * Math.PI).ensure4x4();
-  var rotateZ = Matrix.RotationY(0.25 * Math.PI / 60 / 4).ensure4x4();
-  var linex = line_1.Line.createSimpleLine([0, 0, 0], [10, 0, 0], Matrix.I(4));
-  linex.verticesColor = [
-      1.0, 0.0, 0.0, 1.0,
-      1.0, 0.0, 0.0, 1.0,
-  ];
-  var liney = line_1.Line.createSimpleLine([0, 0, 0], [0, 10, 0], Matrix.I(4));
-  liney.verticesColor = [
-      0.0, 1.0, 0.0, 1.0,
-      0.0, 1.0, 0.0, 1.0,
-  ];
-  var linez = line_1.Line.createSimpleLine([0, 0, 0], [0, 0, 10], Matrix.I(4));
-  linez.verticesColor = [
-      0.0, 0.0, 1.0, 1.0,
-      0.0, 0.0, 1.0, 1.0,
-  ];
   var dummyPlayerControl = new player_control_1.Player();
   var dummyPlayer = cubeTemplate.clone();
   dummyPlayer.vertices.forEach(function (v, i) {
@@ -235,6 +156,8 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
       }
       dummyPlayer.vertices[i] *= 0.25;
   });
+  var levelControler = new level_control_1.LevelControler(dummyPlayerControl);
+  levelControler.levelStart();
   function loadShapes() {
       return __awaiter(this, void 0, void 0, function () {
           return __generator(this, function (_a) {
@@ -242,10 +165,7 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
                   case 0:
                       world.attachLight(skyLight);
                       return [4 /*yield*/, Promise.all([
-                              linex,
-                              liney,
-                              linez,
-                              objMesh3dRoad,
+                              levelControler.mazeMesh,
                               dummyPlayer,
                           ].map(function (x) { return world.attachObject(x); }))];
                   case 1:
@@ -271,13 +191,22 @@ define('js/index', ['require', 'exports', 'module', "./libs/3dRoad", "./world", 
       S: dirFront,
       W: dirBack
   };
+  dummyPlayerControl.on('enterExit', function () {
+      dummyPlayer.x(Matrix.Translation($V([
+          -1 * dummyPlayerControl.currentPos[0],
+          0,
+          -1 * dummyPlayerControl.currentPos[1]
+      ])));
+      levelControler.levelPass();
+      levelControler.mazeMesh.rebuffering(world.gl, world);
+  });
   function drawLoop() {
       var currentTime = Date.now();
       var delta = currentTime - startTime;
       if (interval < delta) {
           startTime = currentTime;
           dummyPlayerControl.accelerate(currentDir);
-          var deltaPos = dummyPlayerControl.move(roadMap);
+          var deltaPos = dummyPlayerControl.move(levelControler.maze);
           dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
           world.render();
       }

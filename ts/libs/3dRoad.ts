@@ -1,4 +1,4 @@
-import { RoadMap } from "./roadMap";
+import { RoadMap } from "./road_map";
 import { IFace, IRoadMesh, IVertex, Vector3, Point, FacesToMesh, Color } from "./2dRoad";
 
 const gridSize = 1;
@@ -33,6 +33,17 @@ export class Mesh3dRoad {
                 return;
             }
 
+            let groundUseColor = groundColor;
+            if (wayPosX === roadMap.entrance[0]
+                && wayPosY === roadMap.entrance[1]
+            ) {
+                groundUseColor = entranceColor;
+            } else if (
+                wayPosX === roadMap.exit[0]
+                && wayPosY === roadMap.exit[1]
+            ) {
+                groundUseColor = exitColor;
+            }
 
             jointFaces.push(createTopSquare(
                 top,
@@ -40,7 +51,7 @@ export class Mesh3dRoad {
                 bottom,
                 right,
                 0,
-                groundColor,
+                groundUseColor,
             ));
 
             const nearBys = this.roadMap.getNearBy(wayPosX, wayPosY);
@@ -77,8 +88,11 @@ const RightXAxis = [1, 0, 0] as Vector3;
 const FrontZAxis = [0, 0, 1] as Vector3;
 const BackZAxis = [0, 0, -1] as Vector3;
 
-const wallColor = [1, 0.1, 0, 1] as Color;
-const groundColor = [0, 0, 0, 1] as Color;
+// alpha 通道用来
+const entranceColor = [0, 0, 1, 0.5] as Color;
+const exitColor = [0, 1, 0, 0.5] as Color;
+const wallColor = [1, 0.1, 0, 0.6] as Color;
+const groundColor = [0, 0, 0, 0.2] as Color;
 
 const frontColor = [1.0, 1.0, 1.0, 1.0] as Color;
 const backColor = [1.0, 0.0, 0.0, 1.0] as Color;
@@ -87,7 +101,15 @@ const bottomColor = [0.0, 0.0, 1.0, 1.0] as Color;
 const rightColor = [1.0, 1.0, 0.0, 1.0] as Color;
 const leftColor = [1.0, 0.0, 1.0, 1.0] as Color;
 
-
+/**
+ * @file 用于构造一个随机生成的3D迷宫。
+ *
+ * 主题1 糖果屋
+ * 元素 棒棒糖 姜饼 拐杖糖 甜甜圈
+ *
+ * 主题2 星际争霸 虫巢
+ * 元素 菌摊 蟑螂 孵化场 跳虫 触手
+ */
 
 const textureCoordinatePreset = [
     [0, 0],

@@ -122,6 +122,29 @@ export class Mesh extends Shape {
         this.inited = true;
     }
 
+    rebuffering(gl: WebGLRenderingContext, world: World){
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
+
+        if (this.vertexColors) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexColors), gl.STATIC_DRAW);
+        }
+
+        if (this.textureCoordinates) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
+        }
+
+        if (this.vertexNormal) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
+        }
+    }
+
     async addDebugObjects(world: World) {
         if (!this.debug) {
             return;

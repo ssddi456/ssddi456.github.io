@@ -14,11 +14,13 @@ export class Player {
     speed: Point = [0, 0];
     size: Point = [0.25, 0.25];
 
+    constructor() {
+        this.resetPos(0, 0);
+    }
+
     move(roadMap: RoadMap) {
         const normalizedPos = this.currentPos.map(Math.floor) as Point;
         const around = roadMap.getArround(normalizedPos[0], normalizedPos[1]) as Array<Point & ICollisionDetector>;
-
-
         const premovePos = this.currentPos.map((x, i) => x + this.speed[i]);
 
         // 获取移动后中心相对当前所在方块的偏移量
@@ -123,10 +125,41 @@ export class Player {
         this.currentPos[0] = premovePos[0];
         this.currentPos[1] = premovePos[1];
 
+        const moveToTile = this.currentPos.map(Math.floor) as Point;
+        if (moveToTile[0] === roadMap.exit[0]
+            && moveToTile[1] === roadMap.exit[1]
+        ) {
+            this.trigger('enterExit');
+        }
         return moveDalta;
     }
     accelerate(dir: Point) {
         this.speed[0] = dir[0] * this.acceleration;
         this.speed[1] = dir[1] * this.acceleration;
+    }
+
+    resetPos(x: number, y: number) {
+        this.currentPos[0] = x;
+        this.currentPos[1] = y;
+        this.speed[0] = 0;
+        this.speed[1] = 0;
+    }
+
+    events: { [k: string]: Array<(...args: any[]) => any> } = {};
+    getEvent(type) {
+        this.events[type] = this.events[type] || [] as Array<(...args: any[]) => any>;
+        return this.events[type];
+    }
+
+    trigger(eventType: string, ...datas: any[]) {
+        const listners = this.getEvent(eventType);
+        for (let index = 0; index < listners.length; index++) {
+            const listner = listners[index];
+            listner(...datas);
+        }
+    }
+
+    on(eventType: string, eventHandler) {
+        this.getEvent(eventType).push(eventHandler);
     }
 }

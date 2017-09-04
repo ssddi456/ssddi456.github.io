@@ -7,7 +7,7 @@ export abstract class Shape {
     visible: boolean = true;
     debug: boolean = false;
     shader: Shader;
-    trs: Matrix;
+    trs: Matrix =  Matrix.I(4);
 
     x(matrix: Matrix) {
         this.trs = this.trs.x(matrix);

@@ -20,7 +20,16 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
                   jointFaces.push(createTopSquare(top, left, bottom, right, gridSize, wallColor));
                   return;
               }
-              jointFaces.push(createTopSquare(top, left, bottom, right, 0, groundColor));
+              var groundUseColor = groundColor;
+              if (wayPosX === roadMap.entrance[0]
+                  && wayPosY === roadMap.entrance[1]) {
+                  groundUseColor = entranceColor;
+              }
+              else if (wayPosX === roadMap.exit[0]
+                  && wayPosY === roadMap.exit[1]) {
+                  groundUseColor = exitColor;
+              }
+              jointFaces.push(createTopSquare(top, left, bottom, right, 0, groundUseColor));
               var nearBys = _this.roadMap.getNearBy(wayPosX, wayPosY);
               nearBys.forEach(function (nearBy) {
                   if (!_this.roadMap.canWalkThrough(nearBy[0], nearBy[1])) {
@@ -57,14 +66,26 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
   var RightXAxis = [1, 0, 0];
   var FrontZAxis = [0, 0, 1];
   var BackZAxis = [0, 0, -1];
-  var wallColor = [1, 0.1, 0, 1];
-  var groundColor = [0, 0, 0, 1];
+  // alpha 通道用来
+  var entranceColor = [0, 0, 1, 0.5];
+  var exitColor = [0, 1, 0, 0.5];
+  var wallColor = [1, 0.1, 0, 0.6];
+  var groundColor = [0, 0, 0, 0.2];
   var frontColor = [1.0, 1.0, 1.0, 1.0];
   var backColor = [1.0, 0.0, 0.0, 1.0];
   var topColor = [0.0, 1.0, 0.0, 1.0];
   var bottomColor = [0.0, 0.0, 1.0, 1.0];
   var rightColor = [1.0, 1.0, 0.0, 1.0];
   var leftColor = [1.0, 0.0, 1.0, 1.0];
+  /**
+   * @file 用于构造一个随机生成的3D迷宫。
+   *
+   * 主题1 糖果屋
+   * 元素 棒棒糖 姜饼 拐杖糖 甜甜圈
+   *
+   * 主题2 星际争霸 虫巢
+   * 元素 菌摊 蟑螂 孵化场 跳虫 触手
+   */
   var textureCoordinatePreset = [
       [0, 0],
       [1, 0],
