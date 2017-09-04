@@ -21,6 +21,7 @@ export class LevelControler {
     mazeMesh: Mesh;
     player: Player;
     meshTranseformer: Mesh3dRoad;
+    transformLevel: Promise<void>;
 
     constructor(player: Player) {
         this.player = player;
@@ -40,7 +41,7 @@ export class LevelControler {
         return Math.min(Math.floor(this.currentLevel / 10), 10);
     }
 
-    levelStart() {
+    async levelStart() {
         const startX = 0;
         const startY = 0;
         this.player.resetPos(startX, startY);
@@ -68,7 +69,6 @@ export class LevelControler {
         if (meshInfo.textureCoordinates.length) {
             this.mazeMesh.textureCoordinates = meshInfo.textureCoordinates;
         }
-
     }
 
     levelPass() {

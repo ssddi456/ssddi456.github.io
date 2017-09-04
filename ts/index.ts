@@ -30,7 +30,7 @@ world.camara = mainCamara;
 const skyLight = new Light();
 
 skyLight.direction = [1, 2, 1];
-skyLight.color = [1, 1, 1];
+skyLight.color = [0.5, 0.5, 0.5];
 skyLight.debug = false;
 
 const cubeTemplate = new Mesh();
@@ -200,10 +200,13 @@ function drawLoop() {
     if (interval < delta) {
         startTime = currentTime;
 
-        dummyPlayerControl.accelerate(currentDir);
-        const deltaPos = dummyPlayerControl.move(levelControler.maze);
-
-        dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
+        if (levelControler.transformLevel) {
+            // 在别处实现动画逻辑
+        } else {
+            dummyPlayerControl.accelerate(currentDir);
+            const deltaPos = dummyPlayerControl.move(levelControler.maze);
+            dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
+        }
 
         world.render();
     }

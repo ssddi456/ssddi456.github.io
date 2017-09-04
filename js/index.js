@@ -53,7 +53,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   world.camara = mainCamara;
   var skyLight = new light_1.Light();
   skyLight.direction = [1, 2, 1];
-  skyLight.color = [1, 1, 1];
+  skyLight.color = [0.5, 0.5, 0.5];
   skyLight.debug = false;
   var cubeTemplate = new mesh_1.Mesh();
   cubeTemplate.visible = true;
@@ -205,9 +205,13 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       var delta = currentTime - startTime;
       if (interval < delta) {
           startTime = currentTime;
-          dummyPlayerControl.accelerate(currentDir);
-          var deltaPos = dummyPlayerControl.move(levelControler.maze);
-          dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
+          if (levelControler.transformLevel) {
+          }
+          else {
+              dummyPlayerControl.accelerate(currentDir);
+              var deltaPos = dummyPlayerControl.move(levelControler.maze);
+              dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
+          }
           world.render();
       }
       requestAnimationFrame(drawLoop);
