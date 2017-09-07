@@ -30,15 +30,24 @@ export class Mesh3dRoad {
 
             if (!roadMap.canWalkThrough(wayPosX, wayPosY)) {
                 const wallColorIndex = getWallColor(wayPosX, wayPosY);
-
+                const wallUseColor = wallColors[wallColorIndex];
+                const wallHeight = (Math.random() * 1 + 0.3) * gridSize;
                 jointFaces.push(createTopSquare(
                     top,
                     left,
                     bottom,
                     right,
-                    gridSize,
-                    wallColors[wallColorIndex],
+                    wallHeight,
+                    wallUseColor,
                 ));
+                // front
+                jointFaces.push(createFrontSquare(top, left, bottom, wallHeight, BackZAxis, wallUseColor));
+                // back
+                jointFaces.push(createFrontSquare(bottom, right, top, wallHeight, FrontZAxis, wallUseColor));
+                // right
+                jointFaces.push(createSideSquare(top, right, left, wallHeight, LeftXAxis, wallUseColor));
+                // left
+                jointFaces.push(createSideSquare(bottom, left, right, wallHeight, RightXAxis, wallUseColor));
 
                 return;
             }
@@ -64,32 +73,32 @@ export class Mesh3dRoad {
                 groundUseColor,
             ));
 
-            const nearBys = this.roadMap.getNearBy(wayPosX, wayPosY);
-            nearBys.forEach((nearBy) => {
-                if (!this.roadMap.canWalkThrough(nearBy[0], nearBy[1])) {
+            // const nearBys = this.roadMap.getNearBy(wayPosX, wayPosY);
+            // nearBys.forEach((nearBy) => {
+            //     if (!this.roadMap.canWalkThrough(nearBy[0], nearBy[1])) {
 
-                    const wallColorIndex = getWallColor(nearBy[0], nearBy[1]);
-                    const wallUseColor = wallColors[wallColorIndex];
+            //         const wallColorIndex = getWallColor(nearBy[0], nearBy[1]);
+            //         const wallUseColor = wallColors[wallColorIndex];
 
-                    if (nearBy[0] === wayPosX) {
-                        if (nearBy[1] > wayPosY) {
-                            // create front
-                            jointFaces.push(createFrontSquare(top, right, bottom, BackZAxis, wallUseColor));
-                        } else if (nearBy[1] < wayPosY) {
-                            // create back
-                            jointFaces.push(createFrontSquare(bottom, left, top, FrontZAxis, wallUseColor));
-                        }
-                    } else if (nearBy[1] === wayPosY) {
-                        if (nearBy[0] > wayPosX) {
-                            // create right
-                            jointFaces.push(createSideSquare(bottom, right, left, LeftXAxis, wallUseColor));
-                        } else if (nearBy[0] < wayPosX) {
-                            // create left
-                            jointFaces.push(createSideSquare(top, left, right, RightXAxis, wallUseColor));
-                        }
-                    }
-                }
-            });
+            //         if (nearBy[0] === wayPosX) {
+            //             if (nearBy[1] > wayPosY) {
+            //                 // create front
+            //                 jointFaces.push(createFrontSquare(top, right, bottom, BackZAxis, wallUseColor));
+            //             } else if (nearBy[1] < wayPosY) {
+            //                 // create back
+            //                 jointFaces.push(createFrontSquare(bottom, left, top, FrontZAxis, wallUseColor));
+            //             }
+            //         } else if (nearBy[1] === wayPosY) {
+            //             if (nearBy[0] > wayPosX) {
+            //                 // create right
+            //                 jointFaces.push(createSideSquare(bottom, right, left, LeftXAxis, wallUseColor));
+            //             } else if (nearBy[0] < wayPosX) {
+            //                 // create left
+            //                 jointFaces.push(createSideSquare(top, left, right, RightXAxis, wallUseColor));
+            //             }
+            //         }
+            //     }
+            // });
         });
 
         return FacesToMesh(jointFaces);
@@ -214,7 +223,14 @@ function createTopSquare(top: number, left: number, bottom: number, right: numbe
     return createSquare(vertexes);
 }
 
-function createFrontSquare(top: number, left: number, bottom: number, normal: Vector3, vertexColor: Color) {
+function createFrontSquare(
+    top: number,
+    left: number,
+    bottom: number,
+    height: number,
+    normal: Vector3,
+    vertexColor: Color,
+) {
     const vertexes = [
         {
             pos: [top, 0, left] as Vector3,
@@ -223,13 +239,13 @@ function createFrontSquare(top: number, left: number, bottom: number, normal: Ve
             vertexColor,
         },
         {
-            pos: [top, gridSize, left] as Vector3,
+            pos: [top, height, left] as Vector3,
             normal,
             vertexColor,
             textureCoordinate: textureCoordinatePreset[1],
         },
         {
-            pos: [bottom, gridSize, left] as Vector3,
+            pos: [bottom, height, left] as Vector3,
             normal,
             vertexColor,
             textureCoordinate: textureCoordinatePreset[2],
@@ -245,7 +261,14 @@ function createFrontSquare(top: number, left: number, bottom: number, normal: Ve
     return createSquare(vertexes);
 }
 
-function createSideSquare(top: number, left: number, right: number, normal: Vector3, vertexColor: Color) {
+function createSideSquare(
+    top: number,
+    left: number,
+    right: number,
+    height: number,
+    normal: Vector3,
+    vertexColor: Color,
+) {
     const vertexes = [
         {
             pos: [top, 0, left] as Vector3,
@@ -254,13 +277,13 @@ function createSideSquare(top: number, left: number, right: number, normal: Vect
             vertexColor,
         },
         {
-            pos: [top, gridSize, left] as Vector3,
+            pos: [top, height, left] as Vector3,
             normal,
             textureCoordinate: textureCoordinatePreset[1],
             vertexColor,
         },
         {
-            pos: [top, gridSize, right] as Vector3,
+            pos: [top, height, right] as Vector3,
             normal,
             textureCoordinate: textureCoordinatePreset[2],
             vertexColor,

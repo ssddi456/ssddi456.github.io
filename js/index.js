@@ -43,9 +43,14 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var player_control_1 = require("./libs/player_control");
   var level_control_1 = require("./libs/level_control");
   var main = $('#main')[0];
-  var size = main.getClientRects()[0];
-  main.height = size.height;
+  var elBBox = main.getClientRects()[0];
+  var size = { width: elBBox.width, height: elBBox.width * 0.75 };
+  $('#main').css({
+      width: size.width,
+      height: size.height
+  });
   main.width = size.width;
+  main.height = size.height;
   var world = new world_1.World(main.getContext('webgl'), size);
   var mainCamara = new world_1.Camara();
   mainCamara.height = size.height;
@@ -177,8 +182,8 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   }
   var startTime = 0;
   var interval = 1000 / 60;
-  mainCamara.eye = [12, 26, 10];
-  mainCamara.center = [12, 0, 10];
+  mainCamara.eye = [11.5, 26, 9.5];
+  mainCamara.center = [11.5, 0, 9.5];
   mainCamara.up = [0, 0, -1];
   var dirLeft = [1, 0];
   var dirRight = [-1, 0];
@@ -192,20 +197,24 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       W: dirBack
   };
   dummyPlayerControl.on('enterExit', function () {
-      dummyPlayer.x(Matrix.Translation($V([
-          -1 * dummyPlayerControl.currentPos[0],
-          0,
-          -1 * dummyPlayerControl.currentPos[1]
-      ])));
       levelControler.levelPass();
-      levelControler.mazeMesh.rebuffering(world.gl, world);
   });
   function drawLoop() {
       var currentTime = Date.now();
       var delta = currentTime - startTime;
       if (interval < delta) {
           startTime = currentTime;
-          if (levelControler.transformLevel) {
+          if (!levelControler.levelInitialed) {
+              var postPos = dummyPlayerControl.currentPos.slice();
+              levelControler.levelStart();
+              levelControler.mazeMesh.rebuffering(world.gl, world);
+              dummyPlayer.x(Matrix.Translation($V([
+                  dummyPlayerControl.currentPos[0] - postPos[0],
+                  0,
+                  dummyPlayerControl.currentPos[1] - postPos[1],
+              ])));
+          }
+          else if (levelControler.transformLevel) {
           }
           else {
               dummyPlayerControl.accelerate(currentDir);
@@ -217,6 +226,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       requestAnimationFrame(drawLoop);
   }
   loadShapes().then(function () {
+      levelControler.reset();
       requestAnimationFrame(drawLoop);
   });
   var keyPressedMap = {};

@@ -22,6 +22,7 @@ export class LevelControler {
     player: Player;
     meshTranseformer: Mesh3dRoad;
     transformLevel: Promise<void>;
+    levelInitialed: boolean = false;
 
     constructor(player: Player) {
         this.player = player;
@@ -35,23 +36,31 @@ export class LevelControler {
     }
     passLevel() {
         this.currentLevel += 1;
+        this.levelInitialed = false;
         // 应该在这里庆祝一下
     }
     get hardness() {
         return Math.min(Math.floor(this.currentLevel / 10), 10);
     }
 
-    async levelStart() {
-        const startX = 0;
-        const startY = 0;
-        this.player.resetPos(startX, startY);
+    reset() {
+        this.levelInitialed = false;
+        this.player.currentPos[0] = 0;
+        this.player.currentPos[1] = 0;
+    }
+
+    levelStart() {
 
         // 先不管这个难度
         this.maze.height = this.maze.width = Math.max(10, Math.floor(Math.log10(this.hardness * 5)));
         //
-        this.maze.width = 24;
-        this.maze.height = 20;
+        this.maze.width = 23;
+        this.maze.height = 19;
 
+        const startX = Math.floor(Math.random() * this.maze.width / 2);
+        const startY = Math.floor(Math.random() * this.maze.height / 2);
+
+        this.player.resetPos(startX + 0.5, startY + 0.5);
         this.maze.generateRandonRoad(startX, startY);
         const meshInfo = this.meshTranseformer.getMesh();
 
@@ -69,10 +78,11 @@ export class LevelControler {
         if (meshInfo.textureCoordinates.length) {
             this.mazeMesh.textureCoordinates = meshInfo.textureCoordinates;
         }
+
+        this.levelInitialed = true;
     }
 
     levelPass() {
         this.passLevel();
-        this.levelStart();
     }
 }

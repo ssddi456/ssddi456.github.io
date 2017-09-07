@@ -14,17 +14,22 @@ import { Player } from "./libs/player_control";
 import { LevelControler } from "./libs/level_control";
 
 const main = $('#main')[0] as HTMLCanvasElement;
-const size = main.getClientRects()[0];
+const elBBox = main.getClientRects()[0];
+const size = { width: elBBox.width, height: elBBox.width * 0.75 };
 
-main.height = size.height;
+$('#main').css({
+    width: size.width,
+    height: size.height,
+});
+
 main.width = size.width;
+main.height = size.height;
 
 const world = new World(main.getContext('webgl'), size);
 
 const mainCamara = new Camara();
 mainCamara.height = size.height;
 mainCamara.width = size.width;
-
 world.camara = mainCamara;
 
 const skyLight = new Light();
@@ -165,8 +170,8 @@ async function loadShapes() {
 let startTime = 0;
 const interval = 1000 / 60;
 
-mainCamara.eye = [12, 26, 10];
-mainCamara.center = [12, 0, 10];
+mainCamara.eye = [11.5, 26, 9.5];
+mainCamara.center = [11.5, 0, 9.5];
 mainCamara.up = [0, 0, -1];
 
 const dirLeft = [1, 0];
@@ -182,16 +187,8 @@ const accelarateControlMap = {
     W: dirBack,
 };
 
-
 dummyPlayerControl.on('enterExit', () => {
-
-    dummyPlayer.x(Matrix.Translation($V([
-        -1 * dummyPlayerControl.currentPos[0],
-        0,
-        -1 * dummyPlayerControl.currentPos[1]])));
-
     levelControler.levelPass();
-    levelControler.mazeMesh.rebuffering(world.gl, world);
 });
 
 function drawLoop() {
@@ -200,7 +197,19 @@ function drawLoop() {
     if (interval < delta) {
         startTime = currentTime;
 
-        if (levelControler.transformLevel) {
+        if (!levelControler.levelInitialed) {
+            const postPos = dummyPlayerControl.currentPos.slice();
+
+            levelControler.levelStart();
+            levelControler.mazeMesh.rebuffering(world.gl, world);
+
+            dummyPlayer.x(Matrix.Translation($V([
+                dummyPlayerControl.currentPos[0] - postPos[0],
+                0,
+                dummyPlayerControl.currentPos[1] - postPos[1],
+            ])));
+
+        } else if (levelControler.transformLevel) {
             // 在别处实现动画逻辑
         } else {
             dummyPlayerControl.accelerate(currentDir);
@@ -214,6 +223,7 @@ function drawLoop() {
 }
 
 loadShapes().then(function () {
+    levelControler.reset();
     requestAnimationFrame(drawLoop);
 });
 

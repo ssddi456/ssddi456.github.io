@@ -8,7 +8,6 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
           this.roadMap = roadMap;
       }
       Mesh3dRoad.prototype.getMesh = function () {
-          var _this = this;
           var roadMap = this.roadMap;
           var jointFaces = [];
           var wallColorMap = {};
@@ -26,7 +25,17 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
               var right = (wayPosY + 1) * gridSize;
               if (!roadMap.canWalkThrough(wayPosX, wayPosY)) {
                   var wallColorIndex = getWallColor(wayPosX, wayPosY);
-                  jointFaces.push(createTopSquare(top, left, bottom, right, gridSize, wallColors[wallColorIndex]));
+                  var wallUseColor = wallColors[wallColorIndex];
+                  var wallHeight = (Math.random() * 1 + 0.3) * gridSize;
+                  jointFaces.push(createTopSquare(top, left, bottom, right, wallHeight, wallUseColor));
+                  // front
+                  jointFaces.push(createFrontSquare(top, left, bottom, wallHeight, BackZAxis, wallUseColor));
+                  // back
+                  jointFaces.push(createFrontSquare(bottom, right, top, wallHeight, FrontZAxis, wallUseColor));
+                  // right
+                  jointFaces.push(createSideSquare(top, right, left, wallHeight, LeftXAxis, wallUseColor));
+                  // left
+                  jointFaces.push(createSideSquare(bottom, left, right, wallHeight, RightXAxis, wallUseColor));
                   return;
               }
               var groundUseColor = groundColor;
@@ -39,33 +48,30 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
                   groundUseColor = exitColor;
               }
               jointFaces.push(createTopSquare(top, left, bottom, right, 0, groundUseColor));
-              var nearBys = _this.roadMap.getNearBy(wayPosX, wayPosY);
-              nearBys.forEach(function (nearBy) {
-                  if (!_this.roadMap.canWalkThrough(nearBy[0], nearBy[1])) {
-                      var wallColorIndex = getWallColor(nearBy[0], nearBy[1]);
-                      var wallUseColor = wallColors[wallColorIndex];
-                      if (nearBy[0] === wayPosX) {
-                          if (nearBy[1] > wayPosY) {
-                              // create front
-                              jointFaces.push(createFrontSquare(top, right, bottom, BackZAxis, wallUseColor));
-                          }
-                          else if (nearBy[1] < wayPosY) {
-                              // create back
-                              jointFaces.push(createFrontSquare(bottom, left, top, FrontZAxis, wallUseColor));
-                          }
-                      }
-                      else if (nearBy[1] === wayPosY) {
-                          if (nearBy[0] > wayPosX) {
-                              // create right
-                              jointFaces.push(createSideSquare(bottom, right, left, LeftXAxis, wallUseColor));
-                          }
-                          else if (nearBy[0] < wayPosX) {
-                              // create left
-                              jointFaces.push(createSideSquare(top, left, right, RightXAxis, wallUseColor));
-                          }
-                      }
-                  }
-              });
+              // const nearBys = this.roadMap.getNearBy(wayPosX, wayPosY);
+              // nearBys.forEach((nearBy) => {
+              //     if (!this.roadMap.canWalkThrough(nearBy[0], nearBy[1])) {
+              //         const wallColorIndex = getWallColor(nearBy[0], nearBy[1]);
+              //         const wallUseColor = wallColors[wallColorIndex];
+              //         if (nearBy[0] === wayPosX) {
+              //             if (nearBy[1] > wayPosY) {
+              //                 // create front
+              //                 jointFaces.push(createFrontSquare(top, right, bottom, BackZAxis, wallUseColor));
+              //             } else if (nearBy[1] < wayPosY) {
+              //                 // create back
+              //                 jointFaces.push(createFrontSquare(bottom, left, top, FrontZAxis, wallUseColor));
+              //             }
+              //         } else if (nearBy[1] === wayPosY) {
+              //             if (nearBy[0] > wayPosX) {
+              //                 // create right
+              //                 jointFaces.push(createSideSquare(bottom, right, left, LeftXAxis, wallUseColor));
+              //             } else if (nearBy[0] < wayPosX) {
+              //                 // create left
+              //                 jointFaces.push(createSideSquare(top, left, right, RightXAxis, wallUseColor));
+              //             }
+              //         }
+              //     }
+              // });
           });
           return _2dRoad_1.FacesToMesh(jointFaces);
       };
@@ -179,7 +185,7 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
       ];
       return createSquare(vertexes);
   }
-  function createFrontSquare(top, left, bottom, normal, vertexColor) {
+  function createFrontSquare(top, left, bottom, height, normal, vertexColor) {
       var vertexes = [
           {
               pos: [top, 0, left],
@@ -188,13 +194,13 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
               vertexColor: vertexColor
           },
           {
-              pos: [top, gridSize, left],
+              pos: [top, height, left],
               normal: normal,
               vertexColor: vertexColor,
               textureCoordinate: textureCoordinatePreset[1]
           },
           {
-              pos: [bottom, gridSize, left],
+              pos: [bottom, height, left],
               normal: normal,
               vertexColor: vertexColor,
               textureCoordinate: textureCoordinatePreset[2]
@@ -208,7 +214,7 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
       ];
       return createSquare(vertexes);
   }
-  function createSideSquare(top, left, right, normal, vertexColor) {
+  function createSideSquare(top, left, right, height, normal, vertexColor) {
       var vertexes = [
           {
               pos: [top, 0, left],
@@ -217,13 +223,13 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
               vertexColor: vertexColor
           },
           {
-              pos: [top, gridSize, left],
+              pos: [top, height, left],
               normal: normal,
               textureCoordinate: textureCoordinatePreset[1],
               vertexColor: vertexColor
           },
           {
-              pos: [top, gridSize, right],
+              pos: [top, height, right],
               normal: normal,
               textureCoordinate: textureCoordinatePreset[2],
               vertexColor: vertexColor
