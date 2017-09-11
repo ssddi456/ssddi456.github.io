@@ -1,9 +1,10 @@
 define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(require, exports, module) {
 
   "use strict";
+  exports.__esModule = true;
   var _2dRoad_1 = require("./2dRoad");
-  var gridSize = 1;
-  var Mesh3dRoad = (function () {
+  exports.gridSize = 1;
+  var Mesh3dRoad = /** @class */ (function () {
       function Mesh3dRoad(roadMap) {
           this.roadMap = roadMap;
       }
@@ -19,14 +20,14 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
               return wallColorMap[wallColorIndex];
           }
           roadMap.forEach(function (wayPosX, wayPosY) {
-              var top = wayPosX * gridSize;
-              var left = wayPosY * gridSize;
-              var bottom = (wayPosX + 1) * gridSize;
-              var right = (wayPosY + 1) * gridSize;
+              var top = wayPosX * exports.gridSize;
+              var left = wayPosY * exports.gridSize;
+              var bottom = (wayPosX + 1) * exports.gridSize;
+              var right = (wayPosY + 1) * exports.gridSize;
               if (!roadMap.canWalkThrough(wayPosX, wayPosY)) {
                   var wallColorIndex = getWallColor(wayPosX, wayPosY);
                   var wallUseColor = wallColors[wallColorIndex];
-                  var wallHeight = (Math.random() * 1 + 0.3) * gridSize;
+                  var wallHeight = (Math.random() * 1 + 0.3) * exports.gridSize;
                   jointFaces.push(createTopSquare(top, left, bottom, right, wallHeight, wallUseColor));
                   // front
                   jointFaces.push(createFrontSquare(top, left, bottom, wallHeight, BackZAxis, wallUseColor));
@@ -38,14 +39,14 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
                   jointFaces.push(createSideSquare(bottom, left, right, wallHeight, RightXAxis, wallUseColor));
                   return;
               }
-              var groundUseColor = groundColor;
+              var groundUseColor = exports.groundColor;
               if (wayPosX === roadMap.entrance[0]
                   && wayPosY === roadMap.entrance[1]) {
-                  groundUseColor = entranceColor;
+                  groundUseColor = exports.entranceColor;
               }
               else if (wayPosX === roadMap.exit[0]
                   && wayPosY === roadMap.exit[1]) {
-                  groundUseColor = exitColor;
+                  groundUseColor = exports.exitColor;
               }
               jointFaces.push(createTopSquare(top, left, bottom, right, 0, groundUseColor));
               // const nearBys = this.roadMap.getNearBy(wayPosX, wayPosY);
@@ -73,7 +74,7 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
               //     }
               // });
           });
-          return _2dRoad_1.FacesToMesh(jointFaces);
+          return _2dRoad_1.facesToMesh(jointFaces);
       };
       return Mesh3dRoad;
   }());
@@ -115,16 +116,16 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
       [0.98046875, 0.9453125, 0.44140625, 0.4],
       [0.859375, 0.5234375, 0.45703125, 0.4]];
   // alpha 通道用来
-  var entranceColor = [0, 0, 1, 0.5];
-  var exitColor = [0, 1, 0, 0.5];
-  var wallColor = [1, 0.1, 0, 0.6];
-  var groundColor = [0, 0, 0, 0.2];
-  var frontColor = [1.0, 1.0, 1.0, 1.0];
-  var backColor = [1.0, 0.0, 0.0, 1.0];
-  var topColor = [0.0, 1.0, 0.0, 1.0];
-  var bottomColor = [0.0, 0.0, 1.0, 1.0];
-  var rightColor = [1.0, 1.0, 0.0, 1.0];
-  var leftColor = [1.0, 0.0, 1.0, 1.0];
+  exports.entranceColor = [0, 0, 1, 0.5];
+  exports.exitColor = [0, 1, 0, 0.5];
+  exports.wallColor = [1, 0.1, 0, 0.6];
+  exports.groundColor = [0, 0, 0, 0.2];
+  exports.frontColor = [1.0, 1.0, 1.0, 1.0];
+  exports.backColor = [1.0, 0.0, 0.0, 1.0];
+  exports.topColor = [0.0, 1.0, 0.0, 1.0];
+  exports.bottomColor = [0.0, 0.0, 1.0, 1.0];
+  exports.rightColor = [1.0, 1.0, 0.0, 1.0];
+  exports.leftColor = [1.0, 0.0, 1.0, 1.0];
   /**
    * @file 用于构造一个随机生成的3D迷宫。
    *
@@ -185,6 +186,7 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
       ];
       return createSquare(vertexes);
   }
+  exports.createTopSquare = createTopSquare;
   function createFrontSquare(top, left, bottom, height, normal, vertexColor) {
       var vertexes = [
           {

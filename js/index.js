@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./light", "./mesh", "./libs/player_control", "./libs/level_control"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./light", "./mesh", "./libs/plane", "./libs/player_control", "./libs/level_control"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -10,8 +10,8 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       });
   };
   var __generator = (this && this.__generator) || function (thisArg, body) {
-      var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
-      return { next: verb(0), "throw": verb(1), "return": verb(2) };
+      var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+      return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
       function verb(n) { return function (v) { return step([n, v]); }; }
       function step(op) {
           if (f) throw new TypeError("Generator is already executing.");
@@ -36,10 +36,12 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
       }
   };
+  exports.__esModule = true;
   var world_1 = require("./world");
   var vertex_color_shader_1 = require("./shaders/vertex_color_shader");
   var light_1 = require("./light");
   var mesh_1 = require("./mesh");
+  var plane_1 = require("./libs/plane");
   var player_control_1 = require("./libs/player_control");
   var level_control_1 = require("./libs/level_control");
   var main = $('#main')[0];
@@ -163,6 +165,11 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   });
   var levelControler = new level_control_1.LevelControler(dummyPlayerControl);
   levelControler.levelStart();
+  var clampFloor = new mesh_1.Mesh();
+  clampFloor.shader = levelControler.mazeMesh.shader;
+  var clampFloorPlane = new plane_1.Plane();
+  clampFloor.updateMeshInfo(clampFloorPlane.getMesh());
+  clampFloor.x(Matrix.Translation($V([0, -0.1, 0])));
   function loadShapes() {
       return __awaiter(this, void 0, void 0, function () {
           return __generator(this, function (_a) {
@@ -172,6 +179,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
                       return [4 /*yield*/, Promise.all([
                               levelControler.mazeMesh,
                               dummyPlayer,
+                              clampFloor,
                           ].map(function (x) { return world.attachObject(x); }))];
                   case 1:
                       _a.sent();
@@ -180,8 +188,6 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           });
       });
   }
-  var startTime = 0;
-  var interval = 1000 / 60;
   mainCamara.eye = [11.5, 26, 9.5];
   mainCamara.center = [11.5, 0, 9.5];
   mainCamara.up = [0, 0, -1];
@@ -199,35 +205,59 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   dummyPlayerControl.on('enterExit', function () {
       levelControler.levelPass();
   });
-  function drawLoop() {
-      var currentTime = Date.now();
-      var delta = currentTime - startTime;
-      if (interval < delta) {
-          startTime = currentTime;
-          if (!levelControler.levelInitialed) {
-              var postPos = dummyPlayerControl.currentPos.slice();
-              levelControler.levelStart();
-              levelControler.mazeMesh.rebuffering(world.gl, world);
-              dummyPlayer.x(Matrix.Translation($V([
-                  dummyPlayerControl.currentPos[0] - postPos[0],
-                  0,
-                  dummyPlayerControl.currentPos[1] - postPos[1],
-              ])));
+  function loopFactory(updater, updateInterval) {
+      var startTime = Date.now();
+      var ret = function () {
+          var currentTime = Date.now();
+          var delta = currentTime - startTime;
+          if (updateInterval < delta) {
+              startTime = currentTime;
+              updater();
           }
-          else if (levelControler.transformLevel) {
-          }
-          else {
-              dummyPlayerControl.accelerate(currentDir);
-              var deltaPos = dummyPlayerControl.move(levelControler.maze);
-              dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
-          }
-          world.render();
-      }
-      requestAnimationFrame(drawLoop);
+          requestAnimationFrame(ret);
+      };
+      return ret;
   }
+  var updateLoop = loopFactory(function () {
+      if (levelControler.transformLevel) {
+          // console.log('transform');
+          // 在别处实现动画逻辑
+          levelControler.transformLevel();
+      }
+      else if (!levelControler.levelInitialed) {
+          // console.log('init level');
+          var postPos = dummyPlayerControl.currentPos.slice();
+          levelControler.levelStart();
+          levelControler.mazeMesh.rebuffering(world.gl, world);
+          clampFloorPlane.width = levelControler.maze.width;
+          clampFloorPlane.height = levelControler.maze.height;
+          clampFloor.updateMeshInfo(clampFloorPlane.getMesh());
+          clampFloor.rebuffering(world.gl, world);
+          dummyPlayer.x(Matrix.Translation($V([
+              dummyPlayerControl.currentPos[0] - postPos[0],
+              0,
+              dummyPlayerControl.currentPos[1] - postPos[1],
+          ])));
+          var centerX = levelControler.maze.width / 2;
+          var centerY = levelControler.maze.height / 2;
+          var centerHeight = levelControler.maze.width + 4;
+          mainCamara.eye = [centerX, centerHeight, centerY];
+          mainCamara.center = [centerX, 0, centerY];
+      }
+      else {
+          // console.log('play level');
+          dummyPlayerControl.accelerate(currentDir);
+          var deltaPos = dummyPlayerControl.move(levelControler.maze);
+          dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
+      }
+  }, 1000 / 30);
+  var drawLoop = loopFactory(function () {
+      world.render();
+  }, 1000 / 60);
   loadShapes().then(function () {
       levelControler.reset();
-      requestAnimationFrame(drawLoop);
+      updateLoop();
+      drawLoop();
   });
   var keyPressedMap = {};
   document.body.addEventListener('keydown', function (e) {

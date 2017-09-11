@@ -1,7 +1,7 @@
 import { RoadMap } from "./road_map";
-import { IFace, IRoadMesh, IVertex, Vector3, Point, FacesToMesh, Color } from "./2dRoad";
+import { IFace, IMeshInfo, IVertex, Vector3, Point, facesToMesh, Color } from "./2dRoad";
 
-const gridSize = 1;
+export const gridSize = 1;
 export class Mesh3dRoad {
     roadMap: RoadMap;
     constructor(roadMap: RoadMap) {
@@ -101,7 +101,7 @@ export class Mesh3dRoad {
             // });
         });
 
-        return FacesToMesh(jointFaces);
+        return facesToMesh(jointFaces);
     }
 }
 
@@ -144,17 +144,17 @@ const wallColors = [[0.6875, 0.41796875, 0.4375, 0.4],
 [0.859375, 0.5234375, 0.45703125, 0.4]] as Color[];
 
 // alpha 通道用来
-const entranceColor = [0, 0, 1, 0.5] as Color;
-const exitColor = [0, 1, 0, 0.5] as Color;
-const wallColor = [1, 0.1, 0, 0.6] as Color;
-const groundColor = [0, 0, 0, 0.2] as Color;
-
-const frontColor = [1.0, 1.0, 1.0, 1.0] as Color;
-const backColor = [1.0, 0.0, 0.0, 1.0] as Color;
-const topColor = [0.0, 1.0, 0.0, 1.0] as Color;
-const bottomColor = [0.0, 0.0, 1.0, 1.0] as Color;
-const rightColor = [1.0, 1.0, 0.0, 1.0] as Color;
-const leftColor = [1.0, 0.0, 1.0, 1.0] as Color;
+export const entranceColor = [0, 0, 1, 0.5] as Color;
+export const exitColor = [0, 1, 0, 0.5] as Color;
+export const wallColor = [1, 0.1, 0, 0.6] as Color;
+export const groundColor = [0, 0, 0, 0.2] as Color;
+ 
+export const frontColor = [1.0, 1.0, 1.0, 1.0] as Color;
+export const backColor = [1.0, 0.0, 0.0, 1.0] as Color;
+export const topColor = [0.0, 1.0, 0.0, 1.0] as Color;
+export const bottomColor = [0.0, 0.0, 1.0, 1.0] as Color;
+export const rightColor = [1.0, 1.0, 0.0, 1.0] as Color;
+export const leftColor = [1.0, 0.0, 1.0, 1.0] as Color;
 
 /**
  * @file 用于构造一个随机生成的3D迷宫。
@@ -186,7 +186,14 @@ function createSquare(vertexes: IVertex[]) {
     }
     return ret;
 }
-function createTopSquare(top: number, left: number, bottom: number, right: number, height: number, vertexColor: Color) {
+export function createTopSquare(
+    top: number,
+    left: number,
+    bottom: number,
+    right: number,
+    height: number,
+    vertexColor: Color,
+) {
 
     /**
      * 在这里我们假设 Y坐标为零,

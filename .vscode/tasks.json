@@ -5,12 +5,15 @@
     "tasks": [
         {
             "taskName": "fis3 build",
-            "command": "fis3 release dev -d ./js -w",
+            "command": "fis3 release dev -d ./js -cw",
             "type": "shell",
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": [
+                "$tsc-watch"
+            ]
         }
     ]
 }

@@ -6,7 +6,7 @@ export type Vector4 = [number, number, number, number];
 export type Color = Vector4;
 export type Matrix4x4 = [Vector4, Vector4, Vector4, Vector4];
 
-export interface IRoadMesh {
+export interface IMeshInfo {
     vertexs: number[];
     faces: number[];
     vertexNormal?: number[];
@@ -42,7 +42,7 @@ export class Mesh2dRoad {
             );
         });
 
-        return FacesToMesh(jointFaces);
+        return facesToMesh(jointFaces);
     }
 }
 
@@ -93,10 +93,10 @@ function createSquare(top: number, left: number, bottom: number, right: number) 
     return ret;
 }
 
-export function FacesToMesh(faces: IFace[]) {
+export function facesToMesh(faces: IFace[]) {
     let pointCounter = 0;
 
-    const ret: IRoadMesh = {
+    const ret: IMeshInfo = {
         vertexs: [],
         faces: [],
         vertexNormal: [],

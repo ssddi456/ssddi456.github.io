@@ -1,7 +1,8 @@
 define('js/shape', ['require', 'exports', 'module'], function(require, exports, module) {
 
   "use strict";
-  var Shape = (function () {
+  exports.__esModule = true;
+  var Shape = /** @class */ (function () {
       function Shape() {
           this.visible = true;
           this.debug = false;

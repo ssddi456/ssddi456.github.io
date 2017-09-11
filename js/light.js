@@ -10,8 +10,8 @@ define('js/light', ['require', 'exports', 'module', "./shaders/vertex_color_shad
       });
   };
   var __generator = (this && this.__generator) || function (thisArg, body) {
-      var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
-      return { next: verb(0), "throw": verb(1), "return": verb(2) };
+      var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+      return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
       function verb(n) { return function (v) { return step([n, v]); }; }
       function step(op) {
           if (f) throw new TypeError("Generator is already executing.");
@@ -36,6 +36,7 @@ define('js/light', ['require', 'exports', 'module', "./shaders/vertex_color_shad
           if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
       }
   };
+  exports.__esModule = true;
   var vertex_color_shader_1 = require("./shaders/vertex_color_shader");
   var mesh_1 = require("./mesh");
   var debugMesh = new mesh_1.Mesh();
@@ -83,7 +84,7 @@ define('js/light', ['require', 'exports', 'module', "./shaders/vertex_color_shad
       20, 21, 22, 20, 22, 23 // left
   ];
   debugMesh.trs = Matrix.Translation($V([0, 0, 0]));
-  var Light = (function () {
+  var Light = /** @class */ (function () {
       function Light() {
           this.direction = [1, 1, 1];
           this.debug = false;

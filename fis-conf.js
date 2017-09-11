@@ -1,5 +1,6 @@
 var path = require('path');
 
+
 fis.set('project.files', ['ts/**','shaders/**']);
 fis.set('project.ignore', ['js/**', 'css/**', 'lib/**', 'node_modules/**', '.git/**']);
 fis.hook('amd');
@@ -9,6 +10,7 @@ fis.match('ts/((**).ts)', {
                 module: 1,
                 target: 0,
                 sourceMap: false,
+                compilerOptions: require(path.join(__dirname, './tsconfig.json')).compilerOptions
             }),
     release: "$1",
     moduleId: 'js/$2',

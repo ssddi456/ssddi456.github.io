@@ -1,6 +1,7 @@
 define('js/libs/road_map', ['require', 'exports', 'module'], function(require, exports, module) {
 
   "use strict";
+  exports.__esModule = true;
   /**
    * [
    *  [0, 0, 0],
@@ -10,7 +11,7 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
    *
    * 来构成一个地图，0为不通过，1为可以通过。
    */
-  var RoadMap = (function () {
+  var RoadMap = /** @class */ (function () {
       function RoadMap(x, y) {
           this.width = 0;
           this.height = 0;

@@ -1,11 +1,16 @@
 define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], function(require, exports, module) {
 
   "use strict";
-  var __extends = (this && this.__extends) || function (d, b) {
-      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-      function __() { this.constructor = d; }
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
+  var __extends = (this && this.__extends) || (function () {
+      var extendStatics = Object.setPrototypeOf ||
+          ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+          function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+      return function (d, b) {
+          extendStatics(d, b);
+          function __() { this.constructor = d; }
+          d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+      };
+  })();
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
       return new (P || (P = Promise))(function (resolve, reject) {
           function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -15,8 +20,8 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
       });
   };
   var __generator = (this && this.__generator) || function (thisArg, body) {
-      var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
-      return { next: verb(0), "throw": verb(1), "return": verb(2) };
+      var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+      return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
       function verb(n) { return function (v) { return step([n, v]); }; }
       function step(op) {
           if (f) throw new TypeError("Generator is already executing.");
@@ -41,9 +46,10 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
           if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
       }
   };
+  exports.__esModule = true;
   var shape_1 = require("./shape");
   var line_1 = require("./line");
-  var Mesh = (function (_super) {
+  var Mesh = /** @class */ (function (_super) {
       __extends(Mesh, _super);
       function Mesh() {
           return _super !== null && _super.apply(this, arguments) || this;
@@ -166,9 +172,9 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
       };
       Mesh.prototype.addDebugObjects = function (world) {
           return __awaiter(this, void 0, void 0, function () {
-              var normals, normalLines, meshLines, transformedNormalLines, vertexFinalLightLines, index, vertex1, vertex2, vertex3, line1, line2, line3, _a, _b, _c, _d, index, normal, vertex, normalLine, transformedNormalLine, finalLightLine, originX;
-              return __generator(this, function (_e) {
-                  switch (_e.label) {
+              var normals, normalLines, meshLines, transformedNormalLines, vertexFinalLightLines, index, vertex1, vertex2, vertex3, line1, line2, line3, _a, _b, _c, index, normal, vertex, normalLine, transformedNormalLine, finalLightLine, originX;
+              return __generator(this, function (_d) {
+                  switch (_d.label) {
                       case 0:
                           if (!this.debug) {
                               return [2 /*return*/];
@@ -179,7 +185,7 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
                           transformedNormalLines = this.transformedNormalLines = [];
                           vertexFinalLightLines = this.vertexFinalLightLines = [];
                           index = 0;
-                          _e.label = 1;
+                          _d.label = 1;
                       case 1:
                           if (!(index < this.faces.length)) return [3 /*break*/, 7];
                           vertex1 = this.vertices.slice(this.faces[index] * 3, this.faces[index] * 3 + 3);
@@ -194,28 +200,28 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
                           _b = (_a = Promise).all;
                           return [4 /*yield*/, world.attachObject(line1)];
                       case 2:
-                          _d = [
-                              _e.sent()
+                          _c = [
+                              _d.sent()
                           ];
                           return [4 /*yield*/, world.attachObject(line2)];
                       case 3:
-                          _d = _d.concat([
-                              _e.sent()
+                          _c = _c.concat([
+                              _d.sent()
                           ]);
                           return [4 /*yield*/, world.attachObject(line3)];
-                      case 4: return [4 /*yield*/, _b.apply(_a, [_d.concat([
-                                  _e.sent()
+                      case 4: return [4 /*yield*/, _b.apply(_a, [_c.concat([
+                                  _d.sent()
                               ])])];
                       case 5:
-                          _e.sent();
-                          _e.label = 6;
+                          _d.sent();
+                          _d.label = 6;
                       case 6:
                           index += 3;
                           return [3 /*break*/, 1];
                       case 7:
                           if (!this.vertexNormal) return [3 /*break*/, 13];
                           index = 0;
-                          _e.label = 8;
+                          _d.label = 8;
                       case 8:
                           if (!(index < this.vertexNormal.length)) return [3 /*break*/, 13];
                           normal = this.vertexNormal.slice(index, index + 3);
@@ -224,7 +230,7 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
                           normalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
                           return [4 /*yield*/, world.attachObject(normalLine)];
                       case 9:
-                          _e.sent();
+                          _d.sent();
                           normalLines.push(normalLine);
                           transformedNormalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
                           transformedNormalLine.verticesColor = [
@@ -233,7 +239,7 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
                           ];
                           return [4 /*yield*/, world.attachObject(transformedNormalLine)];
                       case 10:
-                          _e.sent();
+                          _d.sent();
                           transformedNormalLines.push(transformedNormalLine);
                           finalLightLine = line_1.Line.createSimpleLine([
                               vertex[0] + 0.2 * normal[0],
@@ -246,9 +252,9 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
                           ];
                           return [4 /*yield*/, world.attachObject(finalLightLine)];
                       case 11:
-                          _e.sent();
+                          _d.sent();
                           vertexFinalLightLines.push(finalLightLine);
-                          _e.label = 12;
+                          _d.label = 12;
                       case 12:
                           index += 3;
                           return [3 /*break*/, 8];
@@ -265,6 +271,19 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
                   }
               });
           });
+      };
+      Mesh.prototype.updateMeshInfo = function (meshInfo) {
+          this.vertices = meshInfo.vertexs;
+          this.faces = meshInfo.faces;
+          if (meshInfo.vertexColors.length) {
+              this.vertexColors = meshInfo.vertexColors;
+          }
+          if (meshInfo.vertexNormal.length) {
+              this.vertexNormal = meshInfo.vertexNormal;
+          }
+          if (meshInfo.textureCoordinates.length) {
+              this.textureCoordinates = meshInfo.textureCoordinates;
+          }
       };
       Mesh.prototype.updateDebug = function (world, lights) {
           var _this = this;

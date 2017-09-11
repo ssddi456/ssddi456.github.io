@@ -1,10 +1,11 @@
 define('js/libs/player_control', ['require', 'exports', 'module'], function(require, exports, module) {
 
   "use strict";
-  var Player = (function () {
+  exports.__esModule = true;
+  var Player = /** @class */ (function () {
       function Player() {
           this.currentPos = [0, 0];
-          this.acceleration = 0.1;
+          this.acceleration = 0.2;
           this.maxSpeed = [0, 0];
           this.speed = [0, 0];
           this.size = [0.25, 0.25];

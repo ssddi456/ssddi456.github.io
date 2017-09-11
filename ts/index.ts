@@ -10,6 +10,7 @@ import { Light } from "./light";
 import { Mesh } from "./mesh";
 import { Line } from "./line";
 import { RoadMap } from "./libs/road_map";
+import { Plane } from "./libs/plane";
 import { Player } from "./libs/player_control";
 import { LevelControler } from "./libs/level_control";
 
@@ -154,8 +155,16 @@ dummyPlayer.vertices.forEach((v, i) => {
     }
     dummyPlayer.vertices[i] *= 0.25;
 });
+
+
 const levelControler = new LevelControler(dummyPlayerControl);
 levelControler.levelStart();
+
+const clampFloor = new Mesh();
+clampFloor.shader = levelControler.mazeMesh.shader;
+const clampFloorPlane = new Plane();
+clampFloor.updateMeshInfo(clampFloorPlane.getMesh());
+clampFloor.x(Matrix.Translation($V([0, -0.1, 0])));
 
 async function loadShapes() {
 
@@ -164,11 +173,9 @@ async function loadShapes() {
     await Promise.all([
         levelControler.mazeMesh,
         dummyPlayer,
+        clampFloor,
     ].map((x) => world.attachObject(x)));
 }
-
-let startTime = 0;
-const interval = 1000 / 60;
 
 mainCamara.eye = [11.5, 26, 9.5];
 mainCamara.center = [11.5, 0, 9.5];
@@ -191,40 +198,70 @@ dummyPlayerControl.on('enterExit', () => {
     levelControler.levelPass();
 });
 
-function drawLoop() {
-    const currentTime = Date.now();
-    const delta = currentTime - startTime;
-    if (interval < delta) {
-        startTime = currentTime;
-
-        if (!levelControler.levelInitialed) {
-            const postPos = dummyPlayerControl.currentPos.slice();
-
-            levelControler.levelStart();
-            levelControler.mazeMesh.rebuffering(world.gl, world);
-
-            dummyPlayer.x(Matrix.Translation($V([
-                dummyPlayerControl.currentPos[0] - postPos[0],
-                0,
-                dummyPlayerControl.currentPos[1] - postPos[1],
-            ])));
-
-        } else if (levelControler.transformLevel) {
-            // 在别处实现动画逻辑
-        } else {
-            dummyPlayerControl.accelerate(currentDir);
-            const deltaPos = dummyPlayerControl.move(levelControler.maze);
-            dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
+function loopFactory(updater: () => any, updateInterval: number) {
+    let startTime = Date.now();
+    const ret = function () {
+        const currentTime = Date.now();
+        const delta = currentTime - startTime;
+        if (updateInterval < delta) {
+            startTime = currentTime;
+            updater();
         }
-
-        world.render();
-    }
-    requestAnimationFrame(drawLoop);
+        requestAnimationFrame(ret);
+    };
+    return ret;
 }
+
+const updateLoop = loopFactory(function () {
+    if (levelControler.transformLevel) {
+        // console.log('transform');
+
+        // 在别处实现动画逻辑
+        levelControler.transformLevel();
+    } else if (!levelControler.levelInitialed) {
+        // console.log('init level');
+
+        const postPos = dummyPlayerControl.currentPos.slice();
+
+        levelControler.levelStart();
+        levelControler.mazeMesh.rebuffering(world.gl, world);
+
+        clampFloorPlane.width = levelControler.maze.width;
+        clampFloorPlane.height = levelControler.maze.height;
+        clampFloor.updateMeshInfo(clampFloorPlane.getMesh());
+        clampFloor.rebuffering(world.gl, world);
+
+        dummyPlayer.x(Matrix.Translation($V([
+            dummyPlayerControl.currentPos[0] - postPos[0],
+            0,
+            dummyPlayerControl.currentPos[1] - postPos[1],
+        ])));
+
+        const centerX = levelControler.maze.width / 2;
+        const centerY = levelControler.maze.height / 2;
+        const centerHeight = levelControler.maze.width + 4;
+
+        mainCamara.eye = [centerX, centerHeight, centerY];
+        mainCamara.center = [centerX, 0, centerY];
+
+    } else {
+        // console.log('play level');
+
+        dummyPlayerControl.accelerate(currentDir);
+        const deltaPos = dummyPlayerControl.move(levelControler.maze);
+        dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
+    }
+}, 1000 / 30);
+
+const drawLoop = loopFactory(function () {
+    world.render();
+}, 1000 / 60);
+
 
 loadShapes().then(function () {
     levelControler.reset();
-    requestAnimationFrame(drawLoop);
+    updateLoop();
+    drawLoop();
 });
 
 const keyPressedMap = {};

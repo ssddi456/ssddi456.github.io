@@ -8,7 +8,7 @@ interface ICollisionDetector {
 export class Player {
     currentPos: Point = [0, 0];
 
-    acceleration: number = 0.1;
+    acceleration: number = 0.2;
     maxSpeed: Point = [0, 0];
 
     speed: Point = [0, 0];

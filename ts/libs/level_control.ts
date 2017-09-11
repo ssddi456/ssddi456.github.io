@@ -4,6 +4,7 @@ import { Player } from './player_control';
 import { Mesh } from '../mesh';
 import { RoadMap } from './road_map';
 import { Camara } from "../world";
+import { wrapIterableIterator } from './utils';
 /**
  * @file 关卡管理
  *
@@ -21,7 +22,7 @@ export class LevelControler {
     mazeMesh: Mesh;
     player: Player;
     meshTranseformer: Mesh3dRoad;
-    transformLevel: Promise<void>;
+    transformLevel: () => any;
     levelInitialed: boolean = false;
 
     constructor(player: Player) {
@@ -38,11 +39,39 @@ export class LevelControler {
         this.currentLevel += 1;
         this.levelInitialed = false;
         // 应该在这里庆祝一下
+        this.playAnima(this.passLevelAnima);
     }
     get hardness() {
-        return Math.min(Math.floor(this.currentLevel / 10), 10);
+        return Math.max(Math.floor(Math.log10(this.currentLevel) * 3), 3);
+    }
+    playAnima(anima: () => IterableIterator<any>) {
+        const self = this;
+        this.transformLevel = wrapIterableIterator(function* () {
+            const ticks = anima.call(self);
+            let tick;
+            do {
+                tick = ticks.next();
+                yield tick.value;
+            } while (!tick.done);
+
+            self.transformLevel = undefined;
+        });
     }
 
+    *startLevelAnima() {
+        const frames = 1 * 15;
+        const delta = (0.1 + 1.3) / frames;
+        for (let i = 0; i < frames; i++) {
+            yield this.mazeMesh.x(Matrix.Translation($V([0, delta, 0])));
+        }
+    }
+    *passLevelAnima() {
+        const frames = 1 * 15;
+        const delta = -1 * (0.1 + 1.3) / frames;
+        for (let i = 0; i < frames; i++) {
+            yield this.mazeMesh.x(Matrix.Translation($V([0, delta, 0])));
+        }
+    }
     reset() {
         this.levelInitialed = false;
         this.player.currentPos[0] = 0;
@@ -51,11 +80,8 @@ export class LevelControler {
 
     levelStart() {
 
-        // 先不管这个难度
-        this.maze.height = this.maze.width = Math.max(10, Math.floor(Math.log10(this.hardness * 5)));
-        //
-        this.maze.width = 23;
-        this.maze.height = 19;
+        this.maze.width = 4 * this.hardness + this.currentLevel;
+        this.maze.height = 3 * this.hardness + Math.round(this.currentLevel * 0.75);
 
         const startX = Math.floor(Math.random() * this.maze.width / 2);
         const startY = Math.floor(Math.random() * this.maze.height / 2);
@@ -80,6 +106,9 @@ export class LevelControler {
         }
 
         this.levelInitialed = true;
+        if (this.currentLevel > 1) {
+            this.playAnima(this.startLevelAnima);
+        }
     }
 
     levelPass() {

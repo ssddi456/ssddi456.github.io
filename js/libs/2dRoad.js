@@ -1,7 +1,8 @@
 define('js/libs/2dRoad', ['require', 'exports', 'module'], function(require, exports, module) {
 
   "use strict";
-  var Mesh2dRoad = (function () {
+  exports.__esModule = true;
+  var Mesh2dRoad = /** @class */ (function () {
       function Mesh2dRoad(roadMap) {
           this.gridSize = 1;
           this.roadMap = roadMap;
@@ -12,7 +13,7 @@ define('js/libs/2dRoad', ['require', 'exports', 'module'], function(require, exp
           var jointFaces = joints.map(function (jointPos) {
               return createSquare(jointPos[0] * _this.gridSize, jointPos[1] * _this.gridSize, (jointPos[0] + 1) * _this.gridSize, (jointPos[1] + 1) * _this.gridSize);
           });
-          return FacesToMesh(jointFaces);
+          return facesToMesh(jointFaces);
       };
       return Mesh2dRoad;
   }());
@@ -60,7 +61,7 @@ define('js/libs/2dRoad', ['require', 'exports', 'module'], function(require, exp
       }
       return ret;
   }
-  function FacesToMesh(faces) {
+  function facesToMesh(faces) {
       var pointCounter = 0;
       var ret = {
           vertexs: [],
@@ -100,7 +101,7 @@ define('js/libs/2dRoad', ['require', 'exports', 'module'], function(require, exp
       }
       return ret;
   }
-  exports.FacesToMesh = FacesToMesh;
+  exports.facesToMesh = facesToMesh;
   
 
 });

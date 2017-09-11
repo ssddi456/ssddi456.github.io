@@ -5,7 +5,7 @@ import { World } from "./world";
 import { Light } from "./light";
 import { Line } from "./line";
 import { LineVertexColorShader } from "./shaders/line_vertex_color_shader";
-import { Vector3 } from "./libs/2dRoad";
+import { Vector3, IMeshInfo } from "./libs/2dRoad";
 
 export class Mesh extends Shape {
     vertices: number[];
@@ -122,7 +122,7 @@ export class Mesh extends Shape {
         this.inited = true;
     }
 
-    rebuffering(gl: WebGLRenderingContext, world: World){
+    rebuffering(gl: WebGLRenderingContext, world: World) {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
 
@@ -221,6 +221,20 @@ export class Mesh extends Shape {
             this.meshLins.forEach((x) => x.x(matrix));
             return originX.call(this, matrix);
         };
+    }
+    updateMeshInfo(meshInfo: IMeshInfo) {
+        this.vertices = meshInfo.vertexs;
+        this.faces = meshInfo.faces;
+
+        if (meshInfo.vertexColors.length) {
+            this.vertexColors = meshInfo.vertexColors;
+        }
+        if (meshInfo.vertexNormal.length) {
+            this.vertexNormal = meshInfo.vertexNormal;
+        }
+        if (meshInfo.textureCoordinates.length) {
+            this.textureCoordinates = meshInfo.textureCoordinates;
+        }
     }
 
     meshLins: Line[];

@@ -5,10 +5,13 @@
             "es2015",
             "es2015.promise",
             "dom",
-            "scripthost"
+            "scripthost",
+            "dom.iterable",
+            "es2015.iterable"
         ],
         "module": "amd",
         "outDir": "./js",
+        "downlevelIteration": true,
         "experimentalDecorators": true
     },
     "compileOnSave": true,

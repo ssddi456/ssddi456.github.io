@@ -1,7 +1,8 @@
 define('js/shaders/base_shader', ['require', 'exports', 'module'], function(require, exports, module) {
 
   "use strict";
-  var Shader = (function () {
+  exports.__esModule = true;
+  var Shader = /** @class */ (function () {
       function Shader() {
           this.inited = false;
           this.mounted = false;
