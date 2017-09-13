@@ -6,6 +6,7 @@ import { Light } from "./light";
 import { Line } from "./line";
 import { LineVertexColorShader } from "./shaders/line_vertex_color_shader";
 import { Vector3, IMeshInfo } from "./libs/2dRoad";
+import { createBuffer } from "./libs/utils";
 
 export class Mesh extends Shape {
     vertices: number[];
@@ -53,8 +54,8 @@ export class Mesh extends Shape {
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
-    clone() {
-        const newInstance = new Mesh();
+    clone<T extends Mesh>() {
+        const newInstance = new (this.constructor as new () => T)();
         newInstance.vertices = this.vertices.slice(0);
         newInstance.faces = this.faces.slice(0);
 
@@ -86,28 +87,28 @@ export class Mesh extends Shape {
     }
 
     async init(gl: WebGLRenderingContext, world: World) {
-        this.vertexBuffer = gl.createBuffer();
+        this.vertexBuffer = createBuffer(gl);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
 
-        this.facesBuffer = gl.createBuffer();
+        this.facesBuffer = createBuffer(gl);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
 
         if (this.vertexColors) {
-            this.vertexColorBuffer = gl.createBuffer();
+            this.vertexColorBuffer = createBuffer(gl);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexColors), gl.STATIC_DRAW);
         }
 
         if (this.textureCoordinates) {
-            this.textureCoordinatesBuffer = gl.createBuffer();
+            this.textureCoordinatesBuffer = createBuffer(gl);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
         }
 
         if (this.vertexNormal) {
-            this.vertexNormalBuffer = gl.createBuffer();
+            this.vertexNormalBuffer = createBuffer(gl);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
         }
@@ -122,7 +123,7 @@ export class Mesh extends Shape {
         this.inited = true;
     }
 
-    rebuffering(gl: WebGLRenderingContext, world: World) {
+    rebuffering(gl: WebGLRenderingContext, world: World, attribute?: string) {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
 
@@ -143,6 +144,31 @@ export class Mesh extends Shape {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
         }
+    }
+
+    bindBufferAndDraw(shader: Shader, gl) {
+        shader.bindBuffer('aVertexPosition', this.vertexBuffer);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
+
+        if (this.texture) {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            shader.bindBuffer('uSampler', 0);
+        }
+
+        if (this.vertexColors && this.vertexColors.length) {
+            shader.bindBuffer('aVertexColor', this.vertexColorBuffer);
+        }
+
+        if (this.vertexNormal && this.vertexNormal.length) {
+            shader.bindBuffer('aVertexNormal', this.vertexNormalBuffer);
+        }
+
+        if (this.textureCoordinates && this.textureCoordinates.length) {
+            shader.bindBuffer('aTextureCoord', this.textureCoordinatesBuffer);
+        }
+
+        gl.drawElements(gl.TRIANGLES, this.faces.length, gl.UNSIGNED_SHORT, 0);
     }
 
     async addDebugObjects(world: World) {
@@ -226,13 +252,13 @@ export class Mesh extends Shape {
         this.vertices = meshInfo.vertexs;
         this.faces = meshInfo.faces;
 
-        if (meshInfo.vertexColors.length) {
+        if (meshInfo.vertexColors && meshInfo.vertexColors.length) {
             this.vertexColors = meshInfo.vertexColors;
         }
-        if (meshInfo.vertexNormal.length) {
+        if (meshInfo.vertexNormal && meshInfo.vertexNormal.length) {
             this.vertexNormal = meshInfo.vertexNormal;
         }
-        if (meshInfo.textureCoordinates.length) {
+        if (meshInfo.textureCoordinates && meshInfo.textureCoordinates.length) {
             this.textureCoordinates = meshInfo.textureCoordinates;
         }
     }

@@ -18,6 +18,7 @@ export interface IVertex {
     pos: Vector3;
     normal?: Vector3;
     textureCoordinate?: Point;
+    textureCoordinateIndex?: number;
     vertexColor?: Vector3;
 }
 export interface IFace {
@@ -122,11 +123,12 @@ export function facesToMesh(faces: IFace[]) {
             }
 
             if (vertex.textureCoordinate) {
+                vertex.textureCoordinateIndex = ret.textureCoordinates.length;
                 ret.textureCoordinates.push(vertex.textureCoordinate[0]);
                 ret.textureCoordinates.push(vertex.textureCoordinate[1]);
             }
 
-            if(vertex.vertexColor){
+            if (vertex.vertexColor) {
                 ret.vertexColors.push(vertex.vertexColor[0]);
                 ret.vertexColors.push(vertex.vertexColor[1]);
                 ret.vertexColors.push(vertex.vertexColor[2]);
@@ -139,6 +141,10 @@ export function facesToMesh(faces: IFace[]) {
         for (let indexFaceIndex = 0; indexFaceIndex < face.indexes.length; indexFaceIndex++) {
             ret.faces.push(faceStartIndex + face.indexes[indexFaceIndex]);
         }
+    }
+
+    for (let i = 0; i < faces.length; i++) {
+        const element = faces[i];
     }
     return ret;
 }

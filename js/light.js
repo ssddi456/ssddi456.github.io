@@ -71,7 +71,7 @@ define('js/light', ['require', 'exports', 'module', "./shaders/vertex_color_shad
       -1.0, -1.0, -1.0,
       -1.0, -1.0, 1.0,
       -1.0, 1.0, 1.0,
-      -1.0, 1.0, -1.0
+      -1.0, 1.0, -1.0,
   ].map(function (x) {
       return x * 0.5;
   });

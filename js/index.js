@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./light", "./mesh", "./libs/plane", "./libs/player_control", "./libs/level_control"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./light", "./mesh", "./libs/plane", "./libs/player_control", "./libs/level_control", "./libs/utils"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -44,6 +44,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var plane_1 = require("./libs/plane");
   var player_control_1 = require("./libs/player_control");
   var level_control_1 = require("./libs/level_control");
+  var utils_1 = require("./libs/utils");
   var main = $('#main')[0];
   var elBBox = main.getClientRects()[0];
   var size = { width: elBBox.width, height: elBBox.width * 0.75 };
@@ -53,7 +54,11 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   });
   main.width = size.width;
   main.height = size.height;
-  var world = new world_1.World(main.getContext('webgl'), size);
+  var context = main.getContext('webgl');
+  if (!context) {
+      throw new Error('create webgl context failed');
+  }
+  var world = new world_1.World(context, size);
   var mainCamara = new world_1.Camara();
   mainCamara.height = size.height;
   mainCamara.width = size.width;
@@ -205,20 +210,8 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   dummyPlayerControl.on('enterExit', function () {
       levelControler.levelPass();
   });
-  function loopFactory(updater, updateInterval) {
-      var startTime = Date.now();
-      var ret = function () {
-          var currentTime = Date.now();
-          var delta = currentTime - startTime;
-          if (updateInterval < delta) {
-              startTime = currentTime;
-              updater();
-          }
-          requestAnimationFrame(ret);
-      };
-      return ret;
-  }
-  var updateLoop = loopFactory(function () {
+  var drawFrequant = 30;
+  var updateLoop = utils_1.loopFactory(function () {
       if (levelControler.transformLevel) {
           // console.log('transform');
           // 在别处实现动画逻辑
@@ -249,11 +242,13 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           dummyPlayerControl.accelerate(currentDir);
           var deltaPos = dummyPlayerControl.move(levelControler.maze);
           dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
+          levelControler.update();
+          levelControler.mazeMesh.rebuffering(world.gl, world);
       }
-  }, 1000 / 30);
-  var drawLoop = loopFactory(function () {
+  }, 1000 / drawFrequant);
+  var drawLoop = utils_1.loopFactory(function () {
       world.render();
-  }, 1000 / 60);
+  }, 1000 / drawFrequant);
   loadShapes().then(function () {
       levelControler.reset();
       updateLoop();

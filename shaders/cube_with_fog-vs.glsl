@@ -1,7 +1,8 @@
-attribute highp vec4 aVertexColor;
-attribute highp vec3 aVertexNormal;
+attribute vec4 aVertexColor;
 attribute highp vec3 aVertexPosition;
+attribute highp vec3 aVertexNormal;
 attribute highp vec2 aTextureCoord;
+attribute highp vec2 aFog;
 
 uniform highp mat4 uNormalMatrix;
 
@@ -24,8 +25,7 @@ void main(void) {
 
     highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
     highp float directional = max(dot(transformedNormal.xyz, uDirectionalVector), 0.0);
-
-    vColor = aVertexColor;
+    vColor = vec4(aVertexColor.xyz, aFog.s);
     // 这里应该有一个更好的定义基础材质的算法
     vLighting = ambientLight + (uDirectionalLightColor * directional);
 }

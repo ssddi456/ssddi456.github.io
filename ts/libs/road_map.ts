@@ -6,12 +6,17 @@ import { Point } from './2dRoad';
  *  [0, 0, 0],
  *  [0, 0, 0],
  * ]
- * 
+ *
  * 来构成一个地图，0为不通过，1为可以通过。
  */
+interface IMapCell {
+    canWalkThrough: boolean;
+    visited: boolean;
+    visible: boolean;
+}
 
 export class RoadMap {
-    grid: number[][];
+    grid: IMapCell[][];
     width = 0;
     height = 0;
 
@@ -22,22 +27,40 @@ export class RoadMap {
         this.grid = [];
         this.width = x;
         this.height = y;
-
-
     }
 
     resetGrid() {
-        this.grid = [];
+        this.grid = this.grid || [];
+        this.grid.splice(this.height, this.grid.length - this.height);
+
         for (let indexY = 0; indexY < this.height; indexY++) {
-            const row = [];
-            this.grid.push(row);
+            let row: IMapCell[];
+            if (!this.grid[indexY]) {
+                row = [];
+                this.grid.push(row);
+            }
+            row = this.grid[indexY];
+            row.splice(this.width, row.length - this.width);
+
             for (let indexX = 0; indexX < this.width; indexX++) {
-                row.push(0);
+                let el = row[indexX];
+                if (el === undefined) {
+                    el = {
+                        canWalkThrough: false,
+                        visited: false,
+                        visible: false,
+                    };
+                    row.push(el);
+                } else {
+                    el.canWalkThrough = false;
+                    el.visited = false;
+                    el.visible = false;
+                }
             }
         }
     }
     setWall(x: number, y: number) {
-        this.grid[y][x] = 0;
+        this.grid[y][x].canWalkThrough = false;
     }
     isInGrid(x: number, y: number) {
         if (x < 0 ||
@@ -53,10 +76,10 @@ export class RoadMap {
         if (!this.isInGrid(x, y)) {
             return false;
         }
-        return this.grid[y][x] === 1;
+        return this.grid[y][x].canWalkThrough;
     }
     setWalkThrough(x: number, y: number) {
-        this.grid[y][x] = 1;
+        this.grid[y][x].canWalkThrough = true;
     }
     setRoad(a: [number, number], b: [number, number]) {
         let increaser;
@@ -75,7 +98,7 @@ export class RoadMap {
         const direction = (b[increaser] - a[increaser]) / step;
 
         for (let index = 0; index < step; index += 1) {
-            const pos = [] as [number, number];
+            const pos: Point = [0, 0];
             pos[fixer] = a[fixer];
             pos[increaser] = start + index * direction;
             this.setWalkThrough.apply(this, pos);
@@ -109,7 +132,7 @@ export class RoadMap {
         for (let indexY = 0; indexY < this.grid.length; indexY++) {
             const row = this.grid[indexY];
             for (let indexX = 0; indexX < this.grid.length; indexX++) {
-                if (row[indexX] === 1) {
+                if (row[indexX].canWalkThrough) {
                     ret.push([indexX, indexY]);
                 }
             }
@@ -117,17 +140,22 @@ export class RoadMap {
         return ret;
     }
 
-    forEach(walker: (x: number, y: number) => any) {
+    forEach(walker: (x: number, y: number, cell: IMapCell, index?: number) => any) {
         for (let indexY = 0; indexY < this.grid.length; indexY++) {
             const row = this.grid[indexY];
             for (let indexX = 0; indexX < row.length; indexX++) {
-                walker(indexX, indexY);
+                walker(indexX, indexY, row[indexX], this.posToIndex(indexX, indexY));
             }
         }
     }
 
-    getArround(x: number, y: number) {
-        const deltas = [-1, 0, 1];
+    getArround(x: number, y: number, distance: number = 2) {
+        const deltas = [0];
+        for (let j = 1; j < distance; j++) {
+            deltas.push(j);
+            deltas.unshift(-1 * j);
+        }
+
         const ret = [] as Point[];
         for (let indexY = 0; indexY < deltas.length; indexY++) {
             const deltaY = deltas[indexY];
@@ -141,6 +169,17 @@ export class RoadMap {
         return ret;
     }
 
+    posToIndex(x: number, y: number) {
+        return y * this.width + x;
+    }
+    indexToPos(index: number) {
+        const x = index % this.width;
+        const ret = [x, Math.floor(index / this.width)];
+        return ret;
+    }
+    getCell(x: number, y: number) {
+        return this.grid[y][x];
+    }
     getNearBy(x: number, y: number) {
         const ret = [] as Point[];
         if (this.isInGrid(x, y - 1)) {
@@ -157,6 +196,8 @@ export class RoadMap {
         }
         return ret;
     }
+
+
 
     getCheckPos(x: number, y: number) {
         const ret = [] as Array<{ check: [number, number], add: [number, number] }>;
@@ -202,11 +243,13 @@ export class RoadMap {
                 // random push
                 while (blocked.length) {
                     const block = blocked.pop();
-                    this.setWalkThrough(block.add[0], block.add[1]);
-                    if (Math.random() >= 0.5) {
-                        waitForCheck.push(block.check);
-                    } else {
-                        waitForCheck.unshift(block.check);
+                    if (block) {
+                        this.setWalkThrough(block.add[0], block.add[1]);
+                        if (Math.random() >= 0.5) {
+                            waitForCheck.push(block.check);
+                        } else {
+                            waitForCheck.unshift(block.check);
+                        }
                     }
                 }
             }

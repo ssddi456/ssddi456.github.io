@@ -1,4 +1,4 @@
-define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], function(require, exports, module) {
+define('js/mesh', ['require', 'exports', 'module', "./shape", "./line", "./libs/utils"], function(require, exports, module) {
 
   "use strict";
   var __extends = (this && this.__extends) || (function () {
@@ -49,6 +49,7 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
   exports.__esModule = true;
   var shape_1 = require("./shape");
   var line_1 = require("./line");
+  var utils_1 = require("./libs/utils");
   var Mesh = /** @class */ (function (_super) {
       __extends(Mesh, _super);
       function Mesh() {
@@ -89,7 +90,7 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
           });
       };
       Mesh.prototype.clone = function () {
-          var newInstance = new Mesh();
+          var newInstance = new this.constructor();
           newInstance.vertices = this.vertices.slice(0);
           newInstance.faces = this.faces.slice(0);
           if (this.vertexColors) {
@@ -118,24 +119,24 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
               return __generator(this, function (_a) {
                   switch (_a.label) {
                       case 0:
-                          this.vertexBuffer = gl.createBuffer();
+                          this.vertexBuffer = utils_1.createBuffer(gl);
                           gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
                           gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
-                          this.facesBuffer = gl.createBuffer();
+                          this.facesBuffer = utils_1.createBuffer(gl);
                           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
                           gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
                           if (this.vertexColors) {
-                              this.vertexColorBuffer = gl.createBuffer();
+                              this.vertexColorBuffer = utils_1.createBuffer(gl);
                               gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
                               gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexColors), gl.STATIC_DRAW);
                           }
                           if (this.textureCoordinates) {
-                              this.textureCoordinatesBuffer = gl.createBuffer();
+                              this.textureCoordinatesBuffer = utils_1.createBuffer(gl);
                               gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
                               gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
                           }
                           if (this.vertexNormal) {
-                              this.vertexNormalBuffer = gl.createBuffer();
+                              this.vertexNormalBuffer = utils_1.createBuffer(gl);
                               gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
                               gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
                           }
@@ -152,7 +153,7 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
               });
           });
       };
-      Mesh.prototype.rebuffering = function (gl, world) {
+      Mesh.prototype.rebuffering = function (gl, world, attribute) {
           gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
           gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
@@ -169,6 +170,25 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
               gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
               gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
           }
+      };
+      Mesh.prototype.bindBufferAndDraw = function (shader, gl) {
+          shader.bindBuffer('aVertexPosition', this.vertexBuffer);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
+          if (this.texture) {
+              gl.activeTexture(gl.TEXTURE0);
+              gl.bindTexture(gl.TEXTURE_2D, this.texture);
+              shader.bindBuffer('uSampler', 0);
+          }
+          if (this.vertexColors && this.vertexColors.length) {
+              shader.bindBuffer('aVertexColor', this.vertexColorBuffer);
+          }
+          if (this.vertexNormal && this.vertexNormal.length) {
+              shader.bindBuffer('aVertexNormal', this.vertexNormalBuffer);
+          }
+          if (this.textureCoordinates && this.textureCoordinates.length) {
+              shader.bindBuffer('aTextureCoord', this.textureCoordinatesBuffer);
+          }
+          gl.drawElements(gl.TRIANGLES, this.faces.length, gl.UNSIGNED_SHORT, 0);
       };
       Mesh.prototype.addDebugObjects = function (world) {
           return __awaiter(this, void 0, void 0, function () {
@@ -275,13 +295,13 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line"], functio
       Mesh.prototype.updateMeshInfo = function (meshInfo) {
           this.vertices = meshInfo.vertexs;
           this.faces = meshInfo.faces;
-          if (meshInfo.vertexColors.length) {
+          if (meshInfo.vertexColors && meshInfo.vertexColors.length) {
               this.vertexColors = meshInfo.vertexColors;
           }
-          if (meshInfo.vertexNormal.length) {
+          if (meshInfo.vertexNormal && meshInfo.vertexNormal.length) {
               this.vertexNormal = meshInfo.vertexNormal;
           }
-          if (meshInfo.textureCoordinates.length) {
+          if (meshInfo.textureCoordinates && meshInfo.textureCoordinates.length) {
               this.textureCoordinates = meshInfo.textureCoordinates;
           }
       };

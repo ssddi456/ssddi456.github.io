@@ -9,6 +9,7 @@ export abstract class Shader {
 
     abstract vertexShaderFactory: ShaderFactory;
     abstract fragementShaderFactory: ShaderFactory;
+    bindBuffer?(k: string, value: WebGLBuffer | Float32Array | number): void;
     clone() {
         const newInstance = new (this.constructor as ShaderSubclass)();
         newInstance.vertexShaderFactory = this.vertexShaderFactory;

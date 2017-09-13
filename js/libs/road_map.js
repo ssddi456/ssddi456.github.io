@@ -2,15 +2,6 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
 
   "use strict";
   exports.__esModule = true;
-  /**
-   * [
-   *  [0, 0, 0],
-   *  [0, 0, 0],
-   *  [0, 0, 0],
-   * ]
-   *
-   * 来构成一个地图，0为不通过，1为可以通过。
-   */
   var RoadMap = /** @class */ (function () {
       function RoadMap(x, y) {
           this.width = 0;
@@ -20,17 +11,36 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
           this.height = y;
       }
       RoadMap.prototype.resetGrid = function () {
-          this.grid = [];
+          this.grid = this.grid || [];
+          this.grid.splice(this.height, this.grid.length - this.height);
           for (var indexY = 0; indexY < this.height; indexY++) {
-              var row = [];
-              this.grid.push(row);
+              var row = void 0;
+              if (!this.grid[indexY]) {
+                  row = [];
+                  this.grid.push(row);
+              }
+              row = this.grid[indexY];
+              row.splice(this.width, row.length - this.width);
               for (var indexX = 0; indexX < this.width; indexX++) {
-                  row.push(0);
+                  var el = row[indexX];
+                  if (el === undefined) {
+                      el = {
+                          canWalkThrough: false,
+                          visited: false,
+                          visible: false
+                      };
+                      row.push(el);
+                  }
+                  else {
+                      el.canWalkThrough = false;
+                      el.visited = false;
+                      el.visible = false;
+                  }
               }
           }
       };
       RoadMap.prototype.setWall = function (x, y) {
-          this.grid[y][x] = 0;
+          this.grid[y][x].canWalkThrough = false;
       };
       RoadMap.prototype.isInGrid = function (x, y) {
           if (x < 0 ||
@@ -45,10 +55,10 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
           if (!this.isInGrid(x, y)) {
               return false;
           }
-          return this.grid[y][x] === 1;
+          return this.grid[y][x].canWalkThrough;
       };
       RoadMap.prototype.setWalkThrough = function (x, y) {
-          this.grid[y][x] = 1;
+          this.grid[y][x].canWalkThrough = true;
       };
       RoadMap.prototype.setRoad = function (a, b) {
           var increaser;
@@ -65,7 +75,7 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
           var step = Math.abs(b[increaser] - a[increaser]);
           var direction = (b[increaser] - a[increaser]) / step;
           for (var index = 0; index < step; index += 1) {
-              var pos = [];
+              var pos = [0, 0];
               pos[fixer] = a[fixer];
               pos[increaser] = start + index * direction;
               this.setWalkThrough.apply(this, pos);
@@ -97,7 +107,7 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
           for (var indexY = 0; indexY < this.grid.length; indexY++) {
               var row = this.grid[indexY];
               for (var indexX = 0; indexX < this.grid.length; indexX++) {
-                  if (row[indexX] === 1) {
+                  if (row[indexX].canWalkThrough) {
                       ret.push([indexX, indexY]);
                   }
               }
@@ -108,12 +118,17 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
           for (var indexY = 0; indexY < this.grid.length; indexY++) {
               var row = this.grid[indexY];
               for (var indexX = 0; indexX < row.length; indexX++) {
-                  walker(indexX, indexY);
+                  walker(indexX, indexY, row[indexX], this.posToIndex(indexX, indexY));
               }
           }
       };
-      RoadMap.prototype.getArround = function (x, y) {
-          var deltas = [-1, 0, 1];
+      RoadMap.prototype.getArround = function (x, y, distance) {
+          if (distance === void 0) { distance = 2; }
+          var deltas = [0];
+          for (var j = 1; j < distance; j++) {
+              deltas.push(j);
+              deltas.unshift(-1 * j);
+          }
           var ret = [];
           for (var indexY = 0; indexY < deltas.length; indexY++) {
               var deltaY = deltas[indexY];
@@ -125,6 +140,17 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
               }
           }
           return ret;
+      };
+      RoadMap.prototype.posToIndex = function (x, y) {
+          return y * this.width + x;
+      };
+      RoadMap.prototype.indexToPos = function (index) {
+          var x = index % this.width;
+          var ret = [x, Math.floor(index / this.width)];
+          return ret;
+      };
+      RoadMap.prototype.getCell = function (x, y) {
+          return this.grid[y][x];
       };
       RoadMap.prototype.getNearBy = function (x, y) {
           var ret = [];
@@ -186,12 +212,14 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
                   // random push
                   while (blocked.length) {
                       var block = blocked.pop();
-                      this.setWalkThrough(block.add[0], block.add[1]);
-                      if (Math.random() >= 0.5) {
-                          waitForCheck.push(block.check);
-                      }
-                      else {
-                          waitForCheck.unshift(block.check);
+                      if (block) {
+                          this.setWalkThrough(block.add[0], block.add[1]);
+                          if (Math.random() >= 0.5) {
+                              waitForCheck.push(block.check);
+                          }
+                          else {
+                              waitForCheck.unshift(block.check);
+                          }
                       }
                   }
               }

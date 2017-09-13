@@ -84,6 +84,7 @@ define('js/libs/2dRoad', ['require', 'exports', 'module'], function(require, exp
                   ret.vertexNormal.push(vertex.normal[2]);
               }
               if (vertex.textureCoordinate) {
+                  vertex.textureCoordinateIndex = ret.textureCoordinates.length;
                   ret.textureCoordinates.push(vertex.textureCoordinate[0]);
                   ret.textureCoordinates.push(vertex.textureCoordinate[1]);
               }
@@ -98,6 +99,9 @@ define('js/libs/2dRoad', ['require', 'exports', 'module'], function(require, exp
           for (var indexFaceIndex = 0; indexFaceIndex < face.indexes.length; indexFaceIndex++) {
               ret.faces.push(faceStartIndex + face.indexes[indexFaceIndex]);
           }
+      }
+      for (var i = 0; i < faces.length; i++) {
+          var element = faces[i];
       }
       return ret;
   }

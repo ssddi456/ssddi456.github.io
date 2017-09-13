@@ -2,15 +2,19 @@ import { RoadMap } from "./road_map";
 import { IFace, IMeshInfo, IVertex, Vector3, Point, facesToMesh, Color } from "./2dRoad";
 
 export const gridSize = 1;
+export interface ICellFace extends IFace {
+    index: number;
+}
 export class Mesh3dRoad {
     roadMap: RoadMap;
+    faces: ICellFace[];
     constructor(roadMap: RoadMap) {
         this.roadMap = roadMap;
     }
     getMesh() {
         const roadMap = this.roadMap;
 
-        const jointFaces = [] as IFace[];
+        const jointFaces = [] as ICellFace[];
         const wallColorMap = {};
 
 
@@ -22,17 +26,21 @@ export class Mesh3dRoad {
             return wallColorMap[wallColorIndex];
         }
 
-        roadMap.forEach((wayPosX, wayPosY) => {
+        roadMap.forEach((wayPosX, wayPosY, cell, index) => {
             const top = wayPosX * gridSize;
             const left = wayPosY * gridSize;
             const bottom = (wayPosX + 1) * gridSize;
             const right = (wayPosY + 1) * gridSize;
 
+            const addFace = function (face: IFace) {
+                jointFaces.push(markCell(index, face));
+            };
+
             if (!roadMap.canWalkThrough(wayPosX, wayPosY)) {
                 const wallColorIndex = getWallColor(wayPosX, wayPosY);
                 const wallUseColor = wallColors[wallColorIndex];
                 const wallHeight = (Math.random() * 1 + 0.3) * gridSize;
-                jointFaces.push(createTopSquare(
+                addFace(createTopSquare(
                     top,
                     left,
                     bottom,
@@ -41,13 +49,13 @@ export class Mesh3dRoad {
                     wallUseColor,
                 ));
                 // front
-                jointFaces.push(createFrontSquare(top, left, bottom, wallHeight, BackZAxis, wallUseColor));
+                addFace(createFrontSquare(top, left, bottom, wallHeight, BackZAxis, wallUseColor));
                 // back
-                jointFaces.push(createFrontSquare(bottom, right, top, wallHeight, FrontZAxis, wallUseColor));
+                addFace(createFrontSquare(bottom, right, top, wallHeight, FrontZAxis, wallUseColor));
                 // right
-                jointFaces.push(createSideSquare(top, right, left, wallHeight, LeftXAxis, wallUseColor));
+                addFace(createSideSquare(top, right, left, wallHeight, LeftXAxis, wallUseColor));
                 // left
-                jointFaces.push(createSideSquare(bottom, left, right, wallHeight, RightXAxis, wallUseColor));
+                addFace(createSideSquare(bottom, left, right, wallHeight, RightXAxis, wallUseColor));
 
                 return;
             }
@@ -64,7 +72,7 @@ export class Mesh3dRoad {
                 groundUseColor = exitColor;
             }
 
-            jointFaces.push(createTopSquare(
+            addFace(createTopSquare(
                 top,
                 left,
                 bottom,
@@ -73,34 +81,8 @@ export class Mesh3dRoad {
                 groundUseColor,
             ));
 
-            // const nearBys = this.roadMap.getNearBy(wayPosX, wayPosY);
-            // nearBys.forEach((nearBy) => {
-            //     if (!this.roadMap.canWalkThrough(nearBy[0], nearBy[1])) {
-
-            //         const wallColorIndex = getWallColor(nearBy[0], nearBy[1]);
-            //         const wallUseColor = wallColors[wallColorIndex];
-
-            //         if (nearBy[0] === wayPosX) {
-            //             if (nearBy[1] > wayPosY) {
-            //                 // create front
-            //                 jointFaces.push(createFrontSquare(top, right, bottom, BackZAxis, wallUseColor));
-            //             } else if (nearBy[1] < wayPosY) {
-            //                 // create back
-            //                 jointFaces.push(createFrontSquare(bottom, left, top, FrontZAxis, wallUseColor));
-            //             }
-            //         } else if (nearBy[1] === wayPosY) {
-            //             if (nearBy[0] > wayPosX) {
-            //                 // create right
-            //                 jointFaces.push(createSideSquare(bottom, right, left, LeftXAxis, wallUseColor));
-            //             } else if (nearBy[0] < wayPosX) {
-            //                 // create left
-            //                 jointFaces.push(createSideSquare(top, left, right, RightXAxis, wallUseColor));
-            //             }
-            //         }
-            //     }
-            // });
         });
-
+        this.faces = jointFaces;
         return facesToMesh(jointFaces);
     }
 }
@@ -148,7 +130,7 @@ export const entranceColor = [0, 0, 1, 0.5] as Color;
 export const exitColor = [0, 1, 0, 0.5] as Color;
 export const wallColor = [1, 0.1, 0, 0.6] as Color;
 export const groundColor = [0, 0, 0, 0.2] as Color;
- 
+
 export const frontColor = [1.0, 1.0, 1.0, 1.0] as Color;
 export const backColor = [1.0, 0.0, 0.0, 1.0] as Color;
 export const topColor = [0.0, 1.0, 0.0, 1.0] as Color;
@@ -173,6 +155,10 @@ const textureCoordinatePreset = [
     [0, 1],
 ] as Point[];
 
+function markCell(index: number, face: IFace) {
+    (face as ICellFace).index = index;
+    return face as ICellFace;
+}
 function createSquare(vertexes: IVertex[]) {
     const ret: IFace = {
         vertexes,

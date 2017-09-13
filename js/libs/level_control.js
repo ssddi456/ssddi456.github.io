@@ -1,6 +1,24 @@
-define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "../shaders/cube_with_texture_and_lighting_shader", "../mesh", "./road_map", "./utils"], function(require, exports, module) {
+define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "../shaders/cube_with_fog", "../mesh", "./road_map", "./utils"], function(require, exports, module) {
 
   "use strict";
+  var __extends = (this && this.__extends) || (function () {
+      var extendStatics = Object.setPrototypeOf ||
+          ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+          function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+      return function (d, b) {
+          extendStatics(d, b);
+          function __() { this.constructor = d; }
+          d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+      };
+  })();
+  var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+      return new (P || (P = Promise))(function (resolve, reject) {
+          function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+          function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+          function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+          step((generator = generator.apply(thisArg, _arguments || [])).next());
+      });
+  };
   var __generator = (this && this.__generator) || function (thisArg, body) {
       var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
       return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
@@ -30,7 +48,7 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
   };
   exports.__esModule = true;
   var _3dRoad_1 = require("./3dRoad");
-  var cube_with_texture_and_lighting_shader_1 = require("../shaders/cube_with_texture_and_lighting_shader");
+  var cube_with_fog_1 = require("../shaders/cube_with_fog");
   var mesh_1 = require("../mesh");
   var road_map_1 = require("./road_map");
   var utils_1 = require("./utils");
@@ -44,6 +62,48 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
    *   2 地图大小
    *   3 演出效果
    */
+  var MeshWithFog = /** @class */ (function (_super) {
+      __extends(MeshWithFog, _super);
+      function MeshWithFog() {
+          return _super !== null && _super.apply(this, arguments) || this;
+      }
+      MeshWithFog.prototype.init = function (gl, world) {
+          return __awaiter(this, void 0, void 0, function () {
+              return __generator(this, function (_a) {
+                  switch (_a.label) {
+                      case 0: return [4 /*yield*/, _super.prototype.init.call(this, gl, world)];
+                      case 1:
+                          _a.sent();
+                          this.fog = this.textureCoordinates.map(function (x) { return 1; });
+                          this.fogBuffer = utils_1.createBuffer(gl);
+                          gl.bindBuffer(gl.ARRAY_BUFFER, this.fogBuffer);
+                          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.fog), gl.STATIC_DRAW);
+                          return [2 /*return*/];
+                  }
+              });
+          });
+      };
+      MeshWithFog.prototype.updateMeshInfo = function (meshInfo) {
+          _super.prototype.updateMeshInfo.call(this, meshInfo);
+          this.fog = this.textureCoordinates.map(function (x) { return 1; });
+      };
+      MeshWithFog.prototype.clone = function () {
+          var ret = _super.prototype.clone.call(this);
+          ret.fog = this.fog.slice();
+          return ret;
+      };
+      MeshWithFog.prototype.rebuffering = function (gl, world, attribute) {
+          _super.prototype.rebuffering.call(this, gl, world, attribute);
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.fogBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.fog), gl.STATIC_DRAW);
+      };
+      MeshWithFog.prototype.bindBufferAndDraw = function (shader, gl) {
+          shader.bindBuffer('aFog', this.fogBuffer);
+          _super.prototype.bindBufferAndDraw.call(this, shader, gl);
+      };
+      return MeshWithFog;
+  }(mesh_1.Mesh));
+  var fogChanging = 1 / 30; // 迷雾的渐变速度
   var LevelControler = /** @class */ (function () {
       function LevelControler(player) {
           this.currentLevel = 1;
@@ -51,10 +111,55 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
           this.player = player;
           this.maze = new road_map_1.RoadMap(10, 10);
           this.meshTranseformer = new _3dRoad_1.Mesh3dRoad(this.maze);
-          this.mazeMesh = new mesh_1.Mesh();
+          this.mazeMesh = new MeshWithFog();
           this.mazeMesh.textureSrc = '/images/white.jpg';
-          this.mazeMesh.shader = new cube_with_texture_and_lighting_shader_1.CubeWithTextureAndLightingShader();
+          this.mazeMesh.shader = new cube_with_fog_1.CubeWithFogShader();
       }
+      LevelControler.prototype.update = function () {
+          var _this = this;
+          var pos = this.player.currentPos.map(Math.floor);
+          var visibles = this.maze.getArround(pos[0], pos[1], 3)
+              .filter(function (x) { return _this.maze.isInGrid(x[0], x[1]); })
+              .map(function (x) { return _this.maze.posToIndex(x[0], x[1]); });
+          visibles.push(this.maze.posToIndex(pos[0], pos[1]));
+          this.meshTranseformer.faces.forEach(function (face) {
+              var cellpos = _this.maze.indexToPos(face.index);
+              var cell = _this.maze.getCell(cellpos[0], cellpos[1]);
+              if (visibles.indexOf(face.index) !== -1) {
+                  cell.visible = true;
+                  cell.visited = true;
+              }
+              else {
+                  cell.visible = false;
+              }
+              var targetVal = 0;
+              if (cell.visible) {
+                  targetVal = 1;
+              }
+              else if (cell.visited) {
+                  targetVal = 0.5;
+              }
+              else {
+                  targetVal = 0;
+              }
+              if (cellpos[0] === _this.maze.exit[0] && cellpos[1] === _this.maze.exit[1]) {
+                  targetVal = 1;
+              }
+              var fogIndex = 0;
+              var fog = _this.mazeMesh.fog;
+              var oldFog = fog[face.vertexes[0].textureCoordinateIndex];
+              if (oldFog !== targetVal) {
+                  var delta = targetVal - oldFog;
+                  var newVal = targetVal;
+                  if (Math.abs(delta) > fogChanging) {
+                      newVal = oldFog + (targetVal > oldFog ? 1 : -1) * fogChanging;
+                  }
+                  for (var faceVertexIndex = 0; faceVertexIndex < face.vertexes.length; faceVertexIndex++) {
+                      fog[face.vertexes[faceVertexIndex].textureCoordinateIndex] = newVal;
+                  }
+              }
+          });
+      };
       LevelControler.prototype.passLevel = function () {
           this.currentLevel += 1;
           this.levelInitialed = false;
@@ -150,19 +255,7 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
           this.player.resetPos(startX + 0.5, startY + 0.5);
           this.maze.generateRandonRoad(startX, startY);
           var meshInfo = this.meshTranseformer.getMesh();
-          this.mazeMesh.debug = false;
-          this.mazeMesh.visible = true;
-          this.mazeMesh.vertices = meshInfo.vertexs;
-          this.mazeMesh.faces = meshInfo.faces;
-          if (meshInfo.vertexColors.length) {
-              this.mazeMesh.vertexColors = meshInfo.vertexColors;
-          }
-          if (meshInfo.vertexNormal.length) {
-              this.mazeMesh.vertexNormal = meshInfo.vertexNormal;
-          }
-          if (meshInfo.textureCoordinates.length) {
-              this.mazeMesh.textureCoordinates = meshInfo.textureCoordinates;
-          }
+          this.mazeMesh.updateMeshInfo(meshInfo);
           this.levelInitialed = true;
           if (this.currentLevel > 1) {
               this.playAnima(this.startLevelAnima);

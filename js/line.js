@@ -1,4 +1,4 @@
-define('js/line', ['require', 'exports', 'module', "./shape", "./shaders/line_vertex_color_shader"], function(require, exports, module) {
+define('js/line', ['require', 'exports', 'module', "./shape", "./shaders/line_vertex_color_shader", "./libs/utils"], function(require, exports, module) {
 
   "use strict";
   var __extends = (this && this.__extends) || (function () {
@@ -49,6 +49,7 @@ define('js/line', ['require', 'exports', 'module', "./shape", "./shaders/line_ve
   exports.__esModule = true;
   var shape_1 = require("./shape");
   var line_vertex_color_shader_1 = require("./shaders/line_vertex_color_shader");
+  var utils_1 = require("./libs/utils");
   var Line = /** @class */ (function (_super) {
       __extends(Line, _super);
       function Line() {
@@ -67,13 +68,13 @@ define('js/line', ['require', 'exports', 'module', "./shape", "./shaders/line_ve
       Line.prototype.init = function (gl) {
           return __awaiter(this, void 0, void 0, function () {
               return __generator(this, function (_a) {
-                  this.lineBuffer = gl.createBuffer();
+                  this.lineBuffer = utils_1.createBuffer(gl);
                   gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer);
                   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.points), gl.STATIC_DRAW);
-                  this.vertexColorBuffer = gl.createBuffer();
+                  this.vertexColorBuffer = utils_1.createBuffer(gl);
                   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
                   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticesColor), gl.STATIC_DRAW);
-                  this.indexBuffer = gl.createBuffer();
+                  this.indexBuffer = utils_1.createBuffer(gl);
                   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
                   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.index), gl.STATIC_DRAW);
                   this.shader.init(gl);

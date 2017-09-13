@@ -3,6 +3,7 @@ import { World } from "./world";
 import { Shader } from "./shaders/base_shader";
 import { LineVertexColorShader } from "./shaders/line_vertex_color_shader";
 import { Vector3 } from "./libs/2dRoad";
+import { createBuffer } from "./libs/utils";
 
 export class Line extends Shape {
     start: Vector3;
@@ -17,20 +18,20 @@ export class Line extends Shape {
     verticesColor: number[];
     vertexColorBuffer: WebGLBuffer;
 
-    get points() {
+    get points(): number[] {
         return [].concat(this.start, this.end);
     }
     async init(gl: WebGLRenderingContext) {
 
-        this.lineBuffer = gl.createBuffer();
+        this.lineBuffer = createBuffer(gl);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.points), gl.STATIC_DRAW);
 
-        this.vertexColorBuffer = gl.createBuffer();
+        this.vertexColorBuffer = createBuffer(gl);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticesColor), gl.STATIC_DRAW);
 
-        this.indexBuffer = gl.createBuffer();
+        this.indexBuffer = createBuffer(gl);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.index), gl.STATIC_DRAW);
 

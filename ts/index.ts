@@ -13,6 +13,7 @@ import { RoadMap } from "./libs/road_map";
 import { Plane } from "./libs/plane";
 import { Player } from "./libs/player_control";
 import { LevelControler } from "./libs/level_control";
+import { loopFactory } from './libs/utils';
 
 const main = $('#main')[0] as HTMLCanvasElement;
 const elBBox = main.getClientRects()[0];
@@ -26,7 +27,11 @@ $('#main').css({
 main.width = size.width;
 main.height = size.height;
 
-const world = new World(main.getContext('webgl'), size);
+const context = main.getContext('webgl');
+if (!context) {
+    throw new Error('create webgl context failed');
+}
+const world = new World(context, size);
 
 const mainCamara = new Camara();
 mainCamara.height = size.height;
@@ -198,19 +203,7 @@ dummyPlayerControl.on('enterExit', () => {
     levelControler.levelPass();
 });
 
-function loopFactory(updater: () => any, updateInterval: number) {
-    let startTime = Date.now();
-    const ret = function () {
-        const currentTime = Date.now();
-        const delta = currentTime - startTime;
-        if (updateInterval < delta) {
-            startTime = currentTime;
-            updater();
-        }
-        requestAnimationFrame(ret);
-    };
-    return ret;
-}
+const drawFrequant = 30;
 
 const updateLoop = loopFactory(function () {
     if (levelControler.transformLevel) {
@@ -250,13 +243,15 @@ const updateLoop = loopFactory(function () {
         dummyPlayerControl.accelerate(currentDir);
         const deltaPos = dummyPlayerControl.move(levelControler.maze);
         dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
+
+        levelControler.update();
+        levelControler.mazeMesh.rebuffering(world.gl, world);
     }
-}, 1000 / 30);
+}, 1000 / drawFrequant);
 
 const drawLoop = loopFactory(function () {
     world.render();
-}, 1000 / 60);
-
+}, 1000 / drawFrequant);
 
 loadShapes().then(function () {
     levelControler.reset();
