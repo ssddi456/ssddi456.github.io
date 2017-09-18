@@ -55,9 +55,9 @@ async function loadShapes() {
 
     world.attachLight(skyLight);
 
-    await Promise.all([
+    [
         clampFloor,
-    ].map((x) => world.attachObject(x)));
+    ].map((x) => world.attachObject(x));
 }
 
 const updateLoop = loopFactory(function (tick) {

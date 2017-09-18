@@ -1,4 +1,4 @@
-define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "../shaders/cube_with_fog", "../mesh", "./road_map", "./utils"], function(require, exports, module) {
+define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "../mesh", "./road_map", "./utils", "./wanderer", "../shaders/cube_with_fog"], function(require, exports, module) {
 
   "use strict";
   var __extends = (this && this.__extends) || (function () {
@@ -11,14 +11,6 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
           d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
       };
   })();
-  var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-      return new (P || (P = Promise))(function (resolve, reject) {
-          function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-          function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-          function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-          step((generator = generator.apply(thisArg, _arguments || [])).next());
-      });
-  };
   var __generator = (this && this.__generator) || function (thisArg, body) {
       var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
       return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
@@ -48,10 +40,11 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
   };
   exports.__esModule = true;
   var _3dRoad_1 = require("./3dRoad");
-  var cube_with_fog_1 = require("../shaders/cube_with_fog");
   var mesh_1 = require("../mesh");
   var road_map_1 = require("./road_map");
   var utils_1 = require("./utils");
+  var wanderer_1 = require("./wanderer");
+  var cube_with_fog_1 = require("../shaders/cube_with_fog");
   /**
    * @file 关卡管理
    *
@@ -68,20 +61,11 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
           return _super !== null && _super.apply(this, arguments) || this;
       }
       MeshWithFog.prototype.init = function (gl, world) {
-          return __awaiter(this, void 0, void 0, function () {
-              return __generator(this, function (_a) {
-                  switch (_a.label) {
-                      case 0: return [4 /*yield*/, _super.prototype.init.call(this, gl, world)];
-                      case 1:
-                          _a.sent();
-                          this.fog = this.textureCoordinates.map(function (x) { return 1; });
-                          this.fogBuffer = utils_1.createBuffer(gl);
-                          gl.bindBuffer(gl.ARRAY_BUFFER, this.fogBuffer);
-                          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.fog), gl.STATIC_DRAW);
-                          return [2 /*return*/];
-                  }
-              });
-          });
+          _super.prototype.init.call(this, gl, world);
+          this.fog = this.textureCoordinates.map(function (x) { return 1; });
+          this.fogBuffer = utils_1.createBuffer(gl);
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.fogBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.fog), gl.STATIC_DRAW);
       };
       MeshWithFog.prototype.updateMeshInfo = function (meshInfo) {
           _super.prototype.updateMeshInfo.call(this, meshInfo);
@@ -103,11 +87,13 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
       };
       return MeshWithFog;
   }(mesh_1.Mesh));
-  var fogChanging = 1 / 30; // 迷雾的渐变速度
+  var fogChanging = 1 / 20; // 迷雾的渐变速度
   var LevelControler = /** @class */ (function () {
       function LevelControler(player) {
           this.currentLevel = 1;
           this.levelInitialed = false;
+          this.wanderers = [];
+          this.wanderersPool = [];
           this.player = player;
           this.maze = new road_map_1.RoadMap(10, 10);
           this.meshTranseformer = new _3dRoad_1.Mesh3dRoad(this.maze);
@@ -115,13 +101,21 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
           this.mazeMesh.textureSrc = '/images/white.jpg';
           this.mazeMesh.shader = new cube_with_fog_1.CubeWithFogShader();
       }
-      LevelControler.prototype.update = function () {
+      LevelControler.prototype.update = function (world) {
           var _this = this;
           var pos = this.player.currentPos.map(Math.floor);
-          var visibles = this.maze.getArround(pos[0], pos[1], 3)
+          var visibles = this.maze.getArround(pos[0], pos[1], this.player.sightRange)
               .filter(function (x) { return _this.maze.isInGrid(x[0], x[1]); })
               .map(function (x) { return _this.maze.posToIndex(x[0], x[1]); });
           visibles.push(this.maze.posToIndex(pos[0], pos[1]));
+          this.wanderers.forEach(function (wanderer) {
+              var delta = wanderer.move(_this.maze);
+              wanderer.mesh.x(Matrix.Translation($V([
+                  delta[0],
+                  0,
+                  delta[1],
+              ])));
+          });
           this.meshTranseformer.faces.forEach(function (face) {
               var cellpos = _this.maze.indexToPos(face.index);
               var cell = _this.maze.getCell(cellpos[0], cellpos[1]);
@@ -137,7 +131,7 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
                   targetVal = 1;
               }
               else if (cell.visited) {
-                  targetVal = 0.5;
+                  targetVal = 0.3;
               }
               else {
                   targetVal = 0;
@@ -247,7 +241,8 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
           this.player.currentPos[0] = 0;
           this.player.currentPos[1] = 0;
       };
-      LevelControler.prototype.levelStart = function () {
+      LevelControler.prototype.levelStart = function (world) {
+          var gl = world.gl;
           this.maze.width = 4 * this.hardness + this.currentLevel;
           this.maze.height = 3 * this.hardness + Math.round(this.currentLevel * 0.75);
           var startX = Math.floor(Math.random() * this.maze.width / 2);
@@ -256,6 +251,21 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
           this.maze.generateRandonRoad(startX, startY);
           var meshInfo = this.meshTranseformer.getMesh();
           this.mazeMesh.updateMeshInfo(meshInfo);
+          var walkThroughs = this.maze.getAllWalkThrough();
+          var wanderer;
+          if (!this.wanderers.length) {
+              wanderer = new wanderer_1.Wanderer();
+              world.attachObject(wanderer.mesh);
+              this.wanderers.push(wanderer);
+          }
+          else {
+              wanderer = this.wanderers[0];
+          }
+          var wandererPos = utils_1.randomItem(walkThroughs);
+          while (this.maze.isInSaveZone(wandererPos[0], wandererPos[1])) {
+              wandererPos = utils_1.randomItem(walkThroughs);
+          }
+          wanderer.moveTo(wandererPos, world);
           this.levelInitialed = true;
           if (this.currentLevel > 1) {
               this.playAnima(this.startLevelAnima);

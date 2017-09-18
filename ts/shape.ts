@@ -6,8 +6,20 @@ import { Shader } from "./shaders/base_shader";
 export abstract class Shape {
     visible: boolean = true;
     debug: boolean = false;
+    disposed: boolean = false;
+
     shader: Shader;
-    trs: Matrix =  Matrix.I(4);
+    _trs: Matrix = Matrix.I(4);
+    get trs(): Matrix {
+        if (this.parentShap) {
+            return this.parentShap.trs.x(this._trs);
+        }
+        return this._trs;
+    }
+    set trs(value: Matrix) {
+        this._trs = value;
+    }
+    parentShap: Shape;
 
     x(matrix: Matrix) {
         this.trs = this.trs.x(matrix);
@@ -15,8 +27,9 @@ export abstract class Shape {
     }
 
     inited: boolean = false;
-    abstract async init(gl: WebGLRenderingContext, world: World);
+    abstract init(gl: WebGLRenderingContext, world: World);
     abstract clone();
+    abstract dispose(world: World);
 
     updateDebug?(world: World, lights: Light[]);
 

@@ -9,6 +9,7 @@ define('js/libs/player_control', ['require', 'exports', 'module'], function(requ
           this.maxSpeed = [0, 0];
           this.speed = [0, 0];
           this.size = [0.25, 0.25];
+          this.sightRange = 3;
           this.events = {};
           this.resetPos(0, 0);
       }

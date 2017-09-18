@@ -63,7 +63,7 @@ export class Light {
     debug = false;
     debugMesh: Mesh;
 
-    async init(gl: WebGLRenderingContext, world: World) {
+    init(gl: WebGLRenderingContext, world: World) {
         this.direction = $V(this.direction).toUnitVector().elements;
 
         if (this.debug) {
@@ -82,7 +82,7 @@ export class Light {
                     }
                 }
 
-                await world.attachObject(this.debugMesh);
+                world.attachObject(this.debugMesh);
             }
         }
 

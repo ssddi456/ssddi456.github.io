@@ -1,11 +1,13 @@
-define('js/libs/road_map', ['require', 'exports', 'module'], function(require, exports, module) {
+define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], function(require, exports, module) {
 
   "use strict";
   exports.__esModule = true;
+  var _3dRoad_1 = require("./3dRoad");
   var RoadMap = /** @class */ (function () {
       function RoadMap(x, y) {
           this.width = 0;
           this.height = 0;
+          this.safeZoneSize = 3;
           this.grid = [];
           this.width = x;
           this.height = y;
@@ -184,6 +186,27 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
           }
           return ret;
       };
+      RoadMap.prototype.setSafeZone = function (centerX, centerY) {
+          this.safeZone = [
+              centerX - this.safeZoneSize, centerY - this.safeZoneSize,
+              centerX + this.safeZoneSize, centerY + this.safeZoneSize,
+          ];
+      };
+      RoadMap.prototype.getSafeZoneSize = function () {
+          return [
+              this.safeZone[0] * _3dRoad_1.gridSize, this.safeZone[1] * _3dRoad_1.gridSize,
+              (this.safeZone[2] + 1) * _3dRoad_1.gridSize, (this.safeZone[3] + 1) * _3dRoad_1.gridSize,
+          ];
+      };
+      RoadMap.prototype.isInSaveZone = function (x, y) {
+          var posX = Math.floor(x);
+          var posY = Math.floor(y);
+          if (!this.isInGrid(x, y)) {
+              return false;
+          }
+          return posX >= this.safeZone[0] && posX <= this.safeZone[2]
+              && posY >= this.safeZone[1] && posY <= this.safeZone[3];
+      };
       RoadMap.prototype.generateRandonRoad = function (startX, startY) {
           var _this = this;
           if (startX === void 0) { startX = 0; }
@@ -191,6 +214,7 @@ define('js/libs/road_map', ['require', 'exports', 'module'], function(require, e
           this.resetGrid();
           var waitForCheck = [];
           this.entrance = [startX, startY];
+          this.setSafeZone(startX, startY);
           waitForCheck.push(this.entrance);
           while (waitForCheck.length) {
               // random pop

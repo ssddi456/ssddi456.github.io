@@ -129,7 +129,7 @@ const wallColors = [[0.6875, 0.41796875, 0.4375, 0.4],
 export const entranceColor = [0, 0, 1, 0.5] as Color;
 export const exitColor = [0, 1, 0, 0.5] as Color;
 export const wallColor = [1, 0.1, 0, 0.6] as Color;
-export const groundColor = [0, 0, 0, 0.2] as Color;
+export const groundColor = [0.4, 0.4, 0.3, 0.2] as Color;
 
 export const frontColor = [1.0, 1.0, 1.0, 1.0] as Color;
 export const backColor = [1.0, 0.0, 0.0, 1.0] as Color;

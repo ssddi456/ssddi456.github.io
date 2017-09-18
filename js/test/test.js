@@ -80,16 +80,11 @@ define('js/test/test', ['require', 'exports', 'module', "../libs/plane", "../wor
   function loadShapes() {
       return __awaiter(this, void 0, void 0, function () {
           return __generator(this, function (_a) {
-              switch (_a.label) {
-                  case 0:
-                      world.attachLight(skyLight);
-                      return [4 /*yield*/, Promise.all([
-                              clampFloor,
-                          ].map(function (x) { return world.attachObject(x); }))];
-                  case 1:
-                      _a.sent();
-                      return [2 /*return*/];
-              }
+              world.attachLight(skyLight);
+              [
+                  clampFloor,
+              ].map(function (x) { return world.attachObject(x); });
+              return [2 /*return*/];
           });
       });
   }

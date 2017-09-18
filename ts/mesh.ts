@@ -9,6 +9,7 @@ import { Vector3, IMeshInfo } from "./libs/2dRoad";
 import { createBuffer } from "./libs/utils";
 
 export class Mesh extends Shape {
+
     vertices: number[];
     vertexBuffer: WebGLBuffer;
 
@@ -26,7 +27,6 @@ export class Mesh extends Shape {
 
     textureSrc: string;
     texture: WebGLTexture;
-
 
     async loadTexture(gl: WebGLRenderingContext) {
         if (!this.textureSrc) {
@@ -86,7 +86,7 @@ export class Mesh extends Shape {
         return newInstance;
     }
 
-    async init(gl: WebGLRenderingContext, world: World) {
+    init(gl: WebGLRenderingContext, world: World) {
         this.vertexBuffer = createBuffer(gl);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
@@ -113,14 +113,21 @@ export class Mesh extends Shape {
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
         }
 
-        await Promise.all([
-            this.loadTexture(gl),
-            this.addDebugObjects(world),
-        ]);
-
+        this.addDebugObjects(world),
 
         this.shader.init(gl);
         this.inited = true;
+    }
+
+    dispose(world: World) {
+        const gl = world.gl;
+        gl.deleteBuffer(this.vertexBuffer);
+        gl.deleteBuffer(this.facesBuffer);
+        gl.deleteBuffer(this.vertexColorBuffer);
+        gl.deleteBuffer(this.textureCoordinatesBuffer);
+        gl.deleteBuffer(this.vertexNormalBuffer);
+        gl.deleteTexture(this.texture);
+        this.disposed = true;
     }
 
     rebuffering(gl: WebGLRenderingContext, world: World, attribute?: string) {
@@ -171,7 +178,7 @@ export class Mesh extends Shape {
         gl.drawElements(gl.TRIANGLES, this.faces.length, gl.UNSIGNED_SHORT, 0);
     }
 
-    async addDebugObjects(world: World) {
+    addDebugObjects(world: World) {
         if (!this.debug) {
             return;
         }
@@ -198,11 +205,9 @@ export class Mesh extends Shape {
 
             meshLines.push(line3);
 
-            await Promise.all([
-                await world.attachObject(line1),
-                await world.attachObject(line2),
-                await world.attachObject(line3),
-            ]);
+            world.attachObject(line1);
+            world.attachObject(line2);
+            world.attachObject(line3);
         }
 
         if (this.vertexNormal) {
@@ -213,7 +218,7 @@ export class Mesh extends Shape {
                 normals.push([normal[0], normal[1], normal[2], 1]);
 
                 const normalLine = Line.createSimpleLine(vertex, normal, this.trs);
-                await world.attachObject(normalLine);
+                world.attachObject(normalLine);
                 normalLines.push(normalLine);
 
                 const transformedNormalLine = Line.createSimpleLine(vertex, normal, this.trs);
@@ -221,7 +226,7 @@ export class Mesh extends Shape {
                     0, 1, 0, 1,
                     1, 0, 1, 1,
                 ];
-                await world.attachObject(transformedNormalLine);
+                world.attachObject(transformedNormalLine);
                 transformedNormalLines.push(transformedNormalLine);
 
                 const finalLightLine = Line.createSimpleLine([
@@ -233,21 +238,20 @@ export class Mesh extends Shape {
                     1, 1, 1, 1,
                     1, 0, 1, 1,
                 ];
-                await world.attachObject(finalLightLine);
+                world.attachObject(finalLightLine);
                 vertexFinalLightLines.push(finalLightLine);
 
             }
         }
 
         const originX = this.x;
-        this.x = function (this: Mesh, matrix: Matrix) {
-            this.normalLines.forEach((x) => x.x(matrix));
-            this.transformedNormalLines.forEach((x) => x.x(matrix));
-            this.vertexFinalLightLines.forEach((x) => x.x(matrix));
-            this.meshLins.forEach((x) => x.x(matrix));
-            return originX.call(this, matrix);
-        };
+        const setParent = (x: Shape) => x.parentShap = this;
+        this.normalLines.forEach(setParent);
+        this.transformedNormalLines.forEach(setParent);
+        this.vertexFinalLightLines.forEach(setParent);
+        this.meshLins.forEach(setParent);
     }
+
     updateMeshInfo(meshInfo: IMeshInfo) {
         this.vertices = meshInfo.vertexs;
         this.faces = meshInfo.faces;

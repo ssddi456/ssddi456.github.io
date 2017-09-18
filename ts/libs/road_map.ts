@@ -1,4 +1,5 @@
-import { Point } from './2dRoad';
+import { Point, Vector4 } from './2dRoad';
+import { gridSize } from './3dRoad';
 
 /**
  * [
@@ -22,6 +23,8 @@ export class RoadMap {
 
     entrance: Point;
     exit: Point;
+    safeZone: Vector4;
+    safeZoneSize: number = 3;
 
     constructor(x: number, y: number) {
         this.grid = [];
@@ -216,10 +219,37 @@ export class RoadMap {
         return ret;
     }
 
+    setSafeZone(centerX: number, centerY: number) {
+        this.safeZone = [
+            centerX - this.safeZoneSize, centerY - this.safeZoneSize,
+            centerX + this.safeZoneSize, centerY + this.safeZoneSize,
+        ];
+    }
+    getSafeZoneSize() {
+        return [
+            this.safeZone[0] * gridSize, this.safeZone[1] * gridSize,
+            (this.safeZone[2] + 1) * gridSize, (this.safeZone[3] + 1) * gridSize,
+        ] as Vector4;
+    }
+
+    isInSaveZone(x: number, y: number) {
+        const posX = Math.floor(x);
+        const posY = Math.floor(y);
+
+        if (!this.isInGrid(x, y)) {
+            return false;
+        }
+
+        return posX >= this.safeZone[0] && posX <= this.safeZone[2]
+            && posY >= this.safeZone[1] && posY <= this.safeZone[3];
+    }
+
     generateRandonRoad(startX = 0, startY = 0) {
         this.resetGrid();
         const waitForCheck = [] as Array<[number, number]>;
         this.entrance = [startX, startY];
+        this.setSafeZone(startX, startY);
+
         waitForCheck.push(this.entrance);
 
         while (waitForCheck.length) {

@@ -83,6 +83,13 @@ define('js/line', ['require', 'exports', 'module', "./shape", "./shaders/line_ve
               });
           });
       };
+      Line.prototype.dispose = function (world) {
+          var gl = world.gl;
+          gl.deleteBuffer(this.lineBuffer);
+          gl.deleteBuffer(this.indexBuffer);
+          gl.deleteBuffer(this.vertexColorBuffer);
+          this.disposed = true;
+      };
       Line.prototype.clone = function () {
           var clone = new Line();
       };

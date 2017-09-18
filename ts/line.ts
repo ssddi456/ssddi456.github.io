@@ -6,6 +6,7 @@ import { Vector3 } from "./libs/2dRoad";
 import { createBuffer } from "./libs/utils";
 
 export class Line extends Shape {
+
     start: Vector3;
     end: Vector3;
     lineBuffer: WebGLBuffer;
@@ -37,6 +38,14 @@ export class Line extends Shape {
 
         this.shader.init(gl);
         this.inited = true;
+    }
+
+    dispose(world: World) {
+        const gl = world.gl;
+        gl.deleteBuffer(this.lineBuffer);
+        gl.deleteBuffer(this.indexBuffer);
+        gl.deleteBuffer(this.vertexColorBuffer);
+        this.disposed = true;
     }
 
     clone() {

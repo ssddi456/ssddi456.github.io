@@ -99,7 +99,7 @@ define('js/libs/3dRoad', ['require', 'exports', 'module', "./2dRoad"], function(
   exports.entranceColor = [0, 0, 1, 0.5];
   exports.exitColor = [0, 1, 0, 0.5];
   exports.wallColor = [1, 0.1, 0, 0.6];
-  exports.groundColor = [0, 0, 0, 0.2];
+  exports.groundColor = [0.4, 0.4, 0.3, 0.2];
   exports.frontColor = [1.0, 1.0, 1.0, 1.0];
   exports.backColor = [1.0, 0.0, 0.0, 1.0];
   exports.topColor = [0.0, 1.0, 0.0, 1.0];

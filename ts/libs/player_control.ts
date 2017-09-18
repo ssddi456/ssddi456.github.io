@@ -13,7 +13,7 @@ export class Player {
 
     speed: Point = [0, 0];
     size: Point = [0.25, 0.25];
-
+    sightRange: number = 3;
     constructor() {
         this.resetPos(0, 0);
     }

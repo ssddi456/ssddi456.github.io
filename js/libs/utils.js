@@ -2,6 +2,10 @@ define('js/libs/utils', ['require', 'exports', 'module'], function(require, expo
 
   "use strict";
   exports.__esModule = true;
+  function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+  }
+  exports.randomItem = randomItem;
   function wrapIterableIterator(process) {
       var iterable;
       return function () {
@@ -63,6 +67,28 @@ define('js/libs/utils', ['require', 'exports', 'module'], function(require, expo
       }
   }
   exports.forEachVectorArray = forEachVectorArray;
+  function axisCollision(x1, x2, x3, x4) {
+      var points = [x1, x2, x3, x4].sort(function (a, b) { return a - b; });
+      var delta = points[3] - points[0] - x2 - x1 + x4 - x3;
+      return delta;
+  }
+  exports.axisCollision = axisCollision;
+  function boxCollision(boxA, boxB) {
+      var xCollision = axisCollision(boxA[1], boxA[3], boxB[1], boxB[3]);
+      var yCollision = axisCollision(boxA[0], boxA[2], boxB[0], boxB[2]);
+      if (xCollision < 0 && yCollision < 0) {
+          return [xCollision, yCollision];
+      }
+      return null;
+  }
+  exports.boxCollision = boxCollision;
+  function getBBox(postion, halfsize) {
+      return [
+          postion[0] - halfsize[0], postion[1] - halfsize[1],
+          postion[0] + halfsize[0], postion[1] + halfsize[1],
+      ];
+  }
+  exports.getBBox = getBBox;
   
 
 });

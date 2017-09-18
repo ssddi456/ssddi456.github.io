@@ -115,43 +115,40 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line", "./libs/
           return newInstance;
       };
       Mesh.prototype.init = function (gl, world) {
-          return __awaiter(this, void 0, void 0, function () {
-              return __generator(this, function (_a) {
-                  switch (_a.label) {
-                      case 0:
-                          this.vertexBuffer = utils_1.createBuffer(gl);
-                          gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-                          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
-                          this.facesBuffer = utils_1.createBuffer(gl);
-                          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
-                          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
-                          if (this.vertexColors) {
-                              this.vertexColorBuffer = utils_1.createBuffer(gl);
-                              gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
-                              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexColors), gl.STATIC_DRAW);
-                          }
-                          if (this.textureCoordinates) {
-                              this.textureCoordinatesBuffer = utils_1.createBuffer(gl);
-                              gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
-                              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
-                          }
-                          if (this.vertexNormal) {
-                              this.vertexNormalBuffer = utils_1.createBuffer(gl);
-                              gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
-                              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
-                          }
-                          return [4 /*yield*/, Promise.all([
-                                  this.loadTexture(gl),
-                                  this.addDebugObjects(world),
-                              ])];
-                      case 1:
-                          _a.sent();
-                          this.shader.init(gl);
-                          this.inited = true;
-                          return [2 /*return*/];
-                  }
-              });
-          });
+          this.vertexBuffer = utils_1.createBuffer(gl);
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+          this.facesBuffer = utils_1.createBuffer(gl);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
+          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
+          if (this.vertexColors) {
+              this.vertexColorBuffer = utils_1.createBuffer(gl);
+              gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
+              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexColors), gl.STATIC_DRAW);
+          }
+          if (this.textureCoordinates) {
+              this.textureCoordinatesBuffer = utils_1.createBuffer(gl);
+              gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordinatesBuffer);
+              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.textureCoordinates), gl.STATIC_DRAW);
+          }
+          if (this.vertexNormal) {
+              this.vertexNormalBuffer = utils_1.createBuffer(gl);
+              gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexNormalBuffer);
+              gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertexNormal), gl.STATIC_DRAW);
+          }
+          this.addDebugObjects(world),
+              this.shader.init(gl);
+          this.inited = true;
+      };
+      Mesh.prototype.dispose = function (world) {
+          var gl = world.gl;
+          gl.deleteBuffer(this.vertexBuffer);
+          gl.deleteBuffer(this.facesBuffer);
+          gl.deleteBuffer(this.vertexColorBuffer);
+          gl.deleteBuffer(this.textureCoordinatesBuffer);
+          gl.deleteBuffer(this.vertexNormalBuffer);
+          gl.deleteTexture(this.texture);
+          this.disposed = true;
       };
       Mesh.prototype.rebuffering = function (gl, world, attribute) {
           gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
@@ -191,106 +188,63 @@ define('js/mesh', ['require', 'exports', 'module', "./shape", "./line", "./libs/
           gl.drawElements(gl.TRIANGLES, this.faces.length, gl.UNSIGNED_SHORT, 0);
       };
       Mesh.prototype.addDebugObjects = function (world) {
-          return __awaiter(this, void 0, void 0, function () {
-              var normals, normalLines, meshLines, transformedNormalLines, vertexFinalLightLines, index, vertex1, vertex2, vertex3, line1, line2, line3, _a, _b, _c, index, normal, vertex, normalLine, transformedNormalLine, finalLightLine, originX;
-              return __generator(this, function (_d) {
-                  switch (_d.label) {
-                      case 0:
-                          if (!this.debug) {
-                              return [2 /*return*/];
-                          }
-                          normals = this.normals = [];
-                          normalLines = this.normalLines = [];
-                          meshLines = this.meshLins = [];
-                          transformedNormalLines = this.transformedNormalLines = [];
-                          vertexFinalLightLines = this.vertexFinalLightLines = [];
-                          index = 0;
-                          _d.label = 1;
-                      case 1:
-                          if (!(index < this.faces.length)) return [3 /*break*/, 7];
-                          vertex1 = this.vertices.slice(this.faces[index] * 3, this.faces[index] * 3 + 3);
-                          vertex2 = this.vertices.slice(this.faces[index + 1] * 3, this.faces[index + 1] * 3 + 3);
-                          vertex3 = this.vertices.slice(this.faces[index + 2] * 3, this.faces[index + 2] * 3 + 3);
-                          line1 = line_1.Line.createSimpleLine2(vertex1, vertex2, this.trs);
-                          meshLines.push(line1);
-                          line2 = line_1.Line.createSimpleLine2(vertex2, vertex3, this.trs);
-                          meshLines.push(line2);
-                          line3 = line_1.Line.createSimpleLine2(vertex3, vertex1, this.trs);
-                          meshLines.push(line3);
-                          _b = (_a = Promise).all;
-                          return [4 /*yield*/, world.attachObject(line1)];
-                      case 2:
-                          _c = [
-                              _d.sent()
-                          ];
-                          return [4 /*yield*/, world.attachObject(line2)];
-                      case 3:
-                          _c = _c.concat([
-                              _d.sent()
-                          ]);
-                          return [4 /*yield*/, world.attachObject(line3)];
-                      case 4: return [4 /*yield*/, _b.apply(_a, [_c.concat([
-                                  _d.sent()
-                              ])])];
-                      case 5:
-                          _d.sent();
-                          _d.label = 6;
-                      case 6:
-                          index += 3;
-                          return [3 /*break*/, 1];
-                      case 7:
-                          if (!this.vertexNormal) return [3 /*break*/, 13];
-                          index = 0;
-                          _d.label = 8;
-                      case 8:
-                          if (!(index < this.vertexNormal.length)) return [3 /*break*/, 13];
-                          normal = this.vertexNormal.slice(index, index + 3);
-                          vertex = this.vertices.slice(index, index + 3);
-                          normals.push([normal[0], normal[1], normal[2], 1]);
-                          normalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
-                          return [4 /*yield*/, world.attachObject(normalLine)];
-                      case 9:
-                          _d.sent();
-                          normalLines.push(normalLine);
-                          transformedNormalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
-                          transformedNormalLine.verticesColor = [
-                              0, 1, 0, 1,
-                              1, 0, 1, 1,
-                          ];
-                          return [4 /*yield*/, world.attachObject(transformedNormalLine)];
-                      case 10:
-                          _d.sent();
-                          transformedNormalLines.push(transformedNormalLine);
-                          finalLightLine = line_1.Line.createSimpleLine([
-                              vertex[0] + 0.2 * normal[0],
-                              vertex[1] + 0.2 * normal[1],
-                              vertex[2] + 0.2 * normal[2],
-                          ], normal, this.trs);
-                          finalLightLine.verticesColor = [
-                              1, 1, 1, 1,
-                              1, 0, 1, 1,
-                          ];
-                          return [4 /*yield*/, world.attachObject(finalLightLine)];
-                      case 11:
-                          _d.sent();
-                          vertexFinalLightLines.push(finalLightLine);
-                          _d.label = 12;
-                      case 12:
-                          index += 3;
-                          return [3 /*break*/, 8];
-                      case 13:
-                          originX = this.x;
-                          this.x = function (matrix) {
-                              this.normalLines.forEach(function (x) { return x.x(matrix); });
-                              this.transformedNormalLines.forEach(function (x) { return x.x(matrix); });
-                              this.vertexFinalLightLines.forEach(function (x) { return x.x(matrix); });
-                              this.meshLins.forEach(function (x) { return x.x(matrix); });
-                              return originX.call(this, matrix);
-                          };
-                          return [2 /*return*/];
-                  }
-              });
-          });
+          var _this = this;
+          if (!this.debug) {
+              return;
+          }
+          var normals = this.normals = [];
+          var normalLines = this.normalLines = [];
+          var meshLines = this.meshLins = [];
+          var transformedNormalLines = this.transformedNormalLines = [];
+          var vertexFinalLightLines = this.vertexFinalLightLines = [];
+          for (var index = 0; index < this.faces.length; index += 3) {
+              var vertex1 = this.vertices.slice(this.faces[index] * 3, this.faces[index] * 3 + 3);
+              var vertex2 = this.vertices.slice(this.faces[index + 1] * 3, this.faces[index + 1] * 3 + 3);
+              var vertex3 = this.vertices.slice(this.faces[index + 2] * 3, this.faces[index + 2] * 3 + 3);
+              var line1 = line_1.Line.createSimpleLine2(vertex1, vertex2, this.trs);
+              meshLines.push(line1);
+              var line2 = line_1.Line.createSimpleLine2(vertex2, vertex3, this.trs);
+              meshLines.push(line2);
+              var line3 = line_1.Line.createSimpleLine2(vertex3, vertex1, this.trs);
+              meshLines.push(line3);
+              world.attachObject(line1);
+              world.attachObject(line2);
+              world.attachObject(line3);
+          }
+          if (this.vertexNormal) {
+              for (var index = 0; index < this.vertexNormal.length; index += 3) {
+                  var normal = this.vertexNormal.slice(index, index + 3);
+                  var vertex = this.vertices.slice(index, index + 3);
+                  normals.push([normal[0], normal[1], normal[2], 1]);
+                  var normalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
+                  world.attachObject(normalLine);
+                  normalLines.push(normalLine);
+                  var transformedNormalLine = line_1.Line.createSimpleLine(vertex, normal, this.trs);
+                  transformedNormalLine.verticesColor = [
+                      0, 1, 0, 1,
+                      1, 0, 1, 1,
+                  ];
+                  world.attachObject(transformedNormalLine);
+                  transformedNormalLines.push(transformedNormalLine);
+                  var finalLightLine = line_1.Line.createSimpleLine([
+                      vertex[0] + 0.2 * normal[0],
+                      vertex[1] + 0.2 * normal[1],
+                      vertex[2] + 0.2 * normal[2],
+                  ], normal, this.trs);
+                  finalLightLine.verticesColor = [
+                      1, 1, 1, 1,
+                      1, 0, 1, 1,
+                  ];
+                  world.attachObject(finalLightLine);
+                  vertexFinalLightLines.push(finalLightLine);
+              }
+          }
+          var originX = this.x;
+          var setParent = function (x) { return x.parentShap = _this; };
+          this.normalLines.forEach(setParent);
+          this.transformedNormalLines.forEach(setParent);
+          this.vertexFinalLightLines.forEach(setParent);
+          this.meshLins.forEach(setParent);
       };
       Mesh.prototype.updateMeshInfo = function (meshInfo) {
           this.vertices = meshInfo.vertexs;

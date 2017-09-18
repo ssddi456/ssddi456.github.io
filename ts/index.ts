@@ -11,6 +11,7 @@ import { Mesh } from "./mesh";
 import { Line } from "./line";
 import { RoadMap } from "./libs/road_map";
 import { Plane } from "./libs/plane";
+import { Cube } from "./libs/cube";
 import { Player } from "./libs/player_control";
 import { LevelControler } from "./libs/level_control";
 import { loopFactory } from './libs/utils';
@@ -46,108 +47,11 @@ skyLight.debug = false;
 
 const cubeTemplate = new Mesh();
 cubeTemplate.visible = true;
+const cubeTransFormer = new Cube();
+cubeTemplate.updateMeshInfo(cubeTransFormer.getMesh());
 
 const cubeShader = new VertexColorShader();
-
 cubeTemplate.shader = cubeShader;
-cubeTemplate.vertices = [
-    // Front face
-    -1.0, -1.0, 1.0,
-    1.0, -1.0, 1.0,
-    1.0, 1.0, 1.0,
-    -1.0, 1.0, 1.0,
-
-    // Back face
-    -1.0, -1.0, -1.0,
-    -1.0, 1.0, -1.0,
-    1.0, 1.0, -1.0,
-    1.0, -1.0, -1.0,
-
-    // Top face
-    -1.0, 1.0, -1.0,
-    -1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0,
-    1.0, 1.0, -1.0,
-
-    // Bottom face
-    -1.0, -1.0, -1.0,
-    1.0, -1.0, -1.0,
-    1.0, -1.0, 1.0,
-    -1.0, -1.0, 1.0,
-
-    // Right face
-    1.0, -1.0, -1.0,
-    1.0, 1.0, -1.0,
-    1.0, 1.0, 1.0,
-    1.0, -1.0, 1.0,
-
-    // Left face
-    -1.0, -1.0, -1.0,
-    -1.0, -1.0, 1.0,
-    -1.0, 1.0, 1.0,
-    -1.0, 1.0, -1.0,
-];
-
-cubeTemplate.vertexColors = [].concat.apply([], [
-    [1.0, 1.0, 1.0, 1.0],    // Front face: white
-    [1.0, 0.0, 0.0, 1.0],    // Back face: red
-    [0.0, 1.0, 0.0, 1.0],    // Top face: green
-    [0.0, 0.0, 1.0, 1.0],    // Bottom face: blue
-    [1.0, 1.0, 0.0, 1.0],    // Right face: yellow
-    [1.0, 0.0, 1.0, 1.0],     // Left face: purple
-].reduce((pre, cur) => {
-    for (let index = 0; index < 4; index++) {
-        pre.push(cur);
-    }
-    return pre;
-}, [] as number[][]));
-
-cubeTemplate.faces = [
-    0, 1, 2, 0, 2, 3,    // front
-    4, 5, 6, 4, 6, 7,    // back
-    8, 9, 10, 8, 10, 11,   // top
-    12, 13, 14, 12, 14, 15,   // bottom
-    16, 17, 18, 16, 18, 19,   // right
-    20, 21, 22, 20, 22, 23,    // left
-];
-cubeTemplate.vertexNormal = [
-    // Front
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-    0.0, 0.0, 1.0,
-
-    // Back
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-
-    // Top
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-
-    // Bottom
-    0.0, -1.0, 0.0,
-    0.0, -1.0, 0.0,
-    0.0, -1.0, 0.0,
-    0.0, -1.0, 0.0,
-
-    // Right
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-
-    // Left
-    -1.0, 0.0, 0.0,
-    -1.0, 0.0, 0.0,
-    -1.0, 0.0, 0.0,
-    -1.0, 0.0, 0.0,
-];
-cubeTemplate.trs = Matrix.I(4);
 
 const dummyPlayerControl = new Player();
 const dummyPlayer = cubeTemplate.clone();
@@ -163,7 +67,7 @@ dummyPlayer.vertices.forEach((v, i) => {
 
 
 const levelControler = new LevelControler(dummyPlayerControl);
-levelControler.levelStart();
+levelControler.levelStart(world);
 
 const clampFloor = new Mesh();
 clampFloor.shader = levelControler.mazeMesh.shader;
@@ -174,12 +78,15 @@ clampFloor.x(Matrix.Translation($V([0, -0.1, 0])));
 async function loadShapes() {
 
     world.attachLight(skyLight);
-
-    await Promise.all([
+    [
         levelControler.mazeMesh,
         dummyPlayer,
         clampFloor,
-    ].map((x) => world.attachObject(x)));
+    ].map((x) => world.attachObject(x));
+
+    await Promise.all([
+        levelControler.mazeMesh.loadTexture(world.gl),
+    ]);
 }
 
 mainCamara.eye = [11.5, 26, 9.5];
@@ -216,7 +123,7 @@ const updateLoop = loopFactory(function () {
 
         const postPos = dummyPlayerControl.currentPos.slice();
 
-        levelControler.levelStart();
+        levelControler.levelStart(world);
         levelControler.mazeMesh.rebuffering(world.gl, world);
 
         clampFloorPlane.width = levelControler.maze.width;
@@ -244,7 +151,7 @@ const updateLoop = loopFactory(function () {
         const deltaPos = dummyPlayerControl.move(levelControler.maze);
         dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
 
-        levelControler.update();
+        levelControler.update(world);
         levelControler.mazeMesh.rebuffering(world.gl, world);
     }
 }, 1000 / drawFrequant);

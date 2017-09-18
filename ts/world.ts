@@ -53,15 +53,15 @@ export class World {
         gl.viewport(0, 0, size.width, size.height);
 
     }
-    async attachLight(light: Light) {
+    attachLight(light: Light) {
         this.lights.push(light);
-        await light.init(this.gl, this);
+        light.init(this.gl, this);
     }
 
-    async attachObject(mesh: Shape) {
+    attachObject(mesh: Shape) {
         this.meshes.push(mesh);
 
-        await mesh.init(this.gl, this);
+        mesh.init(this.gl, this);
     }
 
     useShader(shader: Shader) {

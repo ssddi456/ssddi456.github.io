@@ -6,9 +6,23 @@ define('js/shape', ['require', 'exports', 'module'], function(require, exports, 
       function Shape() {
           this.visible = true;
           this.debug = false;
-          this.trs = Matrix.I(4);
+          this.disposed = false;
+          this._trs = Matrix.I(4);
           this.inited = false;
       }
+      Object.defineProperty(Shape.prototype, "trs", {
+          get: function () {
+              if (this.parentShap) {
+                  return this.parentShap.trs.x(this._trs);
+              }
+              return this._trs;
+          },
+          set: function (value) {
+              this._trs = value;
+          },
+          enumerable: true,
+          configurable: true
+      });
       Shape.prototype.x = function (matrix) {
           this.trs = this.trs.x(matrix);
           return this;

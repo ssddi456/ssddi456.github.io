@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./light", "./mesh", "./libs/plane", "./libs/player_control", "./libs/level_control", "./libs/utils"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./light", "./mesh", "./libs/plane", "./libs/cube", "./libs/player_control", "./libs/level_control", "./libs/utils"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -42,6 +42,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var light_1 = require("./light");
   var mesh_1 = require("./mesh");
   var plane_1 = require("./libs/plane");
+  var cube_1 = require("./libs/cube");
   var player_control_1 = require("./libs/player_control");
   var level_control_1 = require("./libs/level_control");
   var utils_1 = require("./libs/utils");
@@ -69,94 +70,10 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   skyLight.debug = false;
   var cubeTemplate = new mesh_1.Mesh();
   cubeTemplate.visible = true;
+  var cubeTransFormer = new cube_1.Cube();
+  cubeTemplate.updateMeshInfo(cubeTransFormer.getMesh());
   var cubeShader = new vertex_color_shader_1.VertexColorShader();
   cubeTemplate.shader = cubeShader;
-  cubeTemplate.vertices = [
-      // Front face
-      -1.0, -1.0, 1.0,
-      1.0, -1.0, 1.0,
-      1.0, 1.0, 1.0,
-      -1.0, 1.0, 1.0,
-      // Back face
-      -1.0, -1.0, -1.0,
-      -1.0, 1.0, -1.0,
-      1.0, 1.0, -1.0,
-      1.0, -1.0, -1.0,
-      // Top face
-      -1.0, 1.0, -1.0,
-      -1.0, 1.0, 1.0,
-      1.0, 1.0, 1.0,
-      1.0, 1.0, -1.0,
-      // Bottom face
-      -1.0, -1.0, -1.0,
-      1.0, -1.0, -1.0,
-      1.0, -1.0, 1.0,
-      -1.0, -1.0, 1.0,
-      // Right face
-      1.0, -1.0, -1.0,
-      1.0, 1.0, -1.0,
-      1.0, 1.0, 1.0,
-      1.0, -1.0, 1.0,
-      // Left face
-      -1.0, -1.0, -1.0,
-      -1.0, -1.0, 1.0,
-      -1.0, 1.0, 1.0,
-      -1.0, 1.0, -1.0,
-  ];
-  cubeTemplate.vertexColors = [].concat.apply([], [
-      [1.0, 1.0, 1.0, 1.0],
-      [1.0, 0.0, 0.0, 1.0],
-      [0.0, 1.0, 0.0, 1.0],
-      [0.0, 0.0, 1.0, 1.0],
-      [1.0, 1.0, 0.0, 1.0],
-      [1.0, 0.0, 1.0, 1.0],
-  ].reduce(function (pre, cur) {
-      for (var index = 0; index < 4; index++) {
-          pre.push(cur);
-      }
-      return pre;
-  }, []));
-  cubeTemplate.faces = [
-      0, 1, 2, 0, 2, 3,
-      4, 5, 6, 4, 6, 7,
-      8, 9, 10, 8, 10, 11,
-      12, 13, 14, 12, 14, 15,
-      16, 17, 18, 16, 18, 19,
-      20, 21, 22, 20, 22, 23,
-  ];
-  cubeTemplate.vertexNormal = [
-      // Front
-      0.0, 0.0, 1.0,
-      0.0, 0.0, 1.0,
-      0.0, 0.0, 1.0,
-      0.0, 0.0, 1.0,
-      // Back
-      0.0, 0.0, -1.0,
-      0.0, 0.0, -1.0,
-      0.0, 0.0, -1.0,
-      0.0, 0.0, -1.0,
-      // Top
-      0.0, 1.0, 0.0,
-      0.0, 1.0, 0.0,
-      0.0, 1.0, 0.0,
-      0.0, 1.0, 0.0,
-      // Bottom
-      0.0, -1.0, 0.0,
-      0.0, -1.0, 0.0,
-      0.0, -1.0, 0.0,
-      0.0, -1.0, 0.0,
-      // Right
-      1.0, 0.0, 0.0,
-      1.0, 0.0, 0.0,
-      1.0, 0.0, 0.0,
-      1.0, 0.0, 0.0,
-      // Left
-      -1.0, 0.0, 0.0,
-      -1.0, 0.0, 0.0,
-      -1.0, 0.0, 0.0,
-      -1.0, 0.0, 0.0,
-  ];
-  cubeTemplate.trs = Matrix.I(4);
   var dummyPlayerControl = new player_control_1.Player();
   var dummyPlayer = cubeTemplate.clone();
   dummyPlayer.vertices.forEach(function (v, i) {
@@ -169,7 +86,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       dummyPlayer.vertices[i] *= 0.25;
   });
   var levelControler = new level_control_1.LevelControler(dummyPlayerControl);
-  levelControler.levelStart();
+  levelControler.levelStart(world);
   var clampFloor = new mesh_1.Mesh();
   clampFloor.shader = levelControler.mazeMesh.shader;
   var clampFloorPlane = new plane_1.Plane();
@@ -181,11 +98,14 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
               switch (_a.label) {
                   case 0:
                       world.attachLight(skyLight);
+                      [
+                          levelControler.mazeMesh,
+                          dummyPlayer,
+                          clampFloor,
+                      ].map(function (x) { return world.attachObject(x); });
                       return [4 /*yield*/, Promise.all([
-                              levelControler.mazeMesh,
-                              dummyPlayer,
-                              clampFloor,
-                          ].map(function (x) { return world.attachObject(x); }))];
+                              levelControler.mazeMesh.loadTexture(world.gl),
+                          ])];
                   case 1:
                       _a.sent();
                       return [2 /*return*/];
@@ -220,7 +140,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       else if (!levelControler.levelInitialed) {
           // console.log('init level');
           var postPos = dummyPlayerControl.currentPos.slice();
-          levelControler.levelStart();
+          levelControler.levelStart(world);
           levelControler.mazeMesh.rebuffering(world.gl, world);
           clampFloorPlane.width = levelControler.maze.width;
           clampFloorPlane.height = levelControler.maze.height;
@@ -242,7 +162,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           dummyPlayerControl.accelerate(currentDir);
           var deltaPos = dummyPlayerControl.move(levelControler.maze);
           dummyPlayer.x(Matrix.Translation($V([deltaPos[0], 0, deltaPos[1]])));
-          levelControler.update();
+          levelControler.update(world);
           levelControler.mazeMesh.rebuffering(world.gl, world);
       }
   }, 1000 / drawFrequant);

@@ -12,7 +12,8 @@
         "module": "amd",
         "outDir": "./js",
         "downlevelIteration": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "plugins": [{ "name": "ts-glsl-plugin" }]
     },
     "compileOnSave": true,
     "include": [
@@ -20,5 +21,6 @@
     ],
     "exclude": [
         "node_modules"
-    ]
+    ],
+    "pluginProbeLocations": ["D:/gitchunk"]
 }

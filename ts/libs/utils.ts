@@ -1,3 +1,9 @@
+import { Vector4, Point } from "./2dRoad";
+
+export function randomItem<T>(arr: T[]) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
 export function wrapIterableIterator(process: () => IterableIterator<any>) {
     let iterable;
     return function () {
@@ -64,3 +70,25 @@ export function forEachVectorArray<T>(
         hander(getVector(), Math.floor(i / vecterSize), setVector);
     }
 }
+
+export function axisCollision(x1: number, x2: number, x3: number, x4: number) {
+    const points = [x1, x2, x3, x4].sort((a, b) => a - b);
+    const delta = points[3] - points[0] - x2 - x1 + x4 - x3;
+    return delta;
+}
+
+export function boxCollision(boxA: Vector4, boxB: Vector4) {
+    const xCollision = axisCollision(boxA[1], boxA[3], boxB[1], boxB[3]);
+    const yCollision = axisCollision(boxA[0], boxA[2], boxB[0], boxB[2]);
+    if (xCollision < 0 && yCollision < 0) {
+        return [xCollision, yCollision];
+    }
+    return null;
+}
+export function getBBox(postion: Point, halfsize: Point) {
+    return [
+        postion[0] - halfsize[0], postion[1] - halfsize[1],
+        postion[0] + halfsize[0], postion[1] + halfsize[1],
+    ] as Vector4;
+}
+

@@ -1,12 +1,14 @@
 import { Mesh3dRoad } from './3dRoad';
-import { CubeWithFogShader } from '../shaders/cube_with_fog';
 import { Player } from './player_control';
 import { Mesh } from '../mesh';
 import { RoadMap } from './road_map';
 import { Camara, World } from "../world";
-import { wrapIterableIterator, createBuffer, forEachVectorArray } from './utils';
+import { wrapIterableIterator, createBuffer, forEachVectorArray, randomItem } from './utils';
 import { Shader } from '../shaders/base_shader';
 import { IMeshInfo } from './2dRoad';
+import { Wanderer } from './wanderer';
+import { CubeWithFogShader } from '../shaders/cube_with_fog';
+
 /**
  * @file 关卡管理
  *
@@ -21,8 +23,8 @@ import { IMeshInfo } from './2dRoad';
 class MeshWithFog extends Mesh {
     fog: number[];
     fogBuffer: WebGLBuffer;
-    async init(gl: WebGLRenderingContext, world: World) {
-        await super.init(gl, world);
+    init(gl: WebGLRenderingContext, world: World) {
+        super.init(gl, world);
 
         this.fog = this.textureCoordinates.map((x) => 1);
 
@@ -51,7 +53,7 @@ class MeshWithFog extends Mesh {
 
 }
 
-const fogChanging = 1 / 30; // 迷雾的渐变速度
+const fogChanging = 1 / 20; // 迷雾的渐变速度
 export class LevelControler {
     currentLevel = 1;
     maze: RoadMap;
@@ -60,6 +62,9 @@ export class LevelControler {
     meshTranseformer: Mesh3dRoad;
     transformLevel?: () => any;
     levelInitialed: boolean = false;
+
+    wanderers: Wanderer[] = [];
+    wanderersPool: Wanderer[] = [];
 
     constructor(player: Player) {
         this.player = player;
@@ -71,13 +76,21 @@ export class LevelControler {
         this.mazeMesh.textureSrc = '/images/white.jpg';
         this.mazeMesh.shader = new CubeWithFogShader();
     }
-    update() {
+    update(world: World) {
         const pos = this.player.currentPos.map(Math.floor);
-        const visibles = this.maze.getArround(pos[0], pos[1], 3)
+        const visibles = this.maze.getArround(pos[0], pos[1], this.player.sightRange)
             .filter((x) => this.maze.isInGrid(x[0], x[1]))
             .map((x) => this.maze.posToIndex(x[0], x[1]));
 
         visibles.push(this.maze.posToIndex(pos[0], pos[1]));
+        this.wanderers.forEach((wanderer) => {
+            const delta = wanderer.move(this.maze);
+            wanderer.mesh.x(Matrix.Translation($V([
+                delta[0],
+                0,
+                delta[1],
+            ])));
+        });
 
         this.meshTranseformer.faces.forEach((face) => {
             const cellpos = this.maze.indexToPos(face.index);
@@ -94,7 +107,7 @@ export class LevelControler {
             if (cell.visible) {
                 targetVal = 1;
             } else if (cell.visited) {
-                targetVal = 0.5;
+                targetVal = 0.3;
             } else {
                 targetVal = 0;
             }
@@ -163,7 +176,8 @@ export class LevelControler {
         this.player.currentPos[1] = 0;
     }
 
-    levelStart() {
+    levelStart(world: World) {
+        const gl = world.gl;
 
         this.maze.width = 4 * this.hardness + this.currentLevel;
         this.maze.height = 3 * this.hardness + Math.round(this.currentLevel * 0.75);
@@ -176,6 +190,25 @@ export class LevelControler {
         const meshInfo = this.meshTranseformer.getMesh();
 
         this.mazeMesh.updateMeshInfo(meshInfo);
+
+        const walkThroughs = this.maze.getAllWalkThrough();
+
+        let wanderer: Wanderer;
+        if (!this.wanderers.length) {
+            wanderer = new Wanderer();
+            world.attachObject(wanderer.mesh);
+
+            this.wanderers.push(wanderer);
+        } else {
+            wanderer = this.wanderers[0];
+        }
+
+        let wandererPos = randomItem(walkThroughs);
+        while (this.maze.isInSaveZone(wandererPos[0], wandererPos[1])) {
+            wandererPos = randomItem(walkThroughs);
+        }
+
+        wanderer.moveTo(wandererPos, world);
 
         this.levelInitialed = true;
         if (this.currentLevel > 1) {
