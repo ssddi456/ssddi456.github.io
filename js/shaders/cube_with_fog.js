@@ -19,9 +19,27 @@ define('js/shaders/cube_with_fog', ['require', 'exports', 'module', "./base_shad
           var _this = _super !== null && _super.apply(this, arguments) || this;
           _this.vertexShaderFactory = require("js/shaders/cube_with_fog-vs.glsl.js");
           _this.fragementShaderFactory = require("js/shaders/cube_with_fog-fs.glsl.js");
+          _this.mytempattrs = {
+              aVertexColor: 0,
+              aVertexPosition: 0,
+              aVertexNormal: 0,
+              aTextureCoord: 0,
+              aFog: 0,
+              uSampler: 0,
+              uNormalMatrix: 0,
+              uDirectionalLightColor: 0,
+              uDirectionalVector: 0,
+              uMVMatrix: 0,
+              uPMatrix: 0,
+              useFog: 0,
+              uUseFog: 0
+          };
           return _this;
       }
       CubeWithFogShader.prototype.mount = function (gl) {
+          for (var k in this.mytempattrs) {
+              this.mytempattrs[k] = 0;
+          }
           var shaderProgram = this.shaderProgram;
           this.aVertexColor = gl.getAttribLocation(shaderProgram, "aVertexColor");
           gl.enableVertexAttribArray(this.aVertexColor);
@@ -39,7 +57,10 @@ define('js/shaders/cube_with_fog', ['require', 'exports', 'module', "./base_shad
           this.uDirectionalVector = gl.getUniformLocation(this.shaderProgram, "uDirectionalVector");
           this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
           this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+          this.useFog = gl.getUniformLocation(this.shaderProgram, "useFog");
+          this.uUseFog = gl.getUniformLocation(this.shaderProgram, "uUseFog");
           this.bindBuffer = function (k, value) {
+              this.mytempattrs[k] = 1;
               switch (k) {
                   case "aVertexColor":
                       gl.bindBuffer(gl.ARRAY_BUFFER, value);
@@ -78,6 +99,12 @@ define('js/shaders/cube_with_fog', ['require', 'exports', 'module', "./base_shad
                       break;
                   case "uPMatrix":
                       gl.uniformMatrix4fv(this.uPMatrix, value);
+                      break;
+                  case "useFog":
+                      gl.uniform1f(this.useFog, value);
+                      break;
+                  case "uUseFog":
+                      gl.uniform1f(this.uUseFog, value);
                       break;
               }
           };

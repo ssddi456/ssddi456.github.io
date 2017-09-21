@@ -1,4 +1,4 @@
-define('js/shaders/animate_shader', ['require', 'exports', 'module', "./base_shader", "js/shaders/animate_shader-vs.glsl.js", "js/shaders/animate_shader-fs.glsl.js"], function(require, exports, module) {
+define('js/shaders/fog_with_merge', ['require', 'exports', 'module', "./base_shader", "js/shaders/fog_with_merge-vs.glsl.js", "js/shaders/fog_with_merge-fs.glsl.js"], function(require, exports, module) {
 
   "use strict";
   var __extends = (this && this.__extends) || (function () {
@@ -13,31 +13,37 @@ define('js/shaders/animate_shader', ['require', 'exports', 'module', "./base_sha
   })();
   exports.__esModule = true;
   var base_shader_1 = require("./base_shader");
-  var AnimateShaderShader = /** @class */ (function (_super) {
-      __extends(AnimateShaderShader, _super);
-      function AnimateShaderShader() {
+  var FogWithMergeShader = /** @class */ (function (_super) {
+      __extends(FogWithMergeShader, _super);
+      function FogWithMergeShader() {
           var _this = _super !== null && _super.apply(this, arguments) || this;
-          _this.vertexShaderFactory = require("js/shaders/animate_shader-vs.glsl.js");
-          _this.fragementShaderFactory = require("js/shaders/animate_shader-fs.glsl.js");
+          _this.vertexShaderFactory = require("js/shaders/fog_with_merge-vs.glsl.js");
+          _this.fragementShaderFactory = require("js/shaders/fog_with_merge-fs.glsl.js");
           _this.mytempattrs = {
               aVertexPosition: 0,
-              aVertexColor: 0,
-              uMVMatrix: 0,
-              uPMatrix: 0
+              aTextureCoord: 0,
+              uSamplerGray: 0,
+              uSamplerColor: 0,
+              uCenter: 0,
+              uResolution: 0,
+              uSightRange: 0
           };
           return _this;
       }
-      AnimateShaderShader.prototype.mount = function (gl) {
+      FogWithMergeShader.prototype.mount = function (gl) {
           for (var k in this.mytempattrs) {
               this.mytempattrs[k] = 0;
           }
           var shaderProgram = this.shaderProgram;
           this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
           gl.enableVertexAttribArray(this.aVertexPosition);
-          this.aVertexColor = gl.getAttribLocation(shaderProgram, "aVertexColor");
-          gl.enableVertexAttribArray(this.aVertexColor);
-          this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
-          this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+          this.aTextureCoord = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+          gl.enableVertexAttribArray(this.aTextureCoord);
+          this.uSamplerGray = gl.getUniformLocation(this.shaderProgram, "uSamplerGray");
+          this.uSamplerColor = gl.getUniformLocation(this.shaderProgram, "uSamplerColor");
+          this.uCenter = gl.getUniformLocation(this.shaderProgram, "uCenter");
+          this.uResolution = gl.getUniformLocation(this.shaderProgram, "uResolution");
+          this.uSightRange = gl.getUniformLocation(this.shaderProgram, "uSightRange");
           this.bindBuffer = function (k, value) {
               this.mytempattrs[k] = 1;
               switch (k) {
@@ -45,20 +51,29 @@ define('js/shaders/animate_shader', ['require', 'exports', 'module', "./base_sha
                       gl.bindBuffer(gl.ARRAY_BUFFER, value);
                       gl.vertexAttribPointer(this.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
                       break;
-                  case "aVertexColor":
+                  case "aTextureCoord":
                       gl.bindBuffer(gl.ARRAY_BUFFER, value);
-                      gl.vertexAttribPointer(this.aVertexColor, 4, gl.FLOAT, false, 0, 0);
+                      gl.vertexAttribPointer(this.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
                       break;
-                  case "uMVMatrix":
-                      gl.uniformMatrix4fv(this.uMVMatrix, value);
+                  case "uSamplerGray":
+                      gl.uniform1i(this.uSamplerGray, value);
                       break;
-                  case "uPMatrix":
-                      gl.uniformMatrix4fv(this.uPMatrix, value);
+                  case "uSamplerColor":
+                      gl.uniform1i(this.uSamplerColor, value);
+                      break;
+                  case "uCenter":
+                      gl.uniform2fv(this.uCenter, value);
+                      break;
+                  case "uResolution":
+                      gl.uniform2fv(this.uResolution, value);
+                      break;
+                  case "uSightRange":
+                      gl.uniform1f(this.uSightRange, value);
                       break;
               }
           };
       };
-      AnimateShaderShader.prototype.render = function (world, mesh, camaraMatrixFlat, lights) {
+      FogWithMergeShader.prototype.render = function (world, mesh, camaraMatrixFlat, lights) {
           var gl = world.gl;
           if (lights && lights.length) {
               if (this.uDirectionalLightColor && this.uDirectionalVector) {
@@ -74,9 +89,9 @@ define('js/shaders/animate_shader', ['require', 'exports', 'module', "./base_sha
           gl.uniformMatrix4fv(this.uMVMatrix, false, new Float32Array(mesh.trs.flatten()));
           mesh.bindBufferAndDraw(this, gl);
       };
-      return AnimateShaderShader;
+      return FogWithMergeShader;
   }(base_shader_1.Shader));
-  exports.AnimateShaderShader = AnimateShaderShader;
+  exports.FogWithMergeShader = FogWithMergeShader;
   
 
 });

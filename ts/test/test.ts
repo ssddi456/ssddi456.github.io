@@ -49,7 +49,6 @@ clampFloorPlane.height = 19;
 
 clampFloor.updateMeshInfo(clampFloorPlane.getMesh());
 clampFloor.x(Matrix.Translation($V([0, -0.1, 0])));
-const multiplier = [-1, 1, -1, 1];
 
 async function loadShapes() {
 

@@ -76,7 +76,6 @@ define('js/test/test', ['require', 'exports', 'module', "../libs/plane", "../wor
   clampFloorPlane.height = 19;
   clampFloor.updateMeshInfo(clampFloorPlane.getMesh());
   clampFloor.x(Matrix.Translation($V([0, -0.1, 0])));
-  var multiplier = [-1, 1, -1, 1];
   function loadShapes() {
       return __awaiter(this, void 0, void 0, function () {
           return __generator(this, function (_a) {

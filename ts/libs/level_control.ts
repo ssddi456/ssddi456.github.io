@@ -20,8 +20,9 @@ import { CubeWithFogShader } from '../shaders/cube_with_fog';
  *   3 演出效果
  */
 
-class MeshWithFog extends Mesh {
+export class MeshWithFog extends Mesh {
     fog: number[];
+    useFog: number = 1;
     fogBuffer: WebGLBuffer;
     init(gl: WebGLRenderingContext, world: World) {
         super.init(gl, world);
@@ -48,9 +49,9 @@ class MeshWithFog extends Mesh {
     }
     bindBufferAndDraw(shader: Shader, gl) {
         shader.bindBuffer('aFog', this.fogBuffer);
+        shader.bindBuffer('uUseFog', this.useFog);
         super.bindBufferAndDraw(shader, gl);
     }
-
 }
 
 const fogChanging = 1 / 20; // 迷雾的渐变速度
@@ -105,7 +106,7 @@ export class LevelControler {
 
             let targetVal = 0;
             if (cell.visible) {
-                targetVal = 1;
+                targetVal = 0.5;
             } else if (cell.visited) {
                 targetVal = 0.3;
             } else {
@@ -128,6 +129,7 @@ export class LevelControler {
                 }
                 for (let faceVertexIndex = 0; faceVertexIndex < face.vertexes.length; faceVertexIndex++) {
                     fog[face.vertexes[faceVertexIndex].textureCoordinateIndex] = newVal;
+                    fog[face.vertexes[faceVertexIndex].textureCoordinateIndex + 1] = targetVal;
                 }
             }
         });

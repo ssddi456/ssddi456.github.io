@@ -153,7 +153,7 @@ export class Mesh extends Shape {
         }
     }
 
-    bindBufferAndDraw(shader: Shader, gl) {
+    bindBufferAndDraw(shader: Shader, gl: WebGLRenderingContext) {
         shader.bindBuffer('aVertexPosition', this.vertexBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesBuffer);
 

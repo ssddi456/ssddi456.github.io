@@ -58,7 +58,9 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
   var MeshWithFog = /** @class */ (function (_super) {
       __extends(MeshWithFog, _super);
       function MeshWithFog() {
-          return _super !== null && _super.apply(this, arguments) || this;
+          var _this = _super !== null && _super.apply(this, arguments) || this;
+          _this.useFog = 1;
+          return _this;
       }
       MeshWithFog.prototype.init = function (gl, world) {
           _super.prototype.init.call(this, gl, world);
@@ -83,10 +85,12 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
       };
       MeshWithFog.prototype.bindBufferAndDraw = function (shader, gl) {
           shader.bindBuffer('aFog', this.fogBuffer);
+          shader.bindBuffer('uUseFog', this.useFog);
           _super.prototype.bindBufferAndDraw.call(this, shader, gl);
       };
       return MeshWithFog;
   }(mesh_1.Mesh));
+  exports.MeshWithFog = MeshWithFog;
   var fogChanging = 1 / 20; // 迷雾的渐变速度
   var LevelControler = /** @class */ (function () {
       function LevelControler(player) {
@@ -128,7 +132,7 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
               }
               var targetVal = 0;
               if (cell.visible) {
-                  targetVal = 1;
+                  targetVal = 0.5;
               }
               else if (cell.visited) {
                   targetVal = 0.3;
@@ -150,6 +154,7 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
                   }
                   for (var faceVertexIndex = 0; faceVertexIndex < face.vertexes.length; faceVertexIndex++) {
                       fog[face.vertexes[faceVertexIndex].textureCoordinateIndex] = newVal;
+                      fog[face.vertexes[faceVertexIndex].textureCoordinateIndex + 1] = targetVal;
                   }
               }
           });

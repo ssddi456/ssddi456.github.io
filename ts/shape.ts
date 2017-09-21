@@ -30,6 +30,7 @@ export abstract class Shape {
     abstract init(gl: WebGLRenderingContext, world: World);
     abstract clone();
     abstract dispose(world: World);
+    abstract bindBufferAndDraw(shader: Shader, gl: WebGLRenderingContext);
 
     updateDebug?(world: World, lights: Light[]);
 

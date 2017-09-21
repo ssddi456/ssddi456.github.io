@@ -14,6 +14,7 @@ uniform highp mat4 uPMatrix;
 varying highp vec2 vTextureCoord;
 varying highp vec3 vLighting;
 varying lowp vec4 vColor;
+varying lowp vec2 vFog;
 
 void main(void) {
     gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
@@ -26,6 +27,7 @@ void main(void) {
     highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
     highp float directional = max(dot(transformedNormal.xyz, uDirectionalVector), 0.0);
     vColor = vec4(aVertexColor.xyz, aFog.s);
+    vFog = aFog;
     // 这里应该有一个更好的定义基础材质的算法
     vLighting = ambientLight + (uDirectionalLightColor * directional);
 }

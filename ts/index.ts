@@ -14,7 +14,8 @@ import { Plane } from "./libs/plane";
 import { Cube } from "./libs/cube";
 import { Player } from "./libs/player_control";
 import { LevelControler } from "./libs/level_control";
-import { loopFactory } from './libs/utils';
+import { loopFactory, createTexture, createFrameBuffer, createFrameBufferWithDepth } from './libs/utils';
+import { createMergeCanvas } from './objects/merge_canvas';
 
 const main = $('#main')[0] as HTMLCanvasElement;
 const elBBox = main.getClientRects()[0];
@@ -65,26 +66,21 @@ dummyPlayer.vertices.forEach((v, i) => {
     dummyPlayer.vertices[i] *= 0.25;
 });
 
-
 const levelControler = new LevelControler(dummyPlayerControl);
 levelControler.levelStart(world);
 
 const clampFloor = new Mesh();
-clampFloor.shader = levelControler.mazeMesh.shader;
+clampFloor.textureSrc = '/images/white.jpg';
+clampFloor.shader = new CubeWithTextureAndLightingShader();
 const clampFloorPlane = new Plane();
+
 clampFloor.updateMeshInfo(clampFloorPlane.getMesh());
-clampFloor.x(Matrix.Translation($V([0, -0.1, 0])));
+clampFloor.x(Matrix.Translation($V([0, -0.2, 0])));
 
 async function loadShapes() {
 
-    world.attachLight(skyLight);
-    [
-        levelControler.mazeMesh,
-        dummyPlayer,
-        clampFloor,
-    ].map((x) => world.attachObject(x));
-
     await Promise.all([
+        clampFloor.loadTexture(world.gl),
         levelControler.mazeMesh.loadTexture(world.gl),
     ]);
 }
@@ -139,7 +135,7 @@ const updateLoop = loopFactory(function () {
 
         const centerX = levelControler.maze.width / 2;
         const centerY = levelControler.maze.height / 2;
-        const centerHeight = levelControler.maze.width + 4;
+        const centerHeight = levelControler.maze.width;
 
         mainCamara.eye = [centerX, centerHeight, centerY];
         mainCamara.center = [centerX, 0, centerY];
@@ -156,14 +152,69 @@ const updateLoop = loopFactory(function () {
     }
 }, 1000 / drawFrequant);
 
-const drawLoop = loopFactory(function () {
-    world.render();
-}, 1000 / drawFrequant);
+const grayFrameTexture = createTexture(world.gl, size.width, size.height);
+const [grayFrameBuffer, grayRenderBuffer] = createFrameBufferWithDepth(world.gl, grayFrameTexture, size);
+const colorFrameTexture = createTexture(world.gl, size.width, size.height);
+const [colorFrameBuffer, colorRenderBuffer] = createFrameBufferWithDepth(world.gl, colorFrameTexture, size);
+
+const greyScene = world.createScene();
+greyScene.camara = mainCamara;
+greyScene.frameBuffer = grayFrameBuffer;
+greyScene.renderBuffer = grayRenderBuffer;
+greyScene.attachLight(skyLight);
+greyScene.attachObject(clampFloor);
+greyScene.attachObject(levelControler.mazeMesh);
+greyScene.attachObject(dummyPlayer);
+greyScene.beforeRender = function () {
+    levelControler.mazeMesh.useFog = 1.0;
+};
+const colorScene = greyScene.clone();
+colorScene.frameBuffer = colorFrameBuffer;
+colorScene.renderBuffer = colorRenderBuffer;
+colorScene.beforeRender = function () {
+    levelControler.mazeMesh.useFog = 0;
+};
+
+const compositScene = world.createScene();
+const compositCanvas = createMergeCanvas(size);
+compositCanvas.sight = Math.pow((dummyPlayerControl.sightRange - 1) * size.height / levelControler.maze.height, 2);
+compositCanvas.textureGray = grayFrameTexture;
+compositCanvas.textureColor = colorFrameTexture;
+compositScene.attachObject(compositCanvas);
+compositScene.beforeRender = function () {
+
+    const centerInWorld = dummyPlayer.trs;
+    const centerInCamara = mainCamara.matrix.x(centerInWorld);
+    const screenW = centerInCamara.elements[3][3];
+
+    const screenX = centerInCamara.elements[0][3] / screenW;
+    const screenY = centerInCamara.elements[1][3] / screenW;
+
+    const actualCenterX = (screenX + 1) / 2 * size.width;
+    const actualCenterY = (screenY + 1) / 2 * size.height;
+
+    // console.log(centerInWorld);
+    // console.log(centerInCamara);
+    // console.log(screenX, screenY);
+    // console.log(actualCenterX, actualCenterY);
+
+    compositCanvas.center[0] = actualCenterX;
+    compositCanvas.center[1] = actualCenterY;
+};
+
+function draw() {
+    greyScene.render();
+    colorScene.render();
+    compositScene.render();
+}
+
+const drawLoop = loopFactory(draw, 1000 / drawFrequant);
 
 loadShapes().then(function () {
     levelControler.reset();
     updateLoop();
     drawLoop();
+    // draw();
 });
 
 const keyPressedMap = {};

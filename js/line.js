@@ -58,6 +58,9 @@ define('js/line', ['require', 'exports', 'module', "./shape", "./shaders/line_ve
           _this.lineVertexCounts = 2;
           return _this;
       }
+      Line.prototype.bindBufferAndDraw = function (shader, gl) {
+          throw new Error("Method not implemented.");
+      };
       Object.defineProperty(Line.prototype, "points", {
           get: function () {
               return [].concat(this.start, this.end);

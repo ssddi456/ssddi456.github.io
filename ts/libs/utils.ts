@@ -1,4 +1,5 @@
 import { Vector4, Point } from "./2dRoad";
+import { ISize } from "../world";
 
 export function randomItem<T>(arr: T[]) {
     return arr[Math.floor(Math.random() * arr.length)];
@@ -92,3 +93,40 @@ export function getBBox(postion: Point, halfsize: Point) {
     ] as Vector4;
 }
 
+export function createTexture(gl: WebGLRenderingContext, width: number, height: number) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Set up texture so we can render any size image and so we are
+    // working with pixels.
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texImage2D(
+        gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+        gl.RGBA, gl.UNSIGNED_BYTE, null);
+    return texture;
+}
+
+export function createFrameBuffer(gl: WebGLRenderingContext, texture: WebGLTexture) {
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+
+    // Attach a texture to it.
+    gl.framebufferTexture2D(
+        gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    return fbo;
+}
+
+export function createFrameBufferWithDepth(gl: WebGLRenderingContext, texture: WebGLTexture, size: ISize) {
+    const depthRenderbuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderbuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size.width, size.height);
+
+    const framebuffer = createFrameBuffer(gl, texture);
+
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderbuffer);
+
+    return [framebuffer, depthRenderbuffer];
+}

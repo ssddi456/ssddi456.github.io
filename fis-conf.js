@@ -64,7 +64,7 @@ function get_shader_obj(file, basename) {
     return shader_map[wrapper_basename];
 }
 
-var reg_attr = /\b(attribute|uniform)\s+((highp|lowp)\s+)?(vec2|vec3|vec4|mat4|sampler2D)\s+([^;]+);(\s*\/\/\s*([^ ]+))?/g;
+var reg_attr = /\b(attribute|uniform)\s+((highp|lowp)\s+)?(float|vec2|vec3|vec4|mat4|sampler2D)\s+([^;]+);(\s*\/\/\s*([^ ]+))?/g;
 function compileFragmentShader(file, name, fshader_content) {
     var shader_obj = get_shader_obj(file, name);
     fshader_content.toString().replace(reg_attr, function ($, $attr_type, $1, $modifier, $type, $name, $2, $bindName) {
@@ -76,6 +76,7 @@ function compileFragmentShader(file, name, fshader_content) {
         }
         shader_obj[$attr_type + 's'][$name] = info;
     });
+
     shader_obj.fs_compiled = true;
     shader_obj.end_compile(file);
 }
@@ -124,7 +125,23 @@ function createShaderFile(file, shader_info) {
     });
 
     content = content.concat([
+        '    mytempattrs = {',]);
+    forOf(shader_info.attributes, function (k, v, obj) {
+        content.push(k + ': 0,');
+    });
+    forOf(shader_info.uniforms, function (k, v, obj) {
+        content.push(k + ': 0,');
+    });
+    content = content.concat([
+        '    }'
+    ]);
+
+    // start mount
+    content = content.concat([
         '    mount(gl: WebGLRenderingContext) {',
+        '        for(const k in this.mytempattrs) {',
+        '            this.mytempattrs[k] = 0;',
+        '        }',
         '        const shaderProgram = this.shaderProgram;'
     ]);
     forOf(shader_info.attributes, function (k, v, obj) {
@@ -137,6 +154,7 @@ function createShaderFile(file, shader_info) {
 
     content = content.concat([
         'this.bindBuffer = function(k: string, value: WebGLBuffer | Float32Array | number) {',
+        '        this.mytempattrs[k] = 1;',
         '        switch (k) {',]);
 
     forOf(shader_info.attributes, function (k, v, obj) {
@@ -160,6 +178,8 @@ function createShaderFile(file, shader_info) {
         var uniformFunc = {
             'mat4': 'uniformMatrix4fv',
             'vec3': 'uniform3fv',
+            'vec2': 'uniform2fv',
+            'float': 'uniform1f',
             'sampler2D': 'uniform1i',
         }[v.type];
 
@@ -179,6 +199,8 @@ function createShaderFile(file, shader_info) {
     content = content.concat([
         '    }',
     ]);
+    // end mount
+    // start render
     content = content.concat([
         '    render(world: World, mesh: Mesh, camaraMatrixFlat: Float32Array, lights: Light[]) {',
         '        const gl = world.gl;',
@@ -197,7 +219,7 @@ function createShaderFile(file, shader_info) {
         '        mesh.bindBufferAndDraw(this, gl);',
         '    }',
         ' }']);
-
+    // end render
     content = content.join('\n');
 
     createDerivedFile(file, shader_info.shader_file_path, content);

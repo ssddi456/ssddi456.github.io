@@ -1,4 +1,4 @@
-define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./light", "./mesh", "./libs/plane", "./libs/cube", "./libs/player_control", "./libs/level_control", "./libs/utils"], function(require, exports, module) {
+define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex_color_shader", "./shaders/cube_with_texture_and_lighting_shader", "./light", "./mesh", "./libs/plane", "./libs/cube", "./libs/player_control", "./libs/level_control", "./libs/utils", "./objects/merge_canvas"], function(require, exports, module) {
 
   "use strict";
   var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -39,6 +39,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   exports.__esModule = true;
   var world_1 = require("./world");
   var vertex_color_shader_1 = require("./shaders/vertex_color_shader");
+  var cube_with_texture_and_lighting_shader_1 = require("./shaders/cube_with_texture_and_lighting_shader");
   var light_1 = require("./light");
   var mesh_1 = require("./mesh");
   var plane_1 = require("./libs/plane");
@@ -46,6 +47,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var player_control_1 = require("./libs/player_control");
   var level_control_1 = require("./libs/level_control");
   var utils_1 = require("./libs/utils");
+  var merge_canvas_1 = require("./objects/merge_canvas");
   var main = $('#main')[0];
   var elBBox = main.getClientRects()[0];
   var size = { width: elBBox.width, height: elBBox.width * 0.75 };
@@ -88,24 +90,19 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   var levelControler = new level_control_1.LevelControler(dummyPlayerControl);
   levelControler.levelStart(world);
   var clampFloor = new mesh_1.Mesh();
-  clampFloor.shader = levelControler.mazeMesh.shader;
+  clampFloor.textureSrc = '/images/white.jpg';
+  clampFloor.shader = new cube_with_texture_and_lighting_shader_1.CubeWithTextureAndLightingShader();
   var clampFloorPlane = new plane_1.Plane();
   clampFloor.updateMeshInfo(clampFloorPlane.getMesh());
-  clampFloor.x(Matrix.Translation($V([0, -0.1, 0])));
+  clampFloor.x(Matrix.Translation($V([0, -0.2, 0])));
   function loadShapes() {
       return __awaiter(this, void 0, void 0, function () {
           return __generator(this, function (_a) {
               switch (_a.label) {
-                  case 0:
-                      world.attachLight(skyLight);
-                      [
-                          levelControler.mazeMesh,
-                          dummyPlayer,
-                          clampFloor,
-                      ].map(function (x) { return world.attachObject(x); });
-                      return [4 /*yield*/, Promise.all([
-                              levelControler.mazeMesh.loadTexture(world.gl),
-                          ])];
+                  case 0: return [4 /*yield*/, Promise.all([
+                          clampFloor.loadTexture(world.gl),
+                          levelControler.mazeMesh.loadTexture(world.gl),
+                      ])];
                   case 1:
                       _a.sent();
                       return [2 /*return*/];
@@ -153,7 +150,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           ])));
           var centerX = levelControler.maze.width / 2;
           var centerY = levelControler.maze.height / 2;
-          var centerHeight = levelControler.maze.width + 4;
+          var centerHeight = levelControler.maze.width;
           mainCamara.eye = [centerX, centerHeight, centerY];
           mainCamara.center = [centerX, 0, centerY];
       }
@@ -166,13 +163,59 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           levelControler.mazeMesh.rebuffering(world.gl, world);
       }
   }, 1000 / drawFrequant);
-  var drawLoop = utils_1.loopFactory(function () {
-      world.render();
-  }, 1000 / drawFrequant);
+  var grayFrameTexture = utils_1.createTexture(world.gl, size.width, size.height);
+  var _a = utils_1.createFrameBufferWithDepth(world.gl, grayFrameTexture, size), grayFrameBuffer = _a[0], grayRenderBuffer = _a[1];
+  var colorFrameTexture = utils_1.createTexture(world.gl, size.width, size.height);
+  var _b = utils_1.createFrameBufferWithDepth(world.gl, colorFrameTexture, size), colorFrameBuffer = _b[0], colorRenderBuffer = _b[1];
+  var greyScene = world.createScene();
+  greyScene.camara = mainCamara;
+  greyScene.frameBuffer = grayFrameBuffer;
+  greyScene.renderBuffer = grayRenderBuffer;
+  greyScene.attachLight(skyLight);
+  greyScene.attachObject(clampFloor);
+  greyScene.attachObject(levelControler.mazeMesh);
+  greyScene.attachObject(dummyPlayer);
+  greyScene.beforeRender = function () {
+      levelControler.mazeMesh.useFog = 1.0;
+  };
+  var colorScene = greyScene.clone();
+  colorScene.frameBuffer = colorFrameBuffer;
+  colorScene.renderBuffer = colorRenderBuffer;
+  colorScene.beforeRender = function () {
+      levelControler.mazeMesh.useFog = 0;
+  };
+  var compositScene = world.createScene();
+  var compositCanvas = merge_canvas_1.createMergeCanvas(size);
+  compositCanvas.sight = Math.pow((dummyPlayerControl.sightRange - 1) * size.height / levelControler.maze.height, 2);
+  compositCanvas.textureGray = grayFrameTexture;
+  compositCanvas.textureColor = colorFrameTexture;
+  compositScene.attachObject(compositCanvas);
+  compositScene.beforeRender = function () {
+      var centerInWorld = dummyPlayer.trs;
+      var centerInCamara = mainCamara.matrix.x(centerInWorld);
+      var screenW = centerInCamara.elements[3][3];
+      var screenX = centerInCamara.elements[0][3] / screenW;
+      var screenY = centerInCamara.elements[1][3] / screenW;
+      var actualCenterX = (screenX + 1) / 2 * size.width;
+      var actualCenterY = (screenY + 1) / 2 * size.height;
+      // console.log(centerInWorld);
+      // console.log(centerInCamara);
+      // console.log(screenX, screenY);
+      // console.log(actualCenterX, actualCenterY);
+      compositCanvas.center[0] = actualCenterX;
+      compositCanvas.center[1] = actualCenterY;
+  };
+  function draw() {
+      greyScene.render();
+      colorScene.render();
+      compositScene.render();
+  }
+  var drawLoop = utils_1.loopFactory(draw, 1000 / drawFrequant);
   loadShapes().then(function () {
       levelControler.reset();
       updateLoop();
       drawLoop();
+      // draw();
   });
   var keyPressedMap = {};
   document.body.addEventListener('keydown', function (e) {

@@ -6,6 +6,9 @@ import { Vector3 } from "./libs/2dRoad";
 import { createBuffer } from "./libs/utils";
 
 export class Line extends Shape {
+    bindBufferAndDraw(shader: Shader, gl: any) {
+        throw new Error("Method not implemented.");
+    }
 
     start: Vector3;
     end: Vector3;

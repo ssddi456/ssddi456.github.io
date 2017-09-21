@@ -18,6 +18,32 @@ define('js/libs/plane', ['require', 'exports', 'module', "./2dRoad", "./3dRoad"]
       return Plane;
   }());
   exports.Plane = Plane;
+  var pos = [
+      [-1, 1, 0],
+      [-1, -1, 0],
+      [1, -1, 0],
+      [1, 1, 0],
+  ];
+  var textcoords = [
+      [0, 1],
+      [0, 0],
+      [1, 0],
+      [1, 1],
+  ];
+  var ClipSpacePlane = /** @class */ (function () {
+      function ClipSpacePlane() {
+      }
+      ClipSpacePlane.getMesh = function () {
+          var face = _3dRoad_1.createTopSquare(0, 0, -1, -1, 0, _3dRoad_1.groundColor);
+          face.vertexes.forEach(function (vertex, i) {
+              vertex.pos = pos[i];
+              vertex.textureCoordinate = textcoords[i];
+          });
+          return _2dRoad_1.facesToMesh([face]);
+      };
+      return ClipSpacePlane;
+  }());
+  exports.ClipSpacePlane = ClipSpacePlane;
   
 
 });

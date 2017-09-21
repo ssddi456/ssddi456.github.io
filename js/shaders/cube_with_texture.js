@@ -19,9 +19,19 @@ define('js/shaders/cube_with_texture', ['require', 'exports', 'module', "./base_
           var _this = _super !== null && _super.apply(this, arguments) || this;
           _this.vertexShaderFactory = require("js/shaders/cube_with_texture-vs.glsl.js");
           _this.fragementShaderFactory = require("js/shaders/cube_with_texture-fs.glsl.js");
+          _this.mytempattrs = {
+              aVertexPosition: 0,
+              aTextureCoord: 0,
+              uSampler: 0,
+              uMVMatrix: 0,
+              uPMatrix: 0
+          };
           return _this;
       }
       CubeWithTextureShader.prototype.mount = function (gl) {
+          for (var k in this.mytempattrs) {
+              this.mytempattrs[k] = 0;
+          }
           var shaderProgram = this.shaderProgram;
           this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
           gl.enableVertexAttribArray(this.aVertexPosition);
@@ -31,6 +41,7 @@ define('js/shaders/cube_with_texture', ['require', 'exports', 'module', "./base_
           this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
           this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
           this.bindBuffer = function (k, value) {
+              this.mytempattrs[k] = 1;
               switch (k) {
                   case "aVertexPosition":
                       gl.bindBuffer(gl.ARRAY_BUFFER, value);

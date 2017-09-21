@@ -19,9 +19,18 @@ define('js/shaders/line_with_vertex_color', ['require', 'exports', 'module', "./
           var _this = _super !== null && _super.apply(this, arguments) || this;
           _this.vertexShaderFactory = require("js/shaders/line_with_vertex_color-vs.glsl.js");
           _this.fragementShaderFactory = require("js/shaders/line_with_vertex_color-fs.glsl.js");
+          _this.mytempattrs = {
+              aVertexPosition: 0,
+              aVertexColor: 0,
+              uMVMatrix: 0,
+              uPMatrix: 0
+          };
           return _this;
       }
       LineWithVertexColorShader.prototype.mount = function (gl) {
+          for (var k in this.mytempattrs) {
+              this.mytempattrs[k] = 0;
+          }
           var shaderProgram = this.shaderProgram;
           this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
           gl.enableVertexAttribArray(this.aVertexPosition);
@@ -30,6 +39,7 @@ define('js/shaders/line_with_vertex_color', ['require', 'exports', 'module', "./
           this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
           this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
           this.bindBuffer = function (k, value) {
+              this.mytempattrs[k] = 1;
               switch (k) {
                   case "aVertexPosition":
                       gl.bindBuffer(gl.ARRAY_BUFFER, value);
