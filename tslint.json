@@ -13,9 +13,7 @@
       false
     ],
     "space-before-function-paran" :false,
-    "quotemark": [
-      "single"
-    ],
+    "quotemark": [ true, "single" ],
     "ordered-imports": [
       false
     ],

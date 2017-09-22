@@ -142,9 +142,5 @@ export function facesToMesh(faces: IFace[]) {
             ret.faces.push(faceStartIndex + face.indexes[indexFaceIndex]);
         }
     }
-
-    for (let i = 0; i < faces.length; i++) {
-        const element = faces[i];
-    }
     return ret;
 }

@@ -6,9 +6,9 @@ export function randomItem<T>(arr: T[]) {
 }
 
 export function wrapIterableIterator(process: () => IterableIterator<any>) {
-    let iterable;
+    let iterable: IterableIterator<any> | undefined;
     return function () {
-        if (!iterable) {
+        if (iterable === undefined) {
             iterable = process();
         }
 
@@ -17,7 +17,7 @@ export function wrapIterableIterator(process: () => IterableIterator<any>) {
             iterable = undefined;
         }
         return item.value;
-    }
+    };
 }
 
 export function createBuffer(gl: WebGLRenderingContext) {
@@ -27,7 +27,6 @@ export function createBuffer(gl: WebGLRenderingContext) {
     }
     return buffer;
 }
-
 
 export function loopFactory(updater: (tick: number) => any, updateInterval: number) {
     let startTime = Date.now();
