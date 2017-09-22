@@ -113,9 +113,6 @@ export class LevelControler {
                 targetVal = 0;
             }
 
-            if (cellpos[0] === this.maze.exit[0] && cellpos[1] === this.maze.exit[1]) {
-                targetVal = 1;
-            }
 
             const fogIndex = 0;
             const fog = this.mazeMesh.fog;
@@ -125,7 +122,11 @@ export class LevelControler {
                 const delta = targetVal - oldFog;
                 let newVal: number = targetVal;
                 if (Math.abs(delta) > fogChanging) {
-                    newVal = oldFog + (targetVal > oldFog ? 1 : -1) * fogChanging;
+                    if (cellpos[0] === this.maze.exit[0] && cellpos[1] === this.maze.exit[1]) {
+                        newVal = oldFog + (targetVal > oldFog ? 1 : -1) * 0.2 * fogChanging;
+                    } else {
+                        newVal = oldFog + (targetVal > oldFog ? 1 : -1) * fogChanging;
+                    }
                 }
                 for (let faceVertexIndex = 0; faceVertexIndex < face.vertexes.length; faceVertexIndex++) {
                     fog[face.vertexes[faceVertexIndex].textureCoordinateIndex] = newVal;

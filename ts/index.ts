@@ -104,6 +104,7 @@ const accelarateControlMap = {
 
 dummyPlayerControl.on('enterExit', () => {
     levelControler.levelPass();
+
 });
 
 const drawFrequant = 30;
@@ -115,7 +116,7 @@ const updateLoop = loopFactory(function () {
         // 在别处实现动画逻辑
         levelControler.transformLevel();
     } else if (!levelControler.levelInitialed) {
-        // console.log('init level');
+        // 重新初始化关卡
 
         const postPos = dummyPlayerControl.currentPos.slice();
 
@@ -140,6 +141,7 @@ const updateLoop = loopFactory(function () {
         mainCamara.eye = [centerX, centerHeight, centerY];
         mainCamara.center = [centerX, 0, centerY];
 
+        updateDebugUI();
     } else {
         // console.log('play level');
 
@@ -149,6 +151,8 @@ const updateLoop = loopFactory(function () {
 
         levelControler.update(world);
         levelControler.mazeMesh.rebuffering(world.gl, world);
+
+
     }
 }, 1000 / drawFrequant);
 
@@ -201,11 +205,22 @@ compositScene.beforeRender = function () {
     compositCanvas.center[0] = actualCenterX;
     compositCanvas.center[1] = actualCenterY;
 };
+const drawInfo = {
+    gray: 1,
+    color: 1,
+    full: 1,
+};
 
 function draw() {
-    greyScene.render();
-    colorScene.render();
-    compositScene.render();
+    if (drawInfo.gray) {
+        greyScene.render();
+    }
+    if (drawInfo.color) {
+        colorScene.render();
+    }
+    if (drawInfo.full) {
+        compositScene.render();
+    }
 }
 
 const drawLoop = loopFactory(draw, 1000 / drawFrequant);
@@ -246,3 +261,46 @@ document.body.addEventListener('keyup', function (e) {
     }
     currentDir.forEach((x, i) => currentDir[i] -= delta[i]);
 }, true);
+
+const $hardness = $('#hardness');
+const $exitDisance = $('#exit_disance');
+const $renderControl = $('[name=render_control]');
+
+
+function updateDebugUI() {
+    $hardness.text(levelControler.hardness);
+    $exitDisance.text(levelControler.maze.exitDistance);
+}
+
+$renderControl.on('change', function () {
+
+    switch ((this as HTMLInputElement).value) {
+        case 'render_composit_layer':
+            drawInfo.gray = 1;
+            drawInfo.color = 1;
+            drawInfo.full = 1;
+
+            greyScene.frameBuffer = grayFrameBuffer;
+            greyScene.renderBuffer = grayRenderBuffer;
+
+            colorScene.frameBuffer = colorFrameBuffer;
+            colorScene.renderBuffer = colorRenderBuffer;
+            break;
+        case 'render_grayscal_layer':
+            drawInfo.gray = 1;
+            drawInfo.color = 0;
+            drawInfo.full = 0;
+
+            greyScene.frameBuffer = null;
+            greyScene.renderBuffer = null;
+            break;
+        case 'render_full_color_layer':
+            drawInfo.gray = 0;
+            drawInfo.color = 1;
+            drawInfo.full = 0;
+
+            colorScene.frameBuffer = null;
+            colorScene.renderBuffer = null;
+            break;
+    }
+});

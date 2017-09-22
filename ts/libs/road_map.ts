@@ -3,17 +3,26 @@ import { gridSize } from './3dRoad';
 
 /**
  * [
- *  [0, 0, 0],
- *  [0, 0, 0],
- *  [0, 0, 0],
+ *  [IMapCell, IMapCell, IMapCell],
+ *  [IMapCell, IMapCell, IMapCell],
+ *  [IMapCell, IMapCell, IMapCell],
  * ]
  *
- * 来构成一个地图，0为不通过，1为可以通过。
+ * 来构成一个地图
  */
 interface IMapCell {
     canWalkThrough: boolean;
     visited: boolean;
     visible: boolean;
+    // 到起点的距离
+    distance: number;
+}
+
+interface ICheckCellInfo {
+    x: number;
+    y: number;
+    cell: IMapCell;
+    parentCell: IMapCell;
 }
 
 export class RoadMap {
@@ -25,6 +34,8 @@ export class RoadMap {
     exit: Point;
     safeZone: Vector4;
     safeZoneSize: number = 3;
+
+    exitDistance: number = 0;
 
     constructor(x: number, y: number) {
         this.grid = [];
@@ -52,12 +63,14 @@ export class RoadMap {
                         canWalkThrough: false,
                         visited: false,
                         visible: false,
+                        distance: 0,
                     };
                     row.push(el);
                 } else {
                     el.canWalkThrough = false;
                     el.visited = false;
                     el.visible = false;
+                    el.distance = 0;
                 }
             }
         }
@@ -81,8 +94,12 @@ export class RoadMap {
         }
         return this.grid[y][x].canWalkThrough;
     }
-    setWalkThrough(x: number, y: number) {
-        this.grid[y][x].canWalkThrough = true;
+    setWalkThrough(x: number, y: number, distance?: number) {
+        const el = this.grid[y][x];
+        el.canWalkThrough = true;
+        if (distance !== undefined) {
+            el.distance = distance;
+        }
     }
     setRoad(a: [number, number], b: [number, number]) {
         let increaser;
@@ -117,6 +134,12 @@ export class RoadMap {
         ) {
             return true;
         }
+    }
+    getCell(x: number, y: number) {
+        if (this.isInGrid(x, y)) {
+            return this.grid[y][x];
+        }
+        return null;
     }
     getAllJoint() {
         const ret: Array<[number, number]> = [];
@@ -180,9 +203,6 @@ export class RoadMap {
         const ret = [x, Math.floor(index / this.width)];
         return ret;
     }
-    getCell(x: number, y: number) {
-        return this.grid[y][x];
-    }
     getNearBy(x: number, y: number) {
         const ret = [] as Point[];
         if (this.isInGrid(x, y - 1)) {
@@ -245,40 +265,55 @@ export class RoadMap {
     }
 
     generateRandonRoad(startX = 0, startY = 0) {
+
+
         this.resetGrid();
-        const waitForCheck = [] as Array<[number, number]>;
+        const waitForCheck = [] as ICheckCellInfo[];
         this.entrance = [startX, startY];
         this.setSafeZone(startX, startY);
 
-        waitForCheck.push(this.entrance);
+        waitForCheck.push({
+            x: startX,
+            y: startY,
+            cell: this.getCell(startX, startY),
+            parentCell: null,
+        });
 
         while (waitForCheck.length) {
             // random pop
-            let pos;
+            let pos: ICheckCellInfo;
             if (Math.random() >= 0.5) {
                 pos = waitForCheck.pop();
             } else {
                 pos = waitForCheck.shift();
             }
 
-            const nearBy = this.getCheckPos(pos[0], pos[1]);
+            const nearBy = this.getCheckPos(pos.x, pos.y);
 
             const blocked = nearBy.filter((nearByPos) => {
                 return !this.canWalkThrough(nearByPos.add[0], nearByPos.add[1]) &&
                     !this.canWalkThrough(nearByPos.check[0], nearByPos.check[1]);
             });
+
             // 这个逻辑有点不对
             if (blocked.length >= nearBy.length - 1) {
-                this.setWalkThrough(pos[0], pos[1]);
+                const distance = pos.parentCell ? pos.parentCell.distance + 1 : 0;
+                this.setWalkThrough(pos.x, pos.y, distance);
                 // random push
                 while (blocked.length) {
                     const block = blocked.pop();
                     if (block) {
-                        this.setWalkThrough(block.add[0], block.add[1]);
+                        this.setWalkThrough(block.add[0], block.add[1], distance + 1);
+                        const newCheckCell = {
+                            x: block.check[0],
+                            y: block.check[1],
+                            cell: this.getCell(block.check[0], block.check[1]),
+                            parentCell: this.getCell(block.add[0], block.add[1]),
+                        } as ICheckCellInfo;
                         if (Math.random() >= 0.5) {
-                            waitForCheck.push(block.check);
+                            waitForCheck.push(newCheckCell);
                         } else {
-                            waitForCheck.unshift(block.check);
+                            waitForCheck.unshift(newCheckCell);
                         }
                     }
                 }
@@ -288,12 +323,23 @@ export class RoadMap {
         const exit = [this.width - 1, Math.max(2, Math.ceil(Math.random() * this.height - 2))] as Point;
         this.exit = exit;
         let findXExit = exit[0];
+        const addedExits = [] as IMapCell[];
+        let exitJoint: IMapCell;
         for (; findXExit > 0; findXExit--) {
+            const cell = this.getCell(findXExit, exit[1]);
             if (this.canWalkThrough(findXExit, exit[1])) {
+                exitJoint = cell;
                 break;
             } else {
-                this.setWalkThrough(findXExit, exit[1]);
+                addedExits.push(cell);
             }
         }
+        let exitDistance = exitJoint.distance;
+        for (let i = addedExits.length; i > 0; i--) {
+            const cell = addedExits[i - 1];
+            cell.distance = ++exitDistance;
+            cell.canWalkThrough = true;
+        }
+        this.exitDistance = exitDistance;
     }
 }

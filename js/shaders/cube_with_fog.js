@@ -26,13 +26,12 @@ define('js/shaders/cube_with_fog', ['require', 'exports', 'module', "./base_shad
               aTextureCoord: 0,
               aFog: 0,
               uSampler: 0,
+              uUseFog: 0,
               uNormalMatrix: 0,
               uDirectionalLightColor: 0,
               uDirectionalVector: 0,
               uMVMatrix: 0,
-              uPMatrix: 0,
-              useFog: 0,
-              uUseFog: 0
+              uPMatrix: 0
           };
           return _this;
       }
@@ -52,13 +51,12 @@ define('js/shaders/cube_with_fog', ['require', 'exports', 'module', "./base_shad
           this.aFog = gl.getAttribLocation(shaderProgram, "aFog");
           gl.enableVertexAttribArray(this.aFog);
           this.uSampler = gl.getUniformLocation(this.shaderProgram, "uSampler");
+          this.uUseFog = gl.getUniformLocation(this.shaderProgram, "uUseFog");
           this.uNormalMatrix = gl.getUniformLocation(this.shaderProgram, "uNormalMatrix");
           this.uDirectionalLightColor = gl.getUniformLocation(this.shaderProgram, "uDirectionalLightColor");
           this.uDirectionalVector = gl.getUniformLocation(this.shaderProgram, "uDirectionalVector");
           this.uMVMatrix = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
           this.uPMatrix = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
-          this.useFog = gl.getUniformLocation(this.shaderProgram, "useFog");
-          this.uUseFog = gl.getUniformLocation(this.shaderProgram, "uUseFog");
           this.bindBuffer = function (k, value) {
               this.mytempattrs[k] = 1;
               switch (k) {
@@ -85,6 +83,9 @@ define('js/shaders/cube_with_fog', ['require', 'exports', 'module', "./base_shad
                   case "uSampler":
                       gl.uniform1i(this.uSampler, value);
                       break;
+                  case "uUseFog":
+                      gl.uniform1f(this.uUseFog, value);
+                      break;
                   case "uNormalMatrix":
                       gl.uniformMatrix4fv(this.uNormalMatrix, value);
                       break;
@@ -99,12 +100,6 @@ define('js/shaders/cube_with_fog', ['require', 'exports', 'module', "./base_shad
                       break;
                   case "uPMatrix":
                       gl.uniformMatrix4fv(this.uPMatrix, value);
-                      break;
-                  case "useFog":
-                      gl.uniform1f(this.useFog, value);
-                      break;
-                  case "uUseFog":
-                      gl.uniform1f(this.uUseFog, value);
                       break;
               }
           };

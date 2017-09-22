@@ -135,7 +135,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           levelControler.transformLevel();
       }
       else if (!levelControler.levelInitialed) {
-          // console.log('init level');
+          // 重新初始化关卡
           var postPos = dummyPlayerControl.currentPos.slice();
           levelControler.levelStart(world);
           levelControler.mazeMesh.rebuffering(world.gl, world);
@@ -153,6 +153,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
           var centerHeight = levelControler.maze.width;
           mainCamara.eye = [centerX, centerHeight, centerY];
           mainCamara.center = [centerX, 0, centerY];
+          updateDebugUI();
       }
       else {
           // console.log('play level');
@@ -205,10 +206,21 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       compositCanvas.center[0] = actualCenterX;
       compositCanvas.center[1] = actualCenterY;
   };
+  var drawInfo = {
+      gray: 1,
+      color: 1,
+      full: 1
+  };
   function draw() {
-      greyScene.render();
-      colorScene.render();
-      compositScene.render();
+      if (drawInfo.gray) {
+          greyScene.render();
+      }
+      if (drawInfo.color) {
+          colorScene.render();
+      }
+      if (drawInfo.full) {
+          compositScene.render();
+      }
   }
   var drawLoop = utils_1.loopFactory(draw, 1000 / drawFrequant);
   loadShapes().then(function () {
@@ -244,6 +256,40 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
       }
       currentDir.forEach(function (x, i) { return currentDir[i] -= delta[i]; });
   }, true);
+  var $hardness = $('#hardness');
+  var $exitDisance = $('#exit_disance');
+  var $renderControl = $('[name=render_control]');
+  function updateDebugUI() {
+      $hardness.text(levelControler.hardness);
+      $exitDisance.text(levelControler.maze.exitDistance);
+  }
+  $renderControl.on('change', function () {
+      switch (this.value) {
+          case 'render_composit_layer':
+              drawInfo.gray = 1;
+              drawInfo.color = 1;
+              drawInfo.full = 1;
+              greyScene.frameBuffer = grayFrameBuffer;
+              greyScene.renderBuffer = grayRenderBuffer;
+              colorScene.frameBuffer = colorFrameBuffer;
+              colorScene.renderBuffer = colorRenderBuffer;
+              break;
+          case 'render_grayscal_layer':
+              drawInfo.gray = 1;
+              drawInfo.color = 0;
+              drawInfo.full = 0;
+              greyScene.frameBuffer = null;
+              greyScene.renderBuffer = null;
+              break;
+          case 'render_full_color_layer':
+              drawInfo.gray = 0;
+              drawInfo.color = 1;
+              drawInfo.full = 0;
+              colorScene.frameBuffer = null;
+              colorScene.renderBuffer = null;
+              break;
+      }
+  });
   
 
 });

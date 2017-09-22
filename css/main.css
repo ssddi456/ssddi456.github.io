@@ -12,3 +12,7 @@ html, body, .wrapper {
     max-height: 800px;
     max-width: 800px;
 }
+
+.wrapper .stat {
+    flex: 0.5;
+}

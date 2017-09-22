@@ -8,6 +8,7 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
           this.width = 0;
           this.height = 0;
           this.safeZoneSize = 3;
+          this.exitDistance = 0;
           this.grid = [];
           this.width = x;
           this.height = y;
@@ -29,7 +30,8 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
                       el = {
                           canWalkThrough: false,
                           visited: false,
-                          visible: false
+                          visible: false,
+                          distance: 0
                       };
                       row.push(el);
                   }
@@ -37,6 +39,7 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
                       el.canWalkThrough = false;
                       el.visited = false;
                       el.visible = false;
+                      el.distance = 0;
                   }
               }
           }
@@ -59,8 +62,12 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
           }
           return this.grid[y][x].canWalkThrough;
       };
-      RoadMap.prototype.setWalkThrough = function (x, y) {
-          this.grid[y][x].canWalkThrough = true;
+      RoadMap.prototype.setWalkThrough = function (x, y, distance) {
+          var el = this.grid[y][x];
+          el.canWalkThrough = true;
+          if (distance !== undefined) {
+              el.distance = distance;
+          }
       };
       RoadMap.prototype.setRoad = function (a, b) {
           var increaser;
@@ -91,6 +98,12 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
               !(this.canWalkThrough(x, y - 1) && this.canWalkThrough(x, y + 1))) {
               return true;
           }
+      };
+      RoadMap.prototype.getCell = function (x, y) {
+          if (this.isInGrid(x, y)) {
+              return this.grid[y][x];
+          }
+          return null;
       };
       RoadMap.prototype.getAllJoint = function () {
           var ret = [];
@@ -150,9 +163,6 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
           var x = index % this.width;
           var ret = [x, Math.floor(index / this.width)];
           return ret;
-      };
-      RoadMap.prototype.getCell = function (x, y) {
-          return this.grid[y][x];
       };
       RoadMap.prototype.getNearBy = function (x, y) {
           var ret = [];
@@ -215,7 +225,12 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
           var waitForCheck = [];
           this.entrance = [startX, startY];
           this.setSafeZone(startX, startY);
-          waitForCheck.push(this.entrance);
+          waitForCheck.push({
+              x: startX,
+              y: startY,
+              cell: this.getCell(startX, startY),
+              parentCell: null
+          });
           while (waitForCheck.length) {
               // random pop
               var pos = void 0;
@@ -225,24 +240,31 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
               else {
                   pos = waitForCheck.shift();
               }
-              var nearBy = this.getCheckPos(pos[0], pos[1]);
+              var nearBy = this.getCheckPos(pos.x, pos.y);
               var blocked = nearBy.filter(function (nearByPos) {
                   return !_this.canWalkThrough(nearByPos.add[0], nearByPos.add[1]) &&
                       !_this.canWalkThrough(nearByPos.check[0], nearByPos.check[1]);
               });
               // 这个逻辑有点不对
               if (blocked.length >= nearBy.length - 1) {
-                  this.setWalkThrough(pos[0], pos[1]);
+                  var distance = pos.parentCell ? pos.parentCell.distance + 1 : 0;
+                  this.setWalkThrough(pos.x, pos.y, distance);
                   // random push
                   while (blocked.length) {
                       var block = blocked.pop();
                       if (block) {
-                          this.setWalkThrough(block.add[0], block.add[1]);
+                          this.setWalkThrough(block.add[0], block.add[1], distance + 1);
+                          var newCheckCell = {
+                              x: block.check[0],
+                              y: block.check[1],
+                              cell: this.getCell(block.check[0], block.check[1]),
+                              parentCell: this.getCell(block.add[0], block.add[1])
+                          };
                           if (Math.random() >= 0.5) {
-                              waitForCheck.push(block.check);
+                              waitForCheck.push(newCheckCell);
                           }
                           else {
-                              waitForCheck.unshift(block.check);
+                              waitForCheck.unshift(newCheckCell);
                           }
                       }
                   }
@@ -251,14 +273,25 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
           var exit = [this.width - 1, Math.max(2, Math.ceil(Math.random() * this.height - 2))];
           this.exit = exit;
           var findXExit = exit[0];
+          var addedExits = [];
+          var exitJoint;
           for (; findXExit > 0; findXExit--) {
+              var cell = this.getCell(findXExit, exit[1]);
               if (this.canWalkThrough(findXExit, exit[1])) {
+                  exitJoint = cell;
                   break;
               }
               else {
-                  this.setWalkThrough(findXExit, exit[1]);
+                  addedExits.push(cell);
               }
           }
+          var exitDistance = exitJoint.distance;
+          for (var i = addedExits.length; i > 0; i--) {
+              var cell = addedExits[i - 1];
+              cell.distance = ++exitDistance;
+              cell.canWalkThrough = true;
+          }
+          this.exitDistance = exitDistance;
       };
       return RoadMap;
   }());

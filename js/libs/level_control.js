@@ -140,9 +140,6 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
               else {
                   targetVal = 0;
               }
-              if (cellpos[0] === _this.maze.exit[0] && cellpos[1] === _this.maze.exit[1]) {
-                  targetVal = 1;
-              }
               var fogIndex = 0;
               var fog = _this.mazeMesh.fog;
               var oldFog = fog[face.vertexes[0].textureCoordinateIndex];
@@ -150,7 +147,12 @@ define('js/libs/level_control', ['require', 'exports', 'module', "./3dRoad", "..
                   var delta = targetVal - oldFog;
                   var newVal = targetVal;
                   if (Math.abs(delta) > fogChanging) {
-                      newVal = oldFog + (targetVal > oldFog ? 1 : -1) * fogChanging;
+                      if (cellpos[0] === _this.maze.exit[0] && cellpos[1] === _this.maze.exit[1]) {
+                          newVal = oldFog + (targetVal > oldFog ? 1 : -1) * 0.2 * fogChanging;
+                      }
+                      else {
+                          newVal = oldFog + (targetVal > oldFog ? 1 : -1) * fogChanging;
+                      }
                   }
                   for (var faceVertexIndex = 0; faceVertexIndex < face.vertexes.length; faceVertexIndex++) {
                       fog[face.vertexes[faceVertexIndex].textureCoordinateIndex] = newVal;
