@@ -1,13 +1,13 @@
-import { Shape } from "./shape";
-import { World } from "./world";
-import { Shader } from "./shaders/base_shader";
-import { LineVertexColorShader } from "./shaders/line_vertex_color_shader";
-import { Vector3 } from "./libs/2dRoad";
-import { createBuffer } from "./libs/utils";
+import { Shape } from './shape';
+import { World } from './world';
+import { Shader } from './shaders/base_shader';
+import { LineVertexColorShader } from './shaders/line_vertex_color_shader';
+import { Vector3 } from './libs/2dRoad';
+import { createBuffer } from './libs/utils';
 
 export class Line extends Shape {
     bindBufferAndDraw(shader: Shader, gl: any) {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
     start: Vector3;
@@ -23,7 +23,7 @@ export class Line extends Shape {
     vertexColorBuffer: WebGLBuffer;
 
     get points(): number[] {
-        return [].concat(this.start, this.end);
+        return [...this.start, ...this.end];
     }
     async init(gl: WebGLRenderingContext) {
 
@@ -53,6 +53,7 @@ export class Line extends Shape {
 
     clone() {
         const clone = new Line();
+        return clone;
     }
     static singleSimepleShader: Shader;
     static get simepleShader(): Shader {
@@ -60,7 +61,7 @@ export class Line extends Shape {
             Line.singleSimepleShader = new LineVertexColorShader();
         }
         return Line.singleSimepleShader;
-    };
+    }
     static createSimpleLine(
         start: Vector3,
         direct: Vector3,

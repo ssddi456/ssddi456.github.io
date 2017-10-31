@@ -166,7 +166,7 @@ export class RoadMap {
         return ret;
     }
 
-    forEach(walker: (x: number, y: number, cell: IMapCell, index?: number) => any) {
+    forEach(walker: (x: number, y: number, cell: IMapCell, index: number) => any) {
         for (let indexY = 0; indexY < this.grid.length; indexY++) {
             const row = this.grid[indexY];
             for (let indexX = 0; indexX < row.length; indexX++) {

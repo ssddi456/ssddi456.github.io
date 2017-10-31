@@ -1,5 +1,5 @@
-import { RoadMap } from "./road_map";
-import { IFace, IMeshInfo, IVertex, Vector3, Point, facesToMesh, Color } from "./2dRoad";
+import { RoadMap } from './road_map';
+import { IFace, IVertex, Vector3, Point, facesToMesh, Color } from './2dRoad';
 
 export const gridSize = 1;
 export interface ICellFace extends IFace {
@@ -15,10 +15,9 @@ export class Mesh3dRoad {
         const roadMap = this.roadMap;
 
         const jointFaces = [] as ICellFace[];
-        const wallColorMap = {};
+        const wallColorMap = {} as {[k: string]: number};
 
-
-        function getWallColor(x, y) {
+        function getWallColor(x: number, y: number) {
             const wallColorIndex = x + ',' + y;
             if (!(wallColorIndex in wallColorMap)) {
                 wallColorMap[wallColorIndex] = Math.floor(Math.random() * wallColors.length);
@@ -26,7 +25,8 @@ export class Mesh3dRoad {
             return wallColorMap[wallColorIndex];
         }
 
-        roadMap.forEach((wayPosX, wayPosY, cell, index) => {
+        roadMap.forEach((wayPosX, wayPosY, _, index) => {
+
             const top = wayPosX * gridSize;
             const left = wayPosY * gridSize;
             const bottom = (wayPosX + 1) * gridSize;

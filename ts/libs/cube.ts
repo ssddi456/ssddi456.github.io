@@ -1,4 +1,4 @@
-import { IMeshInfo } from "./2dRoad";
+import { IMeshInfo } from './2dRoad';
 
 export class Cube {
     getMesh() {

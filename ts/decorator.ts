@@ -1,6 +1,5 @@
-
 type IPropertyDescriptorFactory =
-    (target, propertyName: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
+    (target: {}, propertyName: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 
 interface IDescriptorMap {
     [k: string]: IPropertyDescriptorFactory[];
@@ -11,7 +10,7 @@ interface IConstructor<T> {
 
 const viewModelPrototypeMap = new WeakMap<object, IDescriptorMap>();
 
-export function viewModel<T extends IConstructor<any>>(constructor: T) {
+export function viewModel<T extends IConstructor<{}>>(constructor: T) {
     return class extends constructor {
         constructor(...args: any[]) {
             super(...args);
@@ -25,7 +24,9 @@ export function viewModel<T extends IConstructor<any>>(constructor: T) {
                 if (descriptorFactoryMaps.hasOwnProperty(key)) {
                     const descriptorFactories = descriptorFactoryMaps[key];
                     let descriptor = Object.getOwnPropertyDescriptor(self, key);
-
+                    if (!descriptor) {
+                        throw new Error('descriptor not found of ' + key);
+                    }
                     for (let index = 0; index < descriptorFactories.length; index++) {
                         const descriptorFactory = descriptorFactories[index];
                         descriptor = descriptorFactory(self, key, descriptor);
@@ -40,11 +41,11 @@ export function viewModel<T extends IConstructor<any>>(constructor: T) {
 }
 
 interface IObservable {
-    (target, propertyName: string, descriptor: PropertyDescriptor): PropertyDescriptor;
-    (target, propertyName: string): any;
+    (target: {}, propertyName: string, descriptor: PropertyDescriptor): PropertyDescriptor;
+    (target: {}, propertyName: string): any;
 }
 
-function observableDescriptorFactiory(target, propertyName: string, descriptor: PropertyDescriptor) {
+function observableDescriptorFactiory(target: {}, propertyName: string, descriptor: PropertyDescriptor) {
     const newDescriptor = {} as PropertyDescriptor;
     const originDescriptor = descriptor || {};
 
@@ -72,7 +73,7 @@ function observableDescriptorFactiory(target, propertyName: string, descriptor: 
     return newDescriptor;
 }
 
-function ensurePropertyDescriptorFactories(target, propertyName) {
+function ensurePropertyDescriptorFactories(target: {}, propertyName: string) {
 
     let descriptors = viewModelPrototypeMap.get(target);
     if (!descriptors) {
@@ -87,7 +88,7 @@ function ensurePropertyDescriptorFactories(target, propertyName) {
     return descriptors[propertyName];
 }
 
-export const observable: IObservable = function (target, propertyName, descriptor?) {
+export const observable: IObservable = function (target: {}, propertyName: string, descriptor?) {
 
     ensurePropertyDescriptorFactories(target, propertyName).push(observableDescriptorFactiory);
 

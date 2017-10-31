@@ -1,5 +1,5 @@
-import { Vector4, Point } from "./2dRoad";
-import { ISize } from "../world";
+import { Vector4, Point } from './2dRoad';
+import { ISize } from '../world';
 
 export function randomItem<T>(arr: T[]) {
     return arr[Math.floor(Math.random() * arr.length)];

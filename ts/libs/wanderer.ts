@@ -1,11 +1,11 @@
-import { Player } from "./player_control";
-import { RoadMap } from "./road_map";
-import { getBBox, boxCollision, randomItem } from "./utils";
-import { Point } from "./2dRoad";
-import { gridSize } from "./3dRoad";
-import { Mesh } from "../mesh";
-import { Cube } from "./cube";
-import { VertexColorShader } from "../shaders/vertex_color_shader";
+import { Player } from './player_control';
+import { RoadMap } from './road_map';
+import { getBBox, boxCollision, randomItem } from './utils';
+import { Point } from './2dRoad';
+import { gridSize } from './3dRoad';
+import { Mesh } from '../mesh';
+import { Cube } from './cube';
+import { VertexColorShader } from '../shaders/vertex_color_shader';
 
 export const directions = [
     [-1, 0],

@@ -1,5 +1,5 @@
-import { IFace, facesToMesh, Vector3, Point } from "./2dRoad";
-import { createTopSquare, gridSize, groundColor } from "./3dRoad";
+import { IFace, facesToMesh, Vector3, Point } from './2dRoad';
+import { createTopSquare, gridSize, groundColor } from './3dRoad';
 
 export class Plane {
     width: number = 1;

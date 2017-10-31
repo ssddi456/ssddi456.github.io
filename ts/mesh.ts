@@ -1,12 +1,11 @@
 
-import { Shader } from "./shaders/base_shader";
-import { Shape } from "./shape";
-import { World } from "./world";
-import { Light } from "./light";
-import { Line } from "./line";
-import { LineVertexColorShader } from "./shaders/line_vertex_color_shader";
-import { Vector3, IMeshInfo } from "./libs/2dRoad";
-import { createBuffer } from "./libs/utils";
+import { Shader } from './shaders/base_shader';
+import { Shape } from './shape';
+import { World } from './world';
+import { Light } from './light';
+import { Line } from './line';
+import { Vector3, IMeshInfo } from './libs/2dRoad';
+import { createBuffer } from './libs/utils';
 
 export class Mesh extends Shape {
 
@@ -32,7 +31,10 @@ export class Mesh extends Shape {
         if (!this.textureSrc) {
             return;
         }
-        const texture = this.texture = gl.createTexture();
+        const texture = gl.createTexture();
+        if (texture) {
+            this.texture = texture;
+        }
         const image = new Image();
         const loadFinsh = new Promise(function (resolve, reject) {
             image.onload = function () {
@@ -115,7 +117,7 @@ export class Mesh extends Shape {
 
         this.addDebugObjects(world),
 
-        this.shader.init(gl);
+            this.shader.init(gl);
         this.inited = true;
     }
 
@@ -244,7 +246,6 @@ export class Mesh extends Shape {
             }
         }
 
-        const originX = this.x;
         const setParent = (x: Shape) => x.parentShap = this;
         this.normalLines.forEach(setParent);
         this.transformedNormalLines.forEach(setParent);
