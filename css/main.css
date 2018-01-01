@@ -7,12 +7,82 @@ html, body, .wrapper {
     justify-content: center;
 }
 
-.wrapper canvas#main {
+.wrapper #main {
     flex: 1;
     max-height: 800px;
     max-width: 800px;
+    background: black;
+    position: relative;
 }
 
 .wrapper .stat {
     flex: 0.5;
+}
+
+
+.gem {
+    position: absolute;
+    -webkit-transition: transform 0.3s;
+    -moz-transition: transform 0.3s;
+    transition: transform 0.3s;
+
+    font-weight: bolder;
+    white-space: pre-wrap;
+}
+
+.fake-gem{
+    pointer-events: none;
+}
+
+.no-transition {
+    -webkit-transition: none;
+    -moz-transition: none;
+    transition:none;
+}
+
+.gem-white {
+    background-color: white;
+    color: black;
+}
+.gem-red {
+    background-color: red;
+    color: blue;
+}
+.gem-blue {
+    background-color: blue;
+    color: red;
+}
+.gem-green {
+    background-color: green;
+    color: yellow;
+}
+.gem-yellow {
+    background-color: yellow;
+    color: green;
+}
+.gem-brown {
+    background-color: rgb(92, 54, 43);
+    color: burlywood;
+}
+.gem-darkmagenta {
+    background-color: darkmagenta;
+    color: aquamarine;
+}
+
+.gem .gem-content{
+    padding-top:100%;
+}
+
+.gem-collapse {
+    transform-origin: center;
+    transform: scale(0.2);
+    outline: 2px dashed yellow;
+}
+.gem.suggest {
+    animation-name: tada;
+    animation-duration: 1s;
+}
+
+.gem.subgrid {
+    outline: 4px dashed yellow;
 }

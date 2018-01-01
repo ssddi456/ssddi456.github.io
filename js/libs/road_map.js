@@ -70,8 +70,8 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
           }
       };
       RoadMap.prototype.setRoad = function (a, b) {
-          var increaser;
-          var fixer;
+          var increaser = 0;
+          var fixer = 0;
           if (a[0] === b[0]) {
               fixer = 0;
               increaser = 1;
@@ -98,17 +98,17 @@ define('js/libs/road_map', ['require', 'exports', 'module', "./3dRoad"], functio
               !(this.canWalkThrough(x, y - 1) && this.canWalkThrough(x, y + 1))) {
               return true;
           }
+          return false;
       };
       RoadMap.prototype.getCell = function (x, y) {
           if (this.isInGrid(x, y)) {
               return this.grid[y][x];
           }
-          return null;
+          throw new Error("can not get grid at " + x + ", " + y);
       };
       RoadMap.prototype.getAllJoint = function () {
           var ret = [];
           for (var indexY = 0; indexY < this.grid.length; indexY++) {
-              var row = this.grid[indexY];
               for (var indexX = 0; indexX < this.grid.length; indexX++) {
                   if (this.isJoint(indexX, indexY)) {
                       ret.push([indexX, indexY]);

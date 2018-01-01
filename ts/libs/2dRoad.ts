@@ -1,4 +1,4 @@
-import { RoadMap } from "./road_map";
+import { RoadMap } from './road_map';
 
 export type Point = [number, number];
 export type Vector3 = [number, number, number];

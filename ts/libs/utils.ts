@@ -129,3 +129,14 @@ export function createFrameBufferWithDepth(gl: WebGLRenderingContext, texture: W
 
     return [framebuffer, depthRenderbuffer];
 }
+
+export function throttle(hander: (...args: any[]) => any, interval: number = 0) {
+    let timer: number;
+    const ret = function (...args: any[]) {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            hander(...args);
+        }, interval);
+    };
+    return ret;
+}

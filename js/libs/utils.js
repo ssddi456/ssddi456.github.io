@@ -9,7 +9,7 @@ define('js/libs/utils', ['require', 'exports', 'module'], function(require, expo
   function wrapIterableIterator(process) {
       var iterable;
       return function () {
-          if (!iterable) {
+          if (iterable === undefined) {
               iterable = process();
           }
           var item = iterable.next();
@@ -119,6 +119,22 @@ define('js/libs/utils', ['require', 'exports', 'module'], function(require, expo
       return [framebuffer, depthRenderbuffer];
   }
   exports.createFrameBufferWithDepth = createFrameBufferWithDepth;
+  function throttle(hander, interval) {
+      if (interval === void 0) { interval = 0; }
+      var timer;
+      var ret = function () {
+          var args = [];
+          for (var _i = 0; _i < arguments.length; _i++) {
+              args[_i] = arguments[_i];
+          }
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+              hander.apply(void 0, args);
+          }, interval);
+      };
+      return ret;
+  }
+  exports.throttle = throttle;
   
 
 });

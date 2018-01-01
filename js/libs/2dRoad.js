@@ -100,9 +100,6 @@ define('js/libs/2dRoad', ['require', 'exports', 'module'], function(require, exp
               ret.faces.push(faceStartIndex + face.indexes[indexFaceIndex]);
           }
       }
-      for (var i = 0; i < faces.length; i++) {
-          var element = faces[i];
-      }
       return ret;
   }
   exports.facesToMesh = facesToMesh;
