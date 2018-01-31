@@ -116,66 +116,66 @@ define('js/gem', ['require', 'exports', 'module', "./libs/road_map", "./libs/uti
       }
       return DarkmagentaGem;
   }(Gem));
-  var scoreItem = /** @class */ (function () {
-      function scoreItem(name, data) {
+  var ScoreItem = /** @class */ (function () {
+      function ScoreItem(name, data) {
           this.name = name;
           this.el = $('#' + name);
           this.data = data;
       }
-      scoreItem.prototype.update = function () {
+      ScoreItem.prototype.update = function () {
           this.el.text(this.data + '');
       };
-      return scoreItem;
+      return ScoreItem;
   }());
-  var collapseScoreItem = /** @class */ (function (_super) {
-      __extends(collapseScoreItem, _super);
-      function collapseScoreItem() {
+  var CollapseScoreItem = /** @class */ (function (_super) {
+      __extends(CollapseScoreItem, _super);
+      function CollapseScoreItem() {
           return _super !== null && _super.apply(this, arguments) || this;
       }
-      collapseScoreItem.prototype.update = function () {
+      CollapseScoreItem.prototype.update = function () {
           this.el.text("3: " + this.data[3] + " | 4: " + this.data[4] + " | 5: " + this.data[5]);
       };
-      return collapseScoreItem;
-  }(scoreItem));
+      return CollapseScoreItem;
+  }(ScoreItem));
   var scores = {
-      turns: new scoreItem('turns', 0),
-      time_past: new scoreItem('time_past', 0),
-      collapseCounts: new collapseScoreItem('collapseCounts', {
+      turns: new ScoreItem('turns', 0),
+      time_past: new ScoreItem('time_past', 0),
+      collapseCounts: new CollapseScoreItem('collapseCounts', {
           3: 0,
           4: 0,
           5: 0
       }),
-      whiteGemCounts: new collapseScoreItem('WhiteGemCounts', {
+      whiteGemCounts: new CollapseScoreItem('WhiteGemCounts', {
           3: 0,
           4: 0,
           5: 0
       }),
-      redGemCounts: new collapseScoreItem('RedGemCounts', {
+      redGemCounts: new CollapseScoreItem('RedGemCounts', {
           3: 0,
           4: 0,
           5: 0
       }),
-      blueGemCounts: new collapseScoreItem('BlueGemCounts', {
+      blueGemCounts: new CollapseScoreItem('BlueGemCounts', {
           3: 0,
           4: 0,
           5: 0
       }),
-      greenGemCounts: new collapseScoreItem('GreenGemCounts', {
+      greenGemCounts: new CollapseScoreItem('GreenGemCounts', {
           3: 0,
           4: 0,
           5: 0
       }),
-      yellowGemCounts: new collapseScoreItem('YellowGemCounts', {
+      yellowGemCounts: new CollapseScoreItem('YellowGemCounts', {
           3: 0,
           4: 0,
           5: 0
       }),
-      brownGemCounts: new collapseScoreItem('BrownGemCounts', {
+      brownGemCounts: new CollapseScoreItem('BrownGemCounts', {
           3: 0,
           4: 0,
           5: 0
       }),
-      darkmagentaGemCounts: new collapseScoreItem('DarkmagentaGemCounts', {
+      darkmagentaGemCounts: new CollapseScoreItem('DarkmagentaGemCounts', {
           3: 0,
           4: 0,
           5: 0
@@ -205,8 +205,6 @@ define('js/gem', ['require', 'exports', 'module', "./libs/road_map", "./libs/uti
           _this.wrapper.on('mousedown', '.gem', function (dragStartEvent) {
               dragStartEvent.preventDefault();
               var draggedGem = $(dragStartEvent.currentTarget);
-              var draggedGemTop = parseInt(draggedGem.css('top'), 10);
-              var draggedGemLeft = parseInt(draggedGem.css('left'), 10);
               var startTop = dragStartEvent.clientY;
               var startLeft = dragStartEvent.clientX;
               draggedGem.hide();

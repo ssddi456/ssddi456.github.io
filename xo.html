@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>Ssddi456's blog</title>
+    <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/animate.css/3.5.2/animate.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <style>
+        .xo{
+            width: 33.3%;
+            float: left;
+            position: relative;
+            outline: 1px solid rgb(85, 85, 85);
+            background-color: rgba(170, 205, 214, 0.788);
+            white-space: pre-wrap;
+        }
+        .xo:hover{
+            background-color: rgba(189, 211, 216, 0.932);
+        }
+        .xo::before{
+            content: "";
+            padding-top: 100%;
+            width: 100%;
+            display: block;
+        }
+        .xo-inner{
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            font-size: 40px;
+        }
+        .xo-white, .xo-white:hover {
+            background-color: rgb(226, 226, 226);
+        }
+        .xo-black, .xo-black:hover {
+            background-color: rgb(15, 15, 15);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container wrapper">
+        <div class="stat">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    分数
+                </div>
+                <div class="panel-body">
+
+
+                    <div class="btn-toolbar">
+                        <div class="btn-group" data-toggle="buttons">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" id="reset">重置</button>
+                            </span>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" id="undo">
+                                    <i class="glyphicon glyphicon-chevron-left"></i>
+                                </button>
+                                <button type="button" class="btn btn-default" id="redo">
+                                    <i class="glyphicon glyphicon-chevron-right"></i>
+                                </button>
+                            </span>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="main"></div>
+    </div>
+    <script src="//cdn.bootcss.com/require.js/2.3.3/require.js"></script>
+    <script src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="/lib/sylvester.js"></script>
+    <script src="/lib/glUtils.js"></script>
+    <script>
+        require(['js/xo'], function () { });
+    </script>
+</body>
+
+</html>

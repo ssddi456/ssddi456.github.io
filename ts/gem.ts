@@ -72,7 +72,7 @@ interface Vector2 {
     left: number;
 }
 
-class scoreItem<T> {
+class ScoreItem<T> {
     name: string;
     data: T;
     el: JQuery;
@@ -86,56 +86,56 @@ class scoreItem<T> {
     }
 }
 
-class collapseScoreItem extends scoreItem<{ [k:number]: number }> {
+class CollapseScoreItem extends ScoreItem<{ [k: number]: number }> {
     update() {
         this.el.text(`3: ${this.data[3]} | 4: ${this.data[4]} | 5: ${this.data[5]}`);
     }
 }
 
 const scores = {
-    turns: new scoreItem('turns', 0),
-    time_past: new scoreItem('time_past', 0),
-    collapseCounts: new collapseScoreItem('collapseCounts', {
+    turns: new ScoreItem('turns', 0),
+    time_past: new ScoreItem('time_past', 0),
+    collapseCounts: new CollapseScoreItem('collapseCounts', {
         3: 0,
         4: 0,
         5: 0,
     }),
-    whiteGemCounts: new collapseScoreItem('WhiteGemCounts', {
+    whiteGemCounts: new CollapseScoreItem('WhiteGemCounts', {
         3: 0,
         4: 0,
         5: 0,
     }),
-    redGemCounts: new collapseScoreItem('RedGemCounts', {
+    redGemCounts: new CollapseScoreItem('RedGemCounts', {
         3: 0,
         4: 0,
         5: 0,
     }),
-    blueGemCounts: new collapseScoreItem('BlueGemCounts', {
+    blueGemCounts: new CollapseScoreItem('BlueGemCounts', {
         3: 0,
         4: 0,
         5: 0,
     }),
-    greenGemCounts: new collapseScoreItem('GreenGemCounts', {
+    greenGemCounts: new CollapseScoreItem('GreenGemCounts', {
         3: 0,
         4: 0,
         5: 0,
     }),
-    yellowGemCounts: new collapseScoreItem('YellowGemCounts', {
+    yellowGemCounts: new CollapseScoreItem('YellowGemCounts', {
         3: 0,
         4: 0,
         5: 0,
     }),
-    brownGemCounts: new collapseScoreItem('BrownGemCounts', {
+    brownGemCounts: new CollapseScoreItem('BrownGemCounts', {
         3: 0,
         4: 0,
         5: 0,
     }),
-    darkmagentaGemCounts: new collapseScoreItem('DarkmagentaGemCounts', {
+    darkmagentaGemCounts: new CollapseScoreItem('DarkmagentaGemCounts', {
         3: 0,
         4: 0,
         5: 0,
     }),
-} as { [k: string]: collapseScoreItem | scoreItem<number> };
+} as { [k: string]: CollapseScoreItem | ScoreItem<number> };
 
 function updateGemScore() {
     for (const k in scores) {
@@ -157,12 +157,9 @@ class GemMap extends RoadMap {
     constructor(w: number, h: number) {
         super(w, h);
 
-
         this.wrapper.on('mousedown', '.gem', (dragStartEvent: MouseEvent) => {
             dragStartEvent.preventDefault();
             const draggedGem = $(dragStartEvent.currentTarget);
-            const draggedGemTop = parseInt(draggedGem.css('top'), 10);
-            const draggedGemLeft = parseInt(draggedGem.css('left'), 10);
             const startTop = dragStartEvent.clientY;
             const startLeft = dragStartEvent.clientX;
 
@@ -490,7 +487,6 @@ class GemMap extends RoadMap {
         clearSubgrid();
         markSubgrid();
 
-
         for (let indexY = startY; indexY <= endY; indexY += 1) {
             for (let indexX = startX; indexX <= endX; indexX += 1) {
                 const row = subGrid[indexY];
@@ -520,7 +516,7 @@ class GemMap extends RoadMap {
                         console.log('addGemRelative', x, y);
 
                         return true;
-                    }
+                    };
                     if (gem.powerHorizontal > 1) {
                         for (let i = 1; ; i++) {
                             if (!addGemRelative(indexY, indexX + i)) {
@@ -814,9 +810,9 @@ $('#suggestion').click(function () {
 const start = Date.now();
 const updateInterval = function () {
     setTimeout(function () {
-        scores.time_past.data = Math.floor((Date.now() - start)/1000);
+        scores.time_past.data = Math.floor((Date.now() - start) / 1000);
         updateGemScore();
         updateInterval();
     }, 300);
-}
+};
 updateInterval();
