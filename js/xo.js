@@ -49,24 +49,33 @@ define('js/xo', ['require', 'exports', 'module', "./libs/road_map"], function(re
               xo.setColor(_this.toggleColor());
               var xos = [xo];
               // 这里判定一下是否胜利
-              var playerScore = caculateValue(_this.grid, playerColor);
+              var playerScore = caculateValue(_this.grid, playerColor, _this.currentColor);
+              console.log('playerScore', playerScore);
               if (playerScore === 100) {
-                  alert('you win');
-                  _this.resetGrid();
+                  setTimeout(function () {
+                      alert('you win');
+                      _this.resetGrid();
+                  }, 100);
+                  return;
               }
               // 响应
               var computerColor = _this.currentColor;
-              var dos = predict2(_this.grid, _this.currentColor);
+              var dos = predict2(_this.grid, computerColor);
               if (dos) {
-                  var echo = _this.grid[dos.pos[1]][dos.pos[0]];
+                  var echo = dos;
+                  console.log(echo);
                   echo.setColor(_this.toggleColor());
                   xos.push(echo);
               }
               // 这里判定一下是否胜利
-              var computerScore = caculateValue(_this.grid, computerColor);
+              var computerScore = caculateValue(_this.grid, computerColor, _this.currentColor);
+              console.log('computerScore', computerScore);
               if (computerScore === 100) {
-                  alert('com win');
-                  _this.resetGrid();
+                  setTimeout(function () {
+                      alert('com win');
+                      _this.resetGrid();
+                  }, 100);
+                  return;
               }
               _this.undos.push(xos);
               _this.redos.length = 0;
@@ -89,6 +98,8 @@ define('js/xo', ['require', 'exports', 'module', "./libs/road_map"], function(re
               this.grid.push(row);
               for (var indexX = 0; indexX < this.width; indexX++) {
                   var element = new Xo();
+                  element.x = indexX;
+                  element.y = indexY;
                   var $el = $("<div class=\"xo\"><div class=\"xo-inner\"></div></div>").appendTo(this.wrapper);
                   element.el = $el.get(0);
                   element.el.element = element;
@@ -160,36 +171,57 @@ define('js/xo', ['require', 'exports', 'module', "./libs/road_map"], function(re
           .map(function (row) { return row.slice(0).map(function (xo) {
           var ret = new Xo();
           ret.color = xo.color;
+          ret.el = xo.el;
+          ret.x = xo.x;
+          ret.y = xo.y;
           return ret;
       }); });
   }
-  function caculateValue(map, color) {
-      var totalCount = 0;
-      for (var indexRow = 0; indexRow < rows.length; indexRow++) {
-          var rowPoints = rows[indexRow].map(function (pos) { return map[pos[1]][pos[0]].color; })
+  function caculateValue(map, color, nextPlayerColor) {
+      var rowInfo = rows.map(function (row) {
+          var rowPoints = row.map(function (pos) { return map[pos[1]][pos[0]].color; })
               .map(function (posColor) { return posColor ? posColor === color ? 1 : -1 : 0; });
-          var rawPoints = rowPoints.reduce(function (pre, cur) { return pre + cur; }, 0);
-          if (rowPoints.filter(function (point) { return point === 1; }).length === 3) {
+          var rawPoints = 0;
+          if (!rowPoints.filter(function (x) { return x === -1; }).length) {
+              rawPoints = rowPoints.reduce(function (pre, cur) { return pre + cur; }, 0);
+          }
+          if (!rowPoints.filter(function (x) { return x === 1; }).length) {
+              rawPoints = rowPoints.reduce(function (pre, cur) { return pre + cur; }, 0);
+          }
+          return {
+              rowPoints: rowPoints,
+              rawPoints: rawPoints
+          };
+      });
+      // 
+      // 所以这里应该有一个正常的估值算法
+      // 参考五子棋，应该以获胜手段给不同的估分，以最高分结算
+      // 同时需要考虑先后手
+      // 
+      if (rowInfo.filter(function (x) { return x.rawPoints === 3; }).length) {
+          // 胜利
+          return 100;
+      }
+      if (rowInfo.filter(function (x) { return x.rawPoints === -3; }).length) {
+          // 失败
+          return -200;
+      }
+      if (nextPlayerColor == color) {
+          if (rowInfo.filter(function (x) { return x.rawPoints === 2; }).length) {
+              // 胜利
               return 100;
           }
-          if (rowPoints.filter(function (point) { return point < 0; }).length > 0) {
-              // pass
-              if (rawPoints < -1) {
-                  return -100;
-              }
-          }
-          else {
-              rowPoints.forEach(function (point) {
-                  if (point > 0) {
-                      totalCount += 2;
-                  }
-                  else {
-                      totalCount += 1;
-                  }
-              });
+      }
+      if (rowInfo.filter(function (x) { return x.rawPoints === -2; }).length > 1) {
+          return -100;
+      }
+      if (nextPlayerColor !== color) {
+          if (rowInfo.filter(function (x) { return x.rawPoints === -2; }).length) {
+              return -100;
           }
       }
-      return totalCount;
+      // 争夺中
+      return rowInfo.reduce(function (pre, info) { return pre + info.rawPoints; }, 0);
   }
   function eachGrid(grid, handle) {
       for (var indexY = 0; indexY < 3; indexY++) {
@@ -203,58 +235,68 @@ define('js/xo', ['require', 'exports', 'module', "./libs/road_map"], function(re
   // 这里的思路有点问题，应该思考为落子后对某一方的局势评价
   // 避免不必要的复杂度
   function predict2(map, color) {
-      // 我在此落子之后 对方落一子，我能获得最大优势的招法
-      var gridClone = cloneGrid(map);
+      /**
+       * 我在此落子之后 对方落一子，我能获得最大优势的招法
+       * 这里应该是深度优先搜索而不是广度优先搜索
+       * 图新较小所以可以忽略第一步的估值
+       */
       var steps = [];
       var reverseColor = color === 'white' ? 'black' : 'white';
-      var max = -100;
-      eachGrid(gridClone, function (xo, indexX, indexY) {
+      var min = -200;
+      var emptyGrids = [];
+      eachGrid(map, function (xo) {
           if (!xo.color) {
-              xo.color = color;
-              var score = caculateValue(gridClone, color);
-              if (score > max) {
-                  max = score;
-                  steps.length = 0;
-                  steps.push({ pos: [indexX, indexY], score: score, color: color });
-              }
-              else if (score === max) {
-                  steps.push({ pos: [indexX, indexY], score: score, color: color });
-              }
-              xo.color = undefined;
+              console.log(xo.color, xo);
+              emptyGrids.push(xo);
           }
       });
-      var steps2ops = [];
-      var min = -100;
-      steps.forEach(function (step) {
-          var minScore = Infinity;
-          gridClone[step.pos[1]][step.pos[0]].color = step.color;
-          eachGrid(gridClone, function (xo, indexX1, indexY1) {
-              if (!xo.color) {
-                  xo.color = reverseColor;
-                  var score = caculateValue(gridClone, color);
-                  if (score < minScore) {
-                      minScore = score;
-                  }
-                  xo.color = undefined;
-              }
-          });
-          if (minScore > min) {
-              min = minScore;
-              steps2ops.length = 0;
-              steps2ops.push(step);
+      function addToSteps(xo) {
+          if (steps.indexOf(xo) == -1) {
+              return steps.push(xo);
           }
-          else if (minScore === min) {
-              steps2ops.push(step);
-          }
-          gridClone[step.pos[1]][step.pos[0]].color = undefined;
-      });
-      if (!steps2ops.length) {
-          return steps[Math.floor(Math.random() * steps.length)];
       }
-      return steps2ops[Math.floor(Math.random() * steps2ops.length)];
-  }
-  function predict4() {
-      // 两个回合之后我能获得最大优势的招法
+      var actInterator = function (depth) {
+          if (depth === void 0) { depth = 2; }
+          /**
+           * 实际上是求 C emptyGrids, depth 这样一个全排列
+           * 简单的办法是生成递增进位树？
+           * 由于太过智障我还是先写个2
+           */
+          var max = -200;
+          for (var i = 0; i < emptyGrids.length; i++) {
+              var item = emptyGrids[i];
+              var restGrids = [];
+              item.color = color;
+              var score1 = caculateValue(map, color, reverseColor);
+              for (var k = 0; k < emptyGrids.length; k++) {
+                  if (k !== i) {
+                      restGrids.push(emptyGrids[k]);
+                  }
+              }
+              var min_1 = Infinity;
+              for (var j = 0; j < restGrids.length; j++) {
+                  var item2 = restGrids[j];
+                  item2.color = reverseColor;
+                  var score2 = caculateValue(map, color, color);
+                  if (score2 < min_1) {
+                      min_1 = score2;
+                  }
+                  item2.color = undefined;
+                  ;
+              }
+              item.color = undefined;
+              if (min_1 > max) {
+                  max = min_1;
+                  steps.length = 0;
+                  addToSteps(item);
+              }
+              else if (min_1 == max) {
+                  addToSteps(item);
+              }
+          }
+      };
+      actInterator(2);
+      return steps[Math.floor(Math.random() * steps.length)];
   }
   var xoMap = new XoMap();
   xoMap.generateXoMap();
@@ -268,6 +310,36 @@ define('js/xo', ['require', 'exports', 'module', "./libs/road_map"], function(re
   $('#redo').click(function () {
       xoMap.redo();
   });
+  var numberToColor = {
+      0: undefined,
+      1: 'black',
+      2: 'white'
+  };
+  function caculateGrid(map, color, nextPlayerColor) {
+      var grid = [];
+      for (var j = 0; j < 3; j++) {
+          var row = [];
+          grid.push(row);
+          for (var i = 0; i < 3; i++) {
+              var color_1 = numberToColor[map[j * 3 + i]];
+              var xo = new Xo();
+              xo.x = i;
+              xo.y = j;
+              xo.color = color_1;
+              row.push(xo);
+          }
+      }
+      console.log(grid);
+      var ret = caculateValue(grid, numberToColor[color], numberToColor[nextPlayerColor]);
+      console.log(ret);
+      var step = predict2(grid, numberToColor[color]);
+      console.log(step);
+  }
+  caculateGrid([
+      1, 0, 2,
+      0, 2, 0,
+      1, 1, 0,
+  ], 2, 1);
   
 
 });
