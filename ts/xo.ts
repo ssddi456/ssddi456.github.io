@@ -136,10 +136,6 @@ class XoMap extends RoadMap {
                 const xo = row[indexX];
                 if (!xo.color) {
                     xo.color = this.currentColor;
-                    $(this.grid[indexY][indexX].el).find('.xo-inner')
-                        .html(
-                        '' + caculateValue(gridClone, this.currentColor) + '\n'
-                        + caculateValue(gridClone, this.currentColor === 'white' ? 'black' : 'white'));
                     xo.color = undefined;
                 }
             }
