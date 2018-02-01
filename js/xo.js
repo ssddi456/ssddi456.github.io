@@ -335,11 +335,6 @@ define('js/xo', ['require', 'exports', 'module', "./libs/road_map"], function(re
       var step = predict2(grid, numberToColor[color]);
       console.log(step);
   }
-  caculateGrid([
-      1, 0, 2,
-      0, 2, 0,
-      1, 1, 0,
-  ], 2, 1);
   
 
 });

@@ -372,13 +372,3 @@ function caculateGrid(map: xoMap, color: 1 | 2, nextPlayerColor: 1 | 2) {
     const step = predict2(grid, numberToColor[color]);
     console.log(step);
 }
-
-caculateGrid(
-    [
-        1, 0, 2,
-        0, 2, 0,
-        1, 1, 0,
-    ],
-    2,
-    1
-)
