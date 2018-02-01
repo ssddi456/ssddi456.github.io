@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>Ssddi456's blog</title>
+    <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/animate.css/3.5.2/animate.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="container wrapper">
+        <div class="stat">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    分数
+                </div>
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        <dt>轮数</dt>
+                        <dd id="turns"></dd>
+                        <dt>时间</dt>
+                        <dd id="time_past"></dd>
+                        <dt>清除数目</dt>
+                        <dd id="collapseCounts"></dd>
+                        <dt>WhiteGem</dt>
+                        <dd id="WhiteGemCounts"></dd>
+                        <dt>RedGem</dt>
+                        <dd id="RedGemCounts"></dd>
+                        <dt>BlueGem</dt>
+                        <dd id="BlueGemCounts"></dd>
+                        <dt>GreenGem</dt>
+                        <dd id="GreenGemCounts"></dd>
+                        <dt>YellowGem</dt>
+                        <dd id="YellowGemCounts"></dd>
+                        <dt>BrownGem</dt>
+                        <dd id="BrownGemCounts"></dd>
+                        <dt>DarkmagentaGem</dt>
+                        <dd id="DarkmagentaGemCounts"></dd>
+                    </dl>
+
+                    <div class="btn-toolbar">
+                        <div class="btn-group" data-toggle="buttons">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" id="suggestion">提示</button>
+                            </span>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="main"></div>
+    </div>
+    <script src="//cdn.bootcss.com/require.js/2.3.3/require.js"></script>
+    <script src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="/lib/sylvester.js"></script>
+    <script src="/lib/glUtils.js"></script>
+    <script>
+        require(['js/gem'], function () { });
+    </script>
+</body>
+
+</html>

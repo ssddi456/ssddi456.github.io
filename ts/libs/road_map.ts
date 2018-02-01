@@ -10,7 +10,7 @@ import { gridSize } from './3dRoad';
  *
  * 来构成一个地图
  */
-interface IMapCell {
+export interface IMapCell {
     canWalkThrough: boolean;
     visited: boolean;
     visible: boolean;
@@ -22,7 +22,7 @@ interface ICheckCellInfo {
     x: number;
     y: number;
     cell: IMapCell;
-    parentCell: IMapCell;
+    parentCell: IMapCell | null;
 }
 
 export class RoadMap {
@@ -102,8 +102,8 @@ export class RoadMap {
         }
     }
     setRoad(a: [number, number], b: [number, number]) {
-        let increaser;
-        let fixer;
+        let increaser = 0;
+        let fixer = 0;
 
         if (a[0] === b[0]) {
             fixer = 0;
@@ -134,17 +134,17 @@ export class RoadMap {
         ) {
             return true;
         }
+        return false;
     }
     getCell(x: number, y: number) {
         if (this.isInGrid(x, y)) {
             return this.grid[y][x];
         }
-        return null;
+        throw new Error(`can not get grid at ${x}, ${y}`);
     }
     getAllJoint() {
         const ret: Array<[number, number]> = [];
         for (let indexY = 0; indexY < this.grid.length; indexY++) {
-            const row = this.grid[indexY];
             for (let indexX = 0; indexX < this.grid.length; indexX++) {
                 if (this.isJoint(indexX, indexY)) {
                     ret.push([indexX, indexY]);
@@ -220,8 +220,6 @@ export class RoadMap {
         return ret;
     }
 
-
-
     getCheckPos(x: number, y: number) {
         const ret = [] as Array<{ check: [number, number], add: [number, number] }>;
         if (this.isInGrid(x, y - 2)) {
@@ -265,8 +263,6 @@ export class RoadMap {
     }
 
     generateRandonRoad(startX = 0, startY = 0) {
-
-
         this.resetGrid();
         const waitForCheck = [] as ICheckCellInfo[];
         this.entrance = [startX, startY];

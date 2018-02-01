@@ -1,20 +1,15 @@
-import { Vector3, Point } from './libs/2dRoad';
-import { Mesh3dRoad } from './libs/3dRoad';
-import { LineVertexColorShader } from './shaders/line_vertex_color_shader';
+import { Point } from './libs/2dRoad';
 import { World, Camara } from './world';
 
 import { VertexColorShader } from './shaders/vertex_color_shader';
-import { CubeWithTextureShader } from './shaders/cube_with_texture_shader';
 import { CubeWithTextureAndLightingShader } from './shaders/cube_with_texture_and_lighting_shader';
-import { Light } from "./light";
-import { Mesh } from "./mesh";
-import { Line } from "./line";
-import { RoadMap } from "./libs/road_map";
-import { Plane } from "./libs/plane";
-import { Cube } from "./libs/cube";
-import { Player } from "./libs/player_control";
-import { LevelControler } from "./libs/level_control";
-import { loopFactory, createTexture, createFrameBuffer, createFrameBufferWithDepth } from './libs/utils';
+import { Light } from './light';
+import { Mesh } from './mesh';
+import { Plane } from './libs/plane';
+import { Cube } from './libs/cube';
+import { Player } from './libs/player_control';
+import { LevelControler } from './libs/level_control';
+import { loopFactory, createTexture, createFrameBufferWithDepth } from './libs/utils';
 import { createMergeCanvas } from './objects/merge_canvas';
 
 const main = $('#main')[0] as HTMLCanvasElement;
