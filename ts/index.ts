@@ -102,7 +102,7 @@ dummyPlayerControl.on('enterExit', () => {
 
 });
 
-const drawFrequant = 30;
+const drawFrequant = 60;
 
 const updateLoop = loopFactory(function () {
     if (levelControler.transformLevel) {

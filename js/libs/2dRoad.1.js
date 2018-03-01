@@ -1,4 +1,4 @@
-define('js/libs/2dRoad', ['require', 'exports', 'module'], function(require, exports, module) {
+define('js/libs/2dRoad.1', ['require', 'exports', 'module'], function(require, exports, module) {
 
   "use strict";
   exports.__esModule = true;

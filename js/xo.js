@@ -110,7 +110,9 @@ define('js/xo', ['require', 'exports', 'module', "./libs/road_map"], function(re
       };
       XoMap.prototype.resetGrid = function () {
           this.els.forEach(function (el) {
-              el.element.reset();
+              if (el.element) {
+                  el.element.reset();
+              }
           });
           this.currentColor = 'black';
           this.undos.length = 0;

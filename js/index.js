@@ -127,7 +127,7 @@ define('js/index', ['require', 'exports', 'module', "./world", "./shaders/vertex
   dummyPlayerControl.on('enterExit', function () {
       levelControler.levelPass();
   });
-  var drawFrequant = 30;
+  var drawFrequant = 60;
   var updateLoop = utils_1.loopFactory(function () {
       if (levelControler.transformLevel) {
           // console.log('transform');

@@ -20,7 +20,7 @@ class Xo implements IMapCell {
     }
 }
 
-type XoElement = Element & { element: Xo };
+type XoElement = Element & { element?: Xo };
 class XoMap extends RoadMap {
     width = 3;
     height = 3;
@@ -35,7 +35,7 @@ class XoMap extends RoadMap {
         super(3, 3);
 
         this.wrapper.on('click', '.xo', (e) => {
-            const target = e.currentTarget;
+            const target = e.currentTarget as XoElement;
             const xo = target.element as Xo;
             if (xo.color) {
                 return;
@@ -110,7 +110,9 @@ class XoMap extends RoadMap {
     }
     resetGrid() {
         this.els.forEach((el) => {
-            el.element.reset();
+            if (el.element) {
+                el.element.reset();
+            }
         });
         this.currentColor = 'black';
         this.undos.length = 0;
@@ -228,7 +230,7 @@ function caculateValue(map: Xo[][], color: string, nextPlayerColor: string) {
     if (rowInfo.filter((x) => x.rawPoints === -2).length > 1) {
         return -100;
     }
-    
+
     if (nextPlayerColor !== color) {
         if (rowInfo.filter((x) => x.rawPoints === -2).length) {
             return -100;
@@ -304,7 +306,7 @@ function predict2(map: Xo[][], color: string) {
                 }
                 item2.color = undefined;;
             }
-            
+
             item.color = undefined;
 
             if (min > max) {
